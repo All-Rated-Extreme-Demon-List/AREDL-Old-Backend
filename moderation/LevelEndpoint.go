@@ -47,7 +47,7 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
 				}
-				collection, err := app.Dao().FindCollectionByNameOrId(names.TableLevels)
+				collection, err := txDao.FindCollectionByNameOrId(names.TableLevels)
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
 				}

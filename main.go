@@ -1,6 +1,7 @@
 package main
 
 import (
+	"AREDL/migration"
 	"AREDL/moderation"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
@@ -9,6 +10,8 @@ import (
 
 func main() {
 	app := pocketbase.New()
+
+	migration.Register(app)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		err := moderation.RegisterEndpoints(e.Router, app)
