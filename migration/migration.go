@@ -4,6 +4,7 @@ import (
 	"AREDL/names"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
@@ -46,6 +47,7 @@ type Record struct {
 	Link      string `json:"link"`
 	Percent   int    `json:"percent"`
 	Framerate int    `json:"hz"`
+	Mobile    bool   `json:"mobile"`
 }
 
 type Level struct {
@@ -75,7 +77,7 @@ func Register(app *pocketbase.PocketBase) {
 				return
 			}
 			path := args[0]
-
+			println("Migrating levels & records")
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				var levelNames []string
 				err := readFileIntoJson(path+"/_list.json", &levelNames)
@@ -101,7 +103,7 @@ func Register(app *pocketbase.PocketBase) {
 				knownUsers := make(map[string]string)
 				knownLevels := make(map[string]string)
 				for position, levelName := range levelNames {
-					println(levelName)
+					fmt.Printf("[%d/%d] %s\n", position+1, len(levelNames), levelName)
 					var level Level
 					err = readFileIntoJson(path+"/"+levelName+".json", &level)
 					if err != nil {
@@ -129,8 +131,9 @@ func Register(app *pocketbase.PocketBase) {
 						return err
 					}
 					knownLevels[levelName] = levelRecord.Id
-					for submissionOrder, playerRecord := range level.Records {
-						playerId, exists := knownUsers[strings.ToLower(playerRecord.User)]
+
+					addRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
+						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
 							// create legacy user
 							userRecord := models.NewRecord(userCollection)
@@ -141,7 +144,7 @@ func Register(app *pocketbase.PocketBase) {
 							err = userForm.LoadData(map[string]any{
 								"username":    usedName,
 								"permissions": "member",
-								"global_name": playerRecord.User,
+								"global_name": username,
 								"legacy":      true,
 								"email":       usedName + "@none.com",
 							})
@@ -155,28 +158,47 @@ func Register(app *pocketbase.PocketBase) {
 								return err
 							}
 							playerId = userRecord.Id
-							knownUsers[strings.ToLower(playerRecord.User)] = playerId
+							knownUsers[strings.ToLower(username)] = playerId
 						}
 
 						submissionRecord := models.NewRecord(submissionCollection)
 						submissionForm := forms.NewRecordUpsert(app, submissionRecord)
 						submissionForm.SetDao(txDao)
+						device := "pc"
+						if mobile {
+							device = "mobile"
+						}
 						err = submissionForm.LoadData(map[string]any{
 							"status":       "accepted",
-							"video_url":    strings.Replace(playerRecord.Link, " ", "", -1),
+							"video_url":    strings.Replace(url, " ", "", -1),
 							"level":        levelRecord.Id,
 							"submitted_by": playerId,
-							"fps":          playerRecord.Framerate,
-							"percentage":   playerRecord.Percent,
-							"order":        submissionOrder + 1,
+							"fps":          framerate,
+							"percentage":   percent,
+							"order":        recordOrder,
+							"device":       device,
 						})
 						err = submissionForm.Submit()
+						if err != nil {
+							return err
+						}
+						return nil
+					}
+
+					err := addRecord(level.Verifier, 0, level.Verification, 60, 100, false)
+					if err != nil {
+						return err
+					}
+
+					for submissionOrder, playerRecord := range level.Records {
+						err := addRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
 						if err != nil {
 							return err
 						}
 					}
 				}
 
+				println("Migrating packs")
 				var packs []Pack
 				err = readFileIntoJson(path+"/_packlist.json", &packs)
 				if err != nil {
@@ -215,6 +237,7 @@ func Register(app *pocketbase.PocketBase) {
 			if err != nil {
 				print("Failed to migrate: ", err.Error())
 			}
+			println("Finished migrating")
 		},
 	})
 }
