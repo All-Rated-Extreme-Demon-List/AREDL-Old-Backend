@@ -175,7 +175,7 @@ func Register(app *pocketbase.PocketBase) {
 							"submitted_by": playerId,
 							"fps":          framerate,
 							"percentage":   percent,
-							"order":        recordOrder,
+							"order":        recordOrder + 1,
 							"device":       device,
 						})
 						err = submissionForm.Submit()
