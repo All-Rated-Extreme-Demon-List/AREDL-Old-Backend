@@ -2,6 +2,7 @@ package moderation
 
 import (
 	"AREDL/names"
+	"AREDL/points"
 	"AREDL/util"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
@@ -22,6 +23,10 @@ func registerLevelEndpoints(e *echo.Echo, app *pocketbase.PocketBase) error {
 		return err
 	}
 	err = registerLevelMove(e, app)
+	if err != nil {
+		return err
+	}
+	err = registerUpdatePoints(e, app)
 	return err
 }
 
@@ -31,7 +36,7 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Path:   pathLevelPrefix + "/place",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			//util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"level_id": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
 				"position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
@@ -57,10 +62,13 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 				form := forms.NewRecordUpsert(app, record)
 				form.SetDao(txDao)
 
+				//TODO values
 				err = form.LoadData(map[string]any{
-					"level_id": c.Get("level_id"),
-					"position": position,
-					"name":     c.Get("name"),
+					"level_id":           c.Get("level_id"),
+					"position":           position,
+					"name":               c.Get("name"),
+					"qualifying_percent": 100,
+					"verifier":           "test",
 				})
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
@@ -73,6 +81,11 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 					default:
 						return apis.NewApiError(500, "Error placing level", nil)
 					}
+				}
+				// TODO upper bound
+				err = points.UpdateListPoints(txDao, position, 1000)
+				if err != nil {
+					return err
 				}
 				return nil
 			})
@@ -91,7 +104,7 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Path:   pathLevelPrefix + "/move",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			//util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"level_id":     {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
 				"new_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
@@ -138,12 +151,41 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 				if _, err = query.Execute(); err != nil {
 					return apis.NewApiError(500, "Failed to update", nil)
 				}
+				// update list points for the new positions
+				err = points.UpdateListPoints(txDao, minPos, maxPos)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to update", nil)
+				}
 				return nil
 			})
 			if err != nil {
 				return err
 			}
 			return c.String(200, "Moved level")
+		},
+	})
+	return err
+}
+
+func registerUpdatePoints(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathLevelPrefix + "/update-points",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			// high requirement, because this is used in very rare occasions i.e. when the point curve changes.
+			util.RequirePermission("listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"min_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
+				"max_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := points.UpdateListPoints(app.Dao(), c.Get("min_position").(int), c.Get("max_position").(int))
+			if err != nil {
+				return apis.NewApiError(500, "Failed to update", nil)
+			}
+			return c.String(200, "Updated points")
 		},
 	})
 	return err
