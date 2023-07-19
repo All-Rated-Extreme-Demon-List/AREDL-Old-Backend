@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase/apis"
@@ -25,6 +26,7 @@ func PackRules(rules ...validation.Rule) ValidationFunc {
 
 type ValidationData struct {
 	LoadType       LoadType
+	Required       bool
 	ValidationFunc ValidationFunc
 }
 
@@ -35,6 +37,12 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			for key, data := range rules {
+				if c.FormValue(key) == "" {
+					if data.Required {
+						return apis.NewBadRequestError(fmt.Sprintf("%s can't be empty!", key), nil)
+					}
+					continue
+				}
 				switch data.LoadType {
 				case LoadString:
 					value := c.FormValue(key)

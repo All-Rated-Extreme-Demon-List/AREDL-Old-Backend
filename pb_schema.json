@@ -210,164 +210,6 @@
     }
   },
   {
-    "id": "ugtue2f1kk9kaen",
-    "name": "record_submissions",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "nszmr7iu",
-        "name": "status",
-        "type": "select",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "pending",
-            "accepted",
-            "rejected"
-          ]
-        }
-      },
-      {
-        "id": "ogs9iazb",
-        "name": "raw_footage",
-        "type": "url",
-        "system": false,
-        "required": false,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "qzfbjkib",
-        "name": "level",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "xyomis5lorwaowh",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": []
-        }
-      },
-      {
-        "id": "acxg8cng",
-        "name": "submitted_by",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "_pb_users_auth_",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": [
-            "global_name"
-          ]
-        }
-      },
-      {
-        "id": "cnsqidkj",
-        "name": "fps",
-        "type": "number",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "fophb2ks",
-        "name": "video_url",
-        "type": "url",
-        "system": false,
-        "required": true,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "p4zug6jn",
-        "name": "percentage",
-        "type": "number",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "bxfeda3z",
-        "name": "device",
-        "type": "select",
-        "system": false,
-        "required": true,
-        "options": {
-          "maxSelect": 1,
-          "values": [
-            "pc",
-            "mobile"
-          ]
-        }
-      },
-      {
-        "id": "vgbjp3rd",
-        "name": "ldm_id",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "63kzi2q8",
-        "name": "order",
-        "type": "number",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "lf4xgnxv",
-        "name": "reviewer",
-        "type": "relation",
-        "system": false,
-        "required": false,
-        "options": {
-          "collectionId": "_pb_users_auth_",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": 1,
-          "displayFields": [
-            "global_name"
-          ]
-        }
-      }
-    ],
-    "indexes": [
-      "CREATE UNIQUE INDEX `idx_aoFYa6P` ON `record_submissions` (\n  `level`,\n  `submitted_by`\n)"
-    ],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
     "id": "xyomis5lorwaowh",
     "name": "aredl",
     "type": "base",
@@ -538,71 +380,6 @@
     "options": {}
   },
   {
-    "id": "k73ui7xf07cakcy",
-    "name": "submission_count",
-    "type": "view",
-    "system": false,
-    "schema": [
-      {
-        "id": "5hzeowuc",
-        "name": "submissions",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "qjulkder",
-        "name": "global_name",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      }
-    ],
-    "indexes": [],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {
-      "query": "SELECT u.id, count(r.id) as submissions, u.global_name\nFROM record_submissions r, users u\nWHERE r.submitted_by = u.id\nGROUP BY u.id"
-    }
-  },
-  {
-    "id": "wb9j0i55wyxiykg",
-    "name": "points",
-    "type": "view",
-    "system": false,
-    "schema": [
-      {
-        "id": "kveba5zb",
-        "name": "points",
-        "type": "json",
-        "system": false,
-        "required": false,
-        "options": {}
-      }
-    ],
-    "indexes": [],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {
-      "query": "WITH gen AS (\n  SELECT 1 AS pos\n  UNION ALL\n  SELECT pos+1 FROM gen WHERE pos+1 <= 1000\n)\nSELECT pos as id, \n  (\n  SELECT max(T.V) \n  FROM (SELECT \n  --Formular for point curve\n  ROUND(400 / SQRT((CAST(pos as FLOAT) - 1) / 50 + 0.444444) - 100, 1) \n  --\n  AS V UNION SELECT 0 AS V) T\n  )\n  as points FROM gen"
-    }
-  },
-  {
     "id": "5j8zdz81z885dqu",
     "name": "packs",
     "type": "base",
@@ -633,22 +410,8 @@
         }
       },
       {
-        "id": "8ob5utfv",
-        "name": "levels",
-        "type": "relation",
-        "system": false,
-        "required": true,
-        "options": {
-          "collectionId": "xyomis5lorwaowh",
-          "cascadeDelete": false,
-          "minSelect": null,
-          "maxSelect": null,
-          "displayFields": []
-        }
-      },
-      {
         "id": "nr6wpvao",
-        "name": "order",
+        "name": "placement_order",
         "type": "number",
         "system": false,
         "required": true,
@@ -666,6 +429,368 @@
         "options": {
           "min": null,
           "max": null
+        }
+      }
+    ],
+    "indexes": [],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "6hx32ea9yk96qez",
+    "name": "pack_levels",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "i6ampdki",
+        "name": "pack",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "5j8zdz81z885dqu",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "vbsm6tvg",
+        "name": "level",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "xyomis5lorwaowh",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_MhlwLMw` ON `pack_levels` (\n  `pack`,\n  `level`\n)"
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "r7lznhkp6yhv78m",
+    "name": "completed_packs",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "m9jyjqbi",
+        "name": "user",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": [
+            "global_name"
+          ]
+        }
+      },
+      {
+        "id": "dtddgszu",
+        "name": "pack",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "5j8zdz81z885dqu",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_p9OVKhj` ON `completed_packs` (\n  `user`,\n  `pack`\n)"
+    ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "wb9j0i55wyxiykg",
+    "name": "points",
+    "type": "view",
+    "system": false,
+    "schema": [
+      {
+        "id": "nsjw2xoi",
+        "name": "points",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {
+      "query": "WITH gen AS (\n  SELECT 1 AS pos\n  UNION ALL\n  SELECT pos+1 FROM gen WHERE pos+1 <= 1000\n)\nSELECT pos as id, \n  (\n  SELECT max(T.V) \n  FROM (SELECT \n  --Formular for point curve\n  ROUND(400 / SQRT((CAST(pos as FLOAT) - 1) / 50 + 0.444444) - 100, 1) \n  --------------------------\n  AS V UNION SELECT 0 AS V) T\n  )\n  as points FROM gen"
+    }
+  },
+  {
+    "id": "ugtue2f1kk9kaen",
+    "name": "record_submissions",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "nszmr7iu",
+        "name": "status",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "pending",
+            "accepted",
+            "rejected",
+            "rejected_retryable"
+          ]
+        }
+      },
+      {
+        "id": "ogs9iazb",
+        "name": "raw_footage",
+        "type": "url",
+        "system": false,
+        "required": false,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "qzfbjkib",
+        "name": "level",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "xyomis5lorwaowh",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "acxg8cng",
+        "name": "submitted_by",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": [
+            "global_name"
+          ]
+        }
+      },
+      {
+        "id": "cnsqidkj",
+        "name": "fps",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "fophb2ks",
+        "name": "video_url",
+        "type": "url",
+        "system": false,
+        "required": true,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "p4zug6jn",
+        "name": "percentage",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "bxfeda3z",
+        "name": "device",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "pc",
+            "mobile"
+          ]
+        }
+      },
+      {
+        "id": "vgbjp3rd",
+        "name": "ldm_id",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "63kzi2q8",
+        "name": "placement_order",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "lf4xgnxv",
+        "name": "reviewer",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": [
+            "global_name"
+          ]
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_aoFYa6P` ON `record_submissions` (\n  `level`,\n  `submitted_by`\n)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "pd6wbhqq8pbppu6",
+    "name": "position_history",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "zbd7q3xm",
+        "name": "level",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "xyomis5lorwaowh",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "can0ivht",
+        "name": "action",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "placed",
+            "placedAbove",
+            "movedUp",
+            "movedDown",
+            "movedPastUp",
+            "movedPastDown"
+          ]
+        }
+      },
+      {
+        "id": "cr80pcjf",
+        "name": "new_position",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": null
+        }
+      },
+      {
+        "id": "q1de2nut",
+        "name": "cause",
+        "type": "relation",
+        "system": false,
+        "required": false,
+        "options": {
+          "collectionId": "xyomis5lorwaowh",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "id": "axgljumn",
+        "name": "action_by",
+        "type": "relation",
+        "system": false,
+        "required": true,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": false,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
         }
       }
     ],

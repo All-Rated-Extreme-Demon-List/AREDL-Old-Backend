@@ -36,17 +36,17 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Path:   pathLevelPrefix + "/place",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			//util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
-				"position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
-				"name":     {util.LoadString, util.PackRules(validation.Required)},
+				"level_id": {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"name":     {util.LoadString, true, util.PackRules()},
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			position := c.Get("position").(int)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				// TODO check if new position is outside of the highest position
+				// TODO check if new position is outside the highest position
 				// Move all levels down from the placement position
 				_, err := txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
 				if err != nil {
@@ -104,10 +104,10 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Path:   pathLevelPrefix + "/move",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			//util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id":     {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
-				"new_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
+				"level_id":     {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"new_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -147,7 +147,6 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 						minPos,
 						maxPos,
 					))
-
 				if _, err = query.Execute(); err != nil {
 					return apis.NewApiError(500, "Failed to update", nil)
 				}
@@ -156,6 +155,7 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 				if err != nil {
 					return apis.NewApiError(500, "Failed to update", nil)
 				}
+
 				return nil
 			})
 			if err != nil {
@@ -176,8 +176,8 @@ func registerUpdatePoints(e *echo.Echo, app *pocketbase.PocketBase) error {
 			// high requirement, because this is used in very rare occasions i.e. when the point curve changes.
 			util.RequirePermission("listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"min_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
-				"max_position": {util.LoadInt, util.PackRules(validation.Required, validation.Min(1))},
+				"min_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"max_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
 			}),
 		},
 		Handler: func(c echo.Context) error {

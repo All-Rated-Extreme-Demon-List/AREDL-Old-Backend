@@ -6,20 +6,26 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 )
 
-func UpdateListPoints(txDao *daos.Dao, minPos int, maxPos int) error {
-	query := txDao.DB().NewQuery(fmt.Sprintf("UPDATE %v "+
-		"SET points=("+
-		"	SELECT p.points "+
-		"	FROM %v p "+
-		"	WHERE p.id=position "+
-		")"+
-		"WHERE position BETWEEN %d AND %d",
-		txDao.DB().QuoteSimpleTableName(names.TableLevels),
-		txDao.DB().QuoteSimpleTableName(names.TablePoints),
-		minPos, maxPos))
+func UpdateListPoints(dao *daos.Dao, minPos int, maxPos int) error {
+	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
+		query := txDao.DB().NewQuery(fmt.Sprintf(`UPDATE %v 
+		SET points=(
+			SELECT p.points 
+			FROM %v p 
+			WHERE p.id=position 
+		)
+		WHERE position BETWEEN %d AND %d`, names.TableLevels, names.TablePoints, minPos, maxPos))
 
-	println(query.SQL())
-
-	_, err := query.Execute()
+		_, err := query.Execute()
+		if err != nil {
+			return err
+		}
+		err = updatePackPointsByLevelRange(txDao, minPos, maxPos)
+		if err != nil {
+			return err
+		}
+		err = UpdateUserPointsByLevelRange(txDao, minPos, maxPos)
+		return nil
+	})
 	return err
 }

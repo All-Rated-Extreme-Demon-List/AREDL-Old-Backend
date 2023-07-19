@@ -2,13 +2,13 @@ package migration
 
 import (
 	"AREDL/names"
+	"AREDL/points"
+	"AREDL/util"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
-	"github.com/pocketbase/pocketbase/forms"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/spf13/cobra"
 	"io"
 	"math/rand"
@@ -84,19 +84,23 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				levelCollection, err := app.Dao().FindCollectionByNameOrId(names.TableLevels)
+				levelCollection, err := txDao.FindCollectionByNameOrId(names.TableLevels)
 				if err != nil {
 					return err
 				}
-				userCollection, err := app.Dao().FindCollectionByNameOrId(names.TableUsers)
+				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
 				if err != nil {
 					return err
 				}
-				submissionCollection, err := app.Dao().FindCollectionByNameOrId(names.TableSubmissions)
+				submissionCollection, err := txDao.FindCollectionByNameOrId(names.TableSubmissions)
 				if err != nil {
 					return err
 				}
-				packCollection, err := app.Dao().FindCollectionByNameOrId(names.TablePacks)
+				packCollection, err := txDao.FindCollectionByNameOrId(names.TablePacks)
+				if err != nil {
+					return err
+				}
+				packLevelCollection, err := txDao.FindCollectionByNameOrId(names.TablePackLevels)
 				if err != nil {
 					return err
 				}
@@ -109,10 +113,7 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
-					levelRecord := models.NewRecord(levelCollection)
-					levelForm := forms.NewRecordUpsert(app, levelRecord)
-					levelForm.SetDao(txDao)
-					err = levelForm.LoadData(map[string]any{
+					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
 						"position":           position + 1,
 						"name":               level.Name,
 						"creators":           strings.Join(level.Creators, ","),
@@ -126,34 +127,23 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
-					err = levelForm.Submit()
-					if err != nil {
-						return err
-					}
 					knownLevels[levelName] = levelRecord.Id
 
-					addRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
+					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
 							// create legacy user
-							userRecord := models.NewRecord(userCollection)
-							userForm := forms.NewRecordUpsert(app, userRecord)
-							userForm.SetDao(txDao)
 							password := RandString(20)
 							usedName := RandString(10)
-							err = userForm.LoadData(map[string]any{
-								"username":    usedName,
-								"permissions": "member",
-								"global_name": username,
-								"legacy":      true,
-								"email":       usedName + "@none.com",
+							userRecord, err := util.AddRecord(txDao, app, userCollection, map[string]any{
+								"username":        usedName,
+								"permissions":     "member",
+								"global_name":     username,
+								"legacy":          true,
+								"email":           usedName + "@none.com",
+								"password":        password,
+								"passwordConfirm": password,
 							})
-							userForm.Password = password
-							userForm.PasswordConfirm = password
-							if err != nil {
-								return err
-							}
-							err = userForm.Submit()
 							if err != nil {
 								return err
 							}
@@ -161,37 +151,33 @@ func Register(app *pocketbase.PocketBase) {
 							knownUsers[strings.ToLower(username)] = playerId
 						}
 
-						submissionRecord := models.NewRecord(submissionCollection)
-						submissionForm := forms.NewRecordUpsert(app, submissionRecord)
-						submissionForm.SetDao(txDao)
 						device := "pc"
 						if mobile {
 							device = "mobile"
 						}
-						err = submissionForm.LoadData(map[string]any{
-							"status":       "accepted",
-							"video_url":    strings.Replace(url, " ", "", -1),
-							"level":        levelRecord.Id,
-							"submitted_by": playerId,
-							"fps":          framerate,
-							"percentage":   percent,
-							"order":        recordOrder + 1,
-							"device":       device,
+						_, err := util.AddRecord(txDao, app, submissionCollection, map[string]any{
+							"status":          "accepted",
+							"video_url":       strings.Replace(url, " ", "", -1),
+							"level":           levelRecord.Id,
+							"submitted_by":    playerId,
+							"fps":             framerate,
+							"percentage":      percent,
+							"placement_order": recordOrder + 1,
+							"device":          device,
 						})
-						err = submissionForm.Submit()
 						if err != nil {
 							return err
 						}
 						return nil
 					}
 
-					err := addRecord(level.Verifier, 0, level.Verification, 60, 100, false)
+					err = addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
 					if err != nil {
 						return err
 					}
 
 					for submissionOrder, playerRecord := range level.Records {
-						err := addRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
+						err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
 						if err != nil {
 							return err
 						}
@@ -205,32 +191,38 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				for packOrder, pack := range packs {
-					packRecord := models.NewRecord(packCollection)
-					packForm := forms.NewRecordUpsert(app, packRecord)
-					packForm.SetDao(txDao)
-
-					var levels []string
+					packRecord, err := util.AddRecord(txDao, app, packCollection, map[string]any{
+						"placement_order": packOrder + 1,
+						"name":            pack.Name,
+						"colour":          pack.Colour,
+					})
+					if err != nil {
+						return err
+					}
+					// Add levels to pack
 					for _, levelName := range pack.Levels {
 						levelId, exists := knownLevels[levelName]
 						if !exists {
 							return errors.New("Unknown level: " + levelName)
 						}
-						levels = append(levels, levelId)
+						_, err := util.AddRecord(txDao, app, packLevelCollection, map[string]any{
+							"level": levelId,
+							"pack":  packRecord.Id,
+						})
+						if err != nil {
+							return err
+						}
 					}
-
-					err = packForm.LoadData(map[string]any{
-						"order":  packOrder + 1,
-						"name":   pack.Name,
-						"colour": pack.Colour,
-						"levels": levels,
-					})
-					if err != nil {
-						return err
-					}
-					err = packForm.Submit()
-					if err != nil {
-						return err
-					}
+				}
+				println("Updating users")
+				err = points.UpdateCompletedPacks(txDao)
+				if err != nil {
+					return err
+				}
+				println("Updating list points")
+				err = points.UpdateListPoints(txDao, 1, len(levelNames))
+				if err != nil {
+					return err
 				}
 				return nil
 			})

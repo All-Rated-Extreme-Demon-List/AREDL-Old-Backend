@@ -4,7 +4,6 @@ import (
 	"AREDL/migration"
 	"AREDL/moderation"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
 	"log"
 )
 
@@ -13,13 +12,7 @@ func main() {
 
 	migration.Register(app)
 
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		err := moderation.RegisterEndpoints(e.Router, app)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
+	moderation.RegisterEndpoints(app)
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
