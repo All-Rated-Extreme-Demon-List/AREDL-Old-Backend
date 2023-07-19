@@ -27,6 +27,7 @@ func PackRules(rules ...validation.Rule) ValidationFunc {
 type ValidationData struct {
 	LoadType       LoadType
 	Required       bool
+	Default        any
 	ValidationFunc ValidationFunc
 }
 
@@ -41,6 +42,7 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					if data.Required {
 						return apis.NewBadRequestError(fmt.Sprintf("%s can't be empty!", key), nil)
 					}
+					c.Set(key, data.Default)
 					continue
 				}
 				switch data.LoadType {

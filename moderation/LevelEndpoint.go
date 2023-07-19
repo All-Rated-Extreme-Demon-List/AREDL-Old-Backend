@@ -38,17 +38,27 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 			apis.ActivityLogger(app),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id": {util.LoadInt, true, util.PackRules(validation.Min(1))},
-				"position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
-				"name":     {util.LoadString, true, util.PackRules()},
+				"level_id":       {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"position":       {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"name":           {util.LoadString, true, nil, util.PackRules()},
+				"creators":       {util.LoadString, true, nil, util.PackRules()}, // TODO check for format
+				"verifier":       {util.LoadString, true, nil, util.PackRules()},
+				"publisher":      {util.LoadString, true, nil, util.PackRules()},
+				"level_password": {util.LoadString, false, nil, util.PackRules()},
+				"custom_song":    {util.LoadString, false, nil, util.PackRules()},
+				//"two_player": 	{util.LoadInt}, TODO LoadBool
+				"qualifying_percent": {util.LoadInt, false, 100, util.PackRules(validation.Min(1), validation.Max(100))},
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			position := c.Get("position").(int)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				// TODO check if new position is outside the highest position
+				highestPosition, err := queryMaxPosition(txDao)
+				if position > highestPosition+1 {
+					return apis.NewBadRequestError("New position is outside the list", nil)
+				}
 				// Move all levels down from the placement position
-				_, err := txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
+				_, err = txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
 				}
@@ -62,13 +72,15 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 				form := forms.NewRecordUpsert(app, record)
 				form.SetDao(txDao)
 
-				//TODO values
 				err = form.LoadData(map[string]any{
 					"level_id":           c.Get("level_id"),
 					"position":           position,
 					"name":               c.Get("name"),
-					"qualifying_percent": 100,
-					"verifier":           "test",
+					"verifier":           c.Get("verifier"),
+					"publisher":          c.Get("publisher"),
+					"level_password":     c.Get("level_password"),
+					"custom_song":        c.Get("custom_song"),
+					"qualifying_percent": c.Get("qualifying_percent"),
 				})
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
@@ -82,8 +94,7 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 						return apis.NewApiError(500, "Error placing level", nil)
 					}
 				}
-				// TODO upper bound
-				err = points.UpdateListPoints(txDao, position, 1000)
+				err = points.UpdateListPoints(txDao, position, highestPosition+1)
 				if err != nil {
 					return err
 				}
@@ -106,8 +117,8 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 			apis.ActivityLogger(app),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id":     {util.LoadInt, true, util.PackRules(validation.Min(1))},
-				"new_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"level_id":     {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"new_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -125,7 +136,10 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 					return apis.NewBadRequestError("Level already is at that position", nil)
 				}
 
-				// TODO check if new position is outside of the highest position
+				highestPosition, err := queryMaxPosition(txDao)
+				if newPos > highestPosition {
+					return apis.NewBadRequestError("New position is outside the list", nil)
+				}
 
 				// Determine in what direction the level was moved.
 				// Move down
@@ -176,8 +190,8 @@ func registerUpdatePoints(e *echo.Echo, app *pocketbase.PocketBase) error {
 			// high requirement, because this is used in very rare occasions i.e. when the point curve changes.
 			util.RequirePermission("listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"min_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
-				"max_position": {util.LoadInt, true, util.PackRules(validation.Min(1))},
+				"min_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"max_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -189,4 +203,13 @@ func registerUpdatePoints(e *echo.Echo, app *pocketbase.PocketBase) error {
 		},
 	})
 	return err
+}
+
+func queryMaxPosition(dao *daos.Dao) (int, error) {
+	var position int
+	err := dao.DB().Select("max(position)").From(names.TableLevels).Row(&position)
+	if err != nil {
+		return 0, err
+	}
+	return position, nil
 }
