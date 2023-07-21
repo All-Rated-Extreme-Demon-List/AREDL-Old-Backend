@@ -5,6 +5,7 @@ import (
 	"AREDL/points"
 	"AREDL/util"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -38,15 +39,15 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 			apis.ActivityLogger(app),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id":       {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
-				"position":       {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
-				"name":           {util.LoadString, true, nil, util.PackRules()},
-				"creators":       {util.LoadString, true, nil, util.PackRules()}, // TODO check for format
-				"verifier":       {util.LoadString, true, nil, util.PackRules()},
-				"publisher":      {util.LoadString, true, nil, util.PackRules()},
-				"level_password": {util.LoadString, false, nil, util.PackRules()},
-				"custom_song":    {util.LoadString, false, nil, util.PackRules()},
-				//"two_player": 	{util.LoadInt}, TODO LoadBool
+				"level_id":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"position":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"name":               {util.LoadString, true, nil, util.PackRules()},
+				"creators":           {util.LoadString, true, nil, util.PackRules(is.JSON)},
+				"verifier":           {util.LoadString, true, nil, util.PackRules()},
+				"publisher":          {util.LoadString, true, nil, util.PackRules()},
+				"level_password":     {util.LoadString, false, nil, util.PackRules()},
+				"custom_song":        {util.LoadString, false, nil, util.PackRules()},
+				"two_player":         {util.LoadBool, false, false, util.PackRules()},
 				"qualifying_percent": {util.LoadInt, false, 100, util.PackRules(validation.Min(1), validation.Max(100))},
 			}),
 		},
@@ -80,6 +81,7 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 					"publisher":          c.Get("publisher"),
 					"level_password":     c.Get("level_password"),
 					"custom_song":        c.Get("custom_song"),
+					"2_player":           c.Get("two_player"),
 					"qualifying_percent": c.Get("qualifying_percent"),
 				})
 				if err != nil {
@@ -117,16 +119,16 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 			apis.ActivityLogger(app),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id":     {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"id":           {util.LoadString, true, nil, util.PackRules()},
 				"new_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 			}),
 		},
 		Handler: func(c echo.Context) error {
-			levelId := c.Get("level_id").(int)
+			recordId := c.Get("id")
 			newPos := c.Get("new_position").(int)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				// Get current position of the level
-				record, err := txDao.FindFirstRecordByData(names.TableLevels, "level_id", levelId)
+				record, err := txDao.FindRecordById(names.TableLevels, recordId.(string))
 				if err != nil {
 					return apis.NewBadRequestError("Could not find level", nil)
 				}

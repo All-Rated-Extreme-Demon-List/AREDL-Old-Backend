@@ -13,6 +13,7 @@ type LoadType int64
 const (
 	LoadInt LoadType = iota
 	LoadString
+	LoadBool
 )
 
 type ValidationFunc func(value interface{}) error
@@ -65,8 +66,19 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					}
 					c.Set(key, value)
 					break
+				case LoadBool:
+					value, err := strconv.ParseBool(c.FormValue(key))
+					if err != nil {
+						return apis.NewBadRequestError(key+" is not a bool", nil)
+					}
+					err = data.ValidationFunc(value)
+					if err != nil {
+						return apis.NewBadRequestError(err.Error(), nil)
+					}
+					c.Set(key, value)
+					break
 				default:
-					return apis.NewApiError(500, "Invalid param type", nil)
+					return apis.NewApiError(500, "Invalid param type "+key, nil)
 				}
 			}
 			return next(c)
