@@ -24,7 +24,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 			apis.ActivityLogger(app),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"id":          {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+				"id":          {util.LoadString, true, nil, util.PackRules()},
 				"fps":         {util.LoadInt, true, nil, util.PackRules(validation.Min(30), validation.Max(360))},
 				"video_url":   {util.LoadString, true, nil, util.PackRules(is.URL)},
 				"device":      {util.LoadString, true, nil, util.PackRules(validation.In("pc", "mobile"))},
@@ -82,8 +82,11 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"percentage":      c.Get("percentage"),
 					"ldm_id":          c.Get("ldm_id"),
 					"raw_footage":     c.Get("raw_footage"),
+					"submitted_by":    userRecord.Id,
+					"level":           levelRecord.Id,
 					"placement_order": placementOrder,
 				})
+				submissionForm.SetDao(txDao)
 				if err != nil {
 					return apis.NewApiError(500, "Failed to submit", nil)
 				}
@@ -95,6 +98,45 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					default:
 						return apis.NewApiError(500, "Error placing level", nil)
 					}
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
+
+func registerSubmissionWithdraw(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/withdraw",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.RequirePermission("member"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"id": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if userRecord == nil {
+					return apis.NewBadRequestError("User was not found", nil)
+				}
+				submissionRecord, err := txDao.FindRecordById(names.TableSubmissions, c.Get("id").(string))
+				if err != nil {
+					return apis.NewBadRequestError("Submission was not found", nil)
+				}
+				if submissionRecord.GetString("submitted_by") != userRecord.Id {
+					return apis.NewBadRequestError("Submission was not by the requesting user", nil)
+				}
+				if submissionRecord.GetString("status") != "pending" {
+					return apis.NewBadRequestError("Submission was already processed", nil)
+				}
+				err = txDao.DeleteRecord(submissionRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to delete submission", nil)
 				}
 				return nil
 			})

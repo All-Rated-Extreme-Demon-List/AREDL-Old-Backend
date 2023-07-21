@@ -51,7 +51,7 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					value := c.FormValue(key)
 					err := data.ValidationFunc(value)
 					if err != nil {
-						return apis.NewBadRequestError(err.Error(), nil)
+						return apis.NewBadRequestError(key+": "+err.Error(), nil)
 					}
 					c.Set(key, value)
 					break
@@ -62,7 +62,7 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					}
 					err = data.ValidationFunc(value)
 					if err != nil {
-						return apis.NewBadRequestError(err.Error(), nil)
+						return apis.NewBadRequestError(key+": "+err.Error(), nil)
 					}
 					c.Set(key, value)
 					break
@@ -73,7 +73,7 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					}
 					err = data.ValidationFunc(value)
 					if err != nil {
-						return apis.NewBadRequestError(err.Error(), nil)
+						return apis.NewBadRequestError(key+": "+err.Error(), nil)
 					}
 					c.Set(key, value)
 					break
