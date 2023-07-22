@@ -215,7 +215,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 				}
 				println("Updating users")
-				err = points.UpdateCompletedPacks(txDao)
+				err = points.UpdateAllCompletedPacks(txDao)
 				if err != nil {
 					return err
 				}
