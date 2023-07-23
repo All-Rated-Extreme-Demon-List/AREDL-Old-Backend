@@ -14,7 +14,11 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		if err != nil {
 			return err
 		}
-		err = registerMergeEndpoint(e.Router, app)
+		err = registerMergeAcceptEndpoint(e.Router, app)
+		if err != nil {
+			return err
+		}
+		err = registerMergeRejectEndpoint(e.Router, app)
 		if err != nil {
 			return err
 		}
