@@ -6,7 +6,7 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 )
 
-func UpdateUserPointsByLevelRange(dao *daos.Dao, minPos int, maxPos int) error {
+func updateUserPointsByLevelRange(dao *daos.Dao, minPos int, maxPos int) error {
 	_, err := dao.DB().NewQuery(`
 		UPDATE ` + names.TableUsers + `
 		SET aredl_points = ROUND(

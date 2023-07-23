@@ -29,7 +29,7 @@ func RequirePermission(permissions ...string) echo.MiddlewareFunc {
 			}
 
 			if record == nil || (len(permissions) > 0 && !existCommonElementInSlices(permissions, record.GetStringSlice("permissions"))) {
-				return apis.NewForbiddenError("The authorized user is not allowed to perform this action"+record.GetString("permission"), nil)
+				return apis.NewForbiddenError("The authorized user is not allowed to perform this action", nil)
 			}
 
 			return next(c)

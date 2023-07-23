@@ -24,7 +24,7 @@ func UpdateListPoints(dao *daos.Dao, minPos int, maxPos int) error {
 		if err != nil {
 			return err
 		}
-		err = UpdateUserPointsByLevelRange(txDao, minPos, maxPos)
+		err = updateUserPointsByLevelRange(txDao, minPos, maxPos)
 		return nil
 	})
 	return err
