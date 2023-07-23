@@ -22,6 +22,10 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		if err != nil {
 			return err
 		}
+		err = registerNameChangeRequestEndpoint(e.Router, app)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 }
