@@ -18,20 +18,7 @@ import (
 
 const pathLevelPrefix = pathPrefix + "/level"
 
-func registerLevelEndpoints(e *echo.Echo, app *pocketbase.PocketBase) error {
-	err := registerLevelPlace(e, app)
-	if err != nil {
-		return err
-	}
-	err = registerLevelMove(e, app)
-	if err != nil {
-		return err
-	}
-	err = registerUpdatePoints(e, app)
-	return err
-}
-
-func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathLevelPrefix + "/place",
@@ -111,7 +98,7 @@ func registerLevelPlace(e *echo.Echo, app *pocketbase.PocketBase) error {
 	return err
 }
 
-func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathLevelPrefix + "/move",
@@ -183,7 +170,7 @@ func registerLevelMove(e *echo.Echo, app *pocketbase.PocketBase) error {
 	return err
 }
 
-func registerUpdatePoints(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerUpdatePointsEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathLevelPrefix + "/update-points",

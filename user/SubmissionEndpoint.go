@@ -107,7 +107,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 	return err
 }
 
-func registerSubmissionWithdraw(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/withdraw",
