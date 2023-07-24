@@ -18,6 +18,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Path:   pathPrefix + "/merge/accept",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},

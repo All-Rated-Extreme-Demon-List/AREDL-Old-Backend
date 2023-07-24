@@ -17,5 +17,7 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		registerMergeRejectEndpoint,
 		registerNameChangeAcceptEndpoint,
 		registerNameChangeRejectEndpoint,
+		registerBanAccountEndpoint,
+		registerUnbanAccountEndpoint,
 	)
 }

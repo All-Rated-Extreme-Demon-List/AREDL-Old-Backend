@@ -20,6 +20,7 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 		Path:   pathPrefix + "/name-change",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				// Limit username

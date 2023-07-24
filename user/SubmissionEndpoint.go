@@ -22,6 +22,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Path:   pathPrefix + "/submit",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id":          {util.LoadString, true, nil, util.PackRules()},
@@ -113,6 +114,7 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase
 		Path:   pathPrefix + "/withdraw",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id": {util.LoadString, true, nil, util.PackRules()},

@@ -16,6 +16,7 @@ func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Path:   pathPrefix + "/name-change/accept",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},
@@ -54,6 +55,7 @@ func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Path:   pathPrefix + "/name-change/reject",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},

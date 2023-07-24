@@ -24,6 +24,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Path:   pathLevelPrefix + "/place",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"level_id":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
@@ -104,6 +105,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Path:   pathLevelPrefix + "/move",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id":           {util.LoadString, true, nil, util.PackRules()},

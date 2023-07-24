@@ -18,6 +18,7 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		Path:   pathPrefix + "/legacy/merge-request",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			util.CheckBanned(),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"legacy_name": {util.LoadString, true, nil, util.PackRules()},
