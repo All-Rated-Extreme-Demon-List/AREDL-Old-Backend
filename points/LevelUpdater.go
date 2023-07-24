@@ -2,19 +2,22 @@ package points
 
 import (
 	"AREDL/names"
-	"fmt"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/daos"
 )
 
-func UpdateListPoints(dao *daos.Dao, minPos int, maxPos int) error {
+func UpdateListPointsByLevelRange(dao *daos.Dao, minPos int, maxPos int) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
-		query := txDao.DB().NewQuery(fmt.Sprintf(`UPDATE %v 
+		query := txDao.DB().NewQuery(`UPDATE ` + names.TableLevels + `
 		SET points=(
 			SELECT p.points 
-			FROM %v p 
+			FROM ` + names.TablePoints + ` p 
 			WHERE p.id=position 
 		)
-		WHERE position BETWEEN %d AND %d`, names.TableLevels, names.TablePoints, minPos, maxPos))
+		WHERE position BETWEEN {:minPos} AND {:maxPos}`).Bind(dbx.Params{
+			"minPos": minPos,
+			"maxPos": maxPos,
+		})
 
 		_, err := query.Execute()
 		if err != nil {

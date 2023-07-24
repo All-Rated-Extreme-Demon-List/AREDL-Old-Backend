@@ -5,7 +5,6 @@ import (
 	"AREDL/points"
 	"AREDL/util"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -30,7 +29,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				"level_id":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"position":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"name":               {util.LoadString, true, nil, util.PackRules()},
-				"creators":           {util.LoadString, true, nil, util.PackRules(is.JSON)},
+				"creators":           {util.LoadString, true, nil, util.PackRules()},
 				"verifier":           {util.LoadString, true, nil, util.PackRules()},
 				"publisher":          {util.LoadString, true, nil, util.PackRules()},
 				"level_password":     {util.LoadString, false, nil, util.PackRules()},
@@ -45,6 +44,10 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				highestPosition, err := queryMaxPosition(txDao)
 				if position > highestPosition+1 {
 					return apis.NewBadRequestError("New position is outside the list", nil)
+				}
+				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if userRecord == nil {
+					return apis.NewApiError(500, "User not found", nil)
 				}
 				// Move all levels down from the placement position
 				_, err = txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
@@ -65,6 +68,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"level_id":           c.Get("level_id"),
 					"position":           position,
 					"name":               c.Get("name"),
+					"creators":           c.Get("creators"),
 					"verifier":           c.Get("verifier"),
 					"publisher":          c.Get("publisher"),
 					"level_password":     c.Get("level_password"),
@@ -84,9 +88,35 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 						return apis.NewApiError(500, "Error placing level", nil)
 					}
 				}
-				err = points.UpdateListPoints(txDao, position, highestPosition+1)
+				err = points.UpdateListPointsByLevelRange(txDao, position, highestPosition+1)
 				if err != nil {
-					return err
+					return apis.NewApiError(500, "Failed to update list points", nil)
+				}
+
+				_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
+					"level":        record.Id,
+					"action":       "placed",
+					"new_position": position,
+					"cause":        record.Id,
+					"action_by":    userRecord.Id,
+				})
+				if err != nil {
+					return apis.NewApiError(500, "Failed to write place into the position history", nil)
+				}
+
+				_, err = txDao.DB().NewQuery(`
+				INSERT INTO ` + names.TableLevelHistory + ` (level, action, new_position, cause, action_by)
+				SELECT l.id AS level, 'placedAbove' AS action, l.position AS new_position, {:cause} AS cause, {:action_by} AS action_by
+				FROM ` + names.TableLevels + ` l
+				WHERE l.position BETWEEN {:minPos} + 1 AND {:maxPos} + 1
+				`).Bind(dbx.Params{
+					"minPos":    position,
+					"maxPos":    highestPosition,
+					"cause":     record.Id,
+					"action_by": userRecord.Id,
+				}).Execute()
+				if err != nil {
+					return apis.NewApiError(500, "Failed to write to position history", nil)
 				}
 				return nil
 			})
@@ -116,6 +146,10 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 			recordId := c.Get("id")
 			newPos := c.Get("new_position").(int)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if userRecord == nil {
+					return apis.NewApiError(500, "User not found", nil)
+				}
 				// Get current position of the level
 				record, err := txDao.FindRecordById(names.TableLevels, recordId.(string))
 				if err != nil {
@@ -137,11 +171,15 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 				minPos := oldPos
 				maxPos := newPos
 				moveInc := -1
+				movedStatus := "movedDown"
+				otherStatus := "movedPastDown"
 				if newPos < oldPos {
 					// Move up
 					minPos = newPos
 					maxPos = oldPos
 					moveInc = 1
+					movedStatus = "movedUp"
+					otherStatus = "movedPastUp"
 				}
 
 				query := txDao.DB().Update(
@@ -156,11 +194,38 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 					return apis.NewApiError(500, "Failed to update", nil)
 				}
 				// update list points for the new positions
-				err = points.UpdateListPoints(txDao, minPos, maxPos)
+				err = points.UpdateListPointsByLevelRange(txDao, minPos, maxPos)
 				if err != nil {
 					return apis.NewApiError(500, "Failed to update", nil)
 				}
 
+				_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
+					"level":        record.Id,
+					"action":       movedStatus,
+					"new_position": newPos,
+					"cause":        record.Id,
+					"action_by":    userRecord.Id,
+				})
+				if err != nil {
+					return apis.NewApiError(500, "Failed to write place into the position history", nil)
+				}
+
+				_, err = txDao.DB().NewQuery(`
+				INSERT INTO ` + names.TableLevelHistory + ` (level, action, new_position, cause, action_by)
+				SELECT l.id AS level, {:status} AS action, l.position AS new_position, {:cause} AS cause, {:action_by} AS action_by
+				FROM ` + names.TableLevels + ` l
+				WHERE l.position BETWEEN {:minPos} AND {:maxPos} AND l.position <> {:newPos}
+				`).Bind(dbx.Params{
+					"status":    otherStatus,
+					"minPos":    minPos,
+					"maxPos":    maxPos,
+					"cause":     record.Id,
+					"action_by": userRecord.Id,
+					"newPos":    newPos,
+				}).Execute()
+				if err != nil {
+					return apis.NewApiError(500, "Failed to write to position history", nil)
+				}
 				return nil
 			})
 			if err != nil {
@@ -186,7 +251,7 @@ func registerUpdatePointsEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 			}),
 		},
 		Handler: func(c echo.Context) error {
-			err := points.UpdateListPoints(app.Dao(), c.Get("min_position").(int), c.Get("max_position").(int))
+			err := points.UpdateListPointsByLevelRange(app.Dao(), c.Get("min_position").(int), c.Get("max_position").(int))
 			if err != nil {
 				return apis.NewApiError(500, "Failed to update", nil)
 			}

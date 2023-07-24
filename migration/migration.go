@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/spf13/cobra"
@@ -77,10 +78,27 @@ func Register(app *pocketbase.PocketBase) {
 				return
 			}
 			path := args[0]
-			println("Migrating levels & records")
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				println("Deleting current data")
+				deleteDataTables := []string{names.TableLevels, names.TableLevelHistory, names.TableSubmissions, names.TablePacks, names.TableCompletedPacks, names.TablePackLevels, names.TableMergeRequests, names.TableNameChangeRequests}
+				for _, table := range deleteDataTables {
+					_, err := txDao.DB().Delete(table, nil).Execute()
+					if err != nil {
+						return err
+					}
+				}
+				userRecords, err := txDao.FindRecordsByExpr(names.TableUsers, dbx.HashExp{"legacy": true})
+				if err != nil {
+					return err
+				}
+				for _, userRecord := range userRecords {
+					if err = txDao.DeleteRecord(userRecord); err != nil {
+						return err
+					}
+				}
+				println("Migrating levels & records")
 				var levelNames []string
-				err := readFileIntoJson(path+"/_list.json", &levelNames)
+				err = readFileIntoJson(path+"/_list.json", &levelNames)
 				if err != nil {
 					return err
 				}
@@ -129,6 +147,17 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					knownLevels[levelName] = levelRecord.Id
 
+					_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
+						"level":        levelRecord.Id,
+						"action":       "placed",
+						"new_position": position + 1,
+						"cause":        levelRecord.Id,
+					})
+					if err != nil {
+						return err
+					}
+
+					// level submissions
 					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
@@ -220,7 +249,7 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				println("Updating list points")
-				err = points.UpdateListPoints(txDao, 1, len(levelNames))
+				err = points.UpdateListPointsByLevelRange(txDao, 1, len(levelNames))
 				if err != nil {
 					return err
 				}

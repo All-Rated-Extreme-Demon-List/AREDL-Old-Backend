@@ -17,7 +17,7 @@ func updatePackPointsByLevelRange(dao *daos.Dao, minPos int, maxPos int) error {
 				WHERE ` + names.TablePacks + `.id = pl.pack AND pl.level = l.id
 			) WHERE EXISTS (
 				SELECT * FROM ` + names.TableLevels + ` l, ` + names.TablePackLevels + ` pl 
-				WHERE pl.pack = ` + names.TablePacks + ` AND pl.level = l.id AND l.position BETWEEN {:min} AND {:max}
+				WHERE pl.pack = ` + names.TablePacks + `.id AND pl.level = l.id AND l.position BETWEEN {:min} AND {:max}
 			)`).Bind(dbx.Params{"min": minPos, "max": maxPos}).Execute()
 	return err
 }
