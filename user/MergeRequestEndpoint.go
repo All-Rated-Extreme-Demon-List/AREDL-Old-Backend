@@ -30,7 +30,7 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 				if userRecord == nil {
 					return apis.NewApiError(500, "User not found", nil)
 				}
-				if record, err := txDao.FindFirstRecordByData(names.TableMergeRequests, "user", userRecord.Id); record != nil || err != nil {
+				if record, _ := txDao.FindFirstRecordByData(names.TableMergeRequests, "user", userRecord.Id); record != nil {
 					return apis.NewBadRequestError("Merge request already exists", nil)
 				}
 				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)

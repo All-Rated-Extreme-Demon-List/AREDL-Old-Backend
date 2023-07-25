@@ -2,6 +2,7 @@ package moderation
 
 import (
 	"AREDL/names"
+	"AREDL/points"
 	"AREDL/util"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
@@ -65,6 +66,14 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				if err != nil {
 					return apis.NewApiError(500, "Failed to submit changes", nil)
 				}
+				err = points.UpdateCompletedPacksByUser(txDao, submissionRecord.GetString("submitted_by"))
+				if err != nil {
+					return apis.NewApiError(500, "Failed to update packs", nil)
+				}
+				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
+				if err != nil {
+					return apis.NewApiError(500, "Failed tu update user points", nil)
+				}
 				return nil
 			})
 			return err
@@ -127,6 +136,14 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				err = rejectSubmissionRecord(app, txDao, submissionRecord, userRecord.Id, reason, retryable)
 				if err != nil {
 					return apis.NewApiError(500, "Failed to update submission", nil)
+				}
+				err = points.UpdateCompletedPacksByUser(txDao, submissionRecord.GetString("submitted_by"))
+				if err != nil {
+					return apis.NewApiError(500, "Failed to update packs", nil)
+				}
+				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
+				if err != nil {
+					return apis.NewApiError(500, "Failed tu update user points", nil)
 				}
 				return nil
 			})
