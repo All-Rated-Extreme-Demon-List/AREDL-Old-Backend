@@ -4,14 +4,13 @@ import (
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/list"
 )
 
 func existCommonElementInSlices[T comparable](left []T, right []T) bool {
 	for _, a := range left {
-		for _, b := range right {
-			if a == b {
-				return true
-			}
+		if list.ExistInSlice(a, right) {
+			return true
 		}
 	}
 	return false
