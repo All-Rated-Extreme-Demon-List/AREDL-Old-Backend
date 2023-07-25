@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
@@ -13,6 +14,7 @@ type LoadType int64
 const (
 	LoadInt LoadType = iota
 	LoadString
+	LoadStringArray
 	LoadBool
 )
 
@@ -70,6 +72,18 @@ func ValidateAndLoadParam(rules map[string]ValidationData) echo.MiddlewareFunc {
 					value, err := strconv.ParseBool(c.FormValue(key))
 					if err != nil {
 						return apis.NewBadRequestError(key+" is not a bool", nil)
+					}
+					err = data.ValidationFunc(value)
+					if err != nil {
+						return apis.NewBadRequestError(key+": "+err.Error(), nil)
+					}
+					c.Set(key, value)
+					break
+				case LoadStringArray:
+					var value []string
+					err := json.Unmarshal([]byte(c.FormValue(key)), &value)
+					if err != nil {
+						return apis.NewBadRequestError(key+": Could not parse string array", nil)
 					}
 					err = data.ValidationFunc(value)
 					if err != nil {

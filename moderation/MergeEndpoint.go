@@ -53,6 +53,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 						return apis.NewApiError(500, "Failed deleting packs", nil)
 					}
 				}
+				// TODO merge creators
 				err = txDao.DeleteRecord(otherRecord)
 				if err != nil {
 					return apis.NewApiError(500, "Failed to delete legacy user", nil)

@@ -15,13 +15,13 @@ import (
 func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathPrefix + "/legacy/merge-request",
+		Path:   pathPrefix + "/merge-request",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermission("member"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"legacy_name": {util.LoadString, true, nil, util.PackRules()},
+				"placeholder_name": {util.LoadString, true, nil, util.PackRules()},
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -40,8 +40,8 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 				legacyRecord := &models.Record{}
 				err = txDao.RecordQuery(userCollection).
 					AndWhere(dbx.HashExp{
-						"global_name": c.Get("legacy_name"),
-						"legacy":      true,
+						"global_name": c.Get("placeholder_name"),
+						"placeholder": true,
 					}).Limit(1).One(legacyRecord)
 				if err != nil {
 					return apis.NewBadRequestError("Unknown legacy user", nil)

@@ -12,20 +12,9 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/spf13/cobra"
 	"io"
-	"math/rand"
 	"os"
 	"strings"
 )
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-
-func RandString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
-	}
-	return string(b)
-}
 
 func readFileIntoJson(path string, v any) error {
 	list, err := os.Open(path)
@@ -87,7 +76,7 @@ func Register(app *pocketbase.PocketBase) {
 						return err
 					}
 				}
-				userRecords, err := txDao.FindRecordsByExpr(names.TableUsers, dbx.HashExp{"legacy": true})
+				userRecords, err := txDao.FindRecordsByExpr(names.TableUsers, dbx.HashExp{"placeholder": true})
 				if err != nil {
 					return err
 				}
@@ -122,6 +111,14 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
+				creatorCollection, err := txDao.FindCollectionByNameOrId(names.TableCreators)
+				if err != nil {
+					return err
+				}
+				positionHistoryCollection, err := txDao.FindCollectionByNameOrId(names.TableLevelHistory)
+				if err != nil {
+					return err
+				}
 				knownUsers := make(map[string]string)
 				knownLevels := make(map[string]string)
 				for position, levelName := range levelNames {
@@ -131,10 +128,10 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
+
 					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
 						"position":           position + 1,
 						"name":               level.Name,
-						"creators":           strings.Join(level.Creators, ","),
 						"verifier":           level.Verifier,
 						"publisher":          level.Author,
 						"video_id":           level.Verification,
@@ -146,8 +143,26 @@ func Register(app *pocketbase.PocketBase) {
 						return err
 					}
 					knownLevels[levelName] = levelRecord.Id
+					for _, creator := range level.Creators {
+						creatorId, exists := knownUsers[strings.ToLower(creator)]
+						if !exists {
+							userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, creator)
+							if err != nil {
+								return err
+							}
+							creatorId = userRecord.Id
+							knownUsers[strings.ToLower(creator)] = creatorId
+						}
+						_, err = util.AddRecord(txDao, app, creatorCollection, map[string]any{
+							"creator": creatorId,
+							"level":   levelRecord.Id,
+						})
+						if err != nil {
+							return err
+						}
+					}
 
-					_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
+					_, err = util.AddRecord(txDao, app, positionHistoryCollection, map[string]any{
 						"level":        levelRecord.Id,
 						"action":       "placed",
 						"new_position": position + 1,
@@ -161,18 +176,7 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							// create legacy user
-							password := RandString(20)
-							usedName := RandString(10)
-							userRecord, err := util.AddRecord(txDao, app, userCollection, map[string]any{
-								"username":        usedName,
-								"permissions":     "member",
-								"global_name":     username,
-								"legacy":          true,
-								"email":           usedName + "@none.com",
-								"password":        password,
-								"passwordConfirm": password,
-							})
+							userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, username)
 							if err != nil {
 								return err
 							}
@@ -257,8 +261,9 @@ func Register(app *pocketbase.PocketBase) {
 			})
 			if err != nil {
 				print("Failed to migrate: ", err.Error())
+			} else {
+				println("Finished migrating")
 			}
-			println("Finished migrating")
 		},
 	})
 }

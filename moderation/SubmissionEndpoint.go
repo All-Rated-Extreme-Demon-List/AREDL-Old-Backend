@@ -163,8 +163,9 @@ func rejectSubmissionRecord(app *pocketbase.PocketBase, dao *daos.Dao, record *m
 		form := forms.NewRecordUpsert(app, record)
 		form.SetDao(txDao)
 		err := form.LoadData(map[string]any{
-			"reviewer": reviewerId,
-			"status":   status,
+			"reviewer":         reviewerId,
+			"status":           status,
+			"rejection_reason": reason,
 		})
 		if err != nil {
 			return err
@@ -178,10 +179,6 @@ func rejectSubmissionRecord(app *pocketbase.PocketBase, dao *daos.Dao, record *m
 			// maybe update reason?
 			return nil
 		}
-		_, err = util.AddRecordByCollectionName(dao, app, names.TableRejectReasons, map[string]any{
-			"submission": record.Id,
-			"reason":     reason,
-		})
 		return err
 	})
 	return err

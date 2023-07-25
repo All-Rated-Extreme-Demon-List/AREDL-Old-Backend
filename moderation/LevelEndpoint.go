@@ -29,7 +29,8 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				"level_id":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"position":           {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"name":               {util.LoadString, true, nil, util.PackRules()},
-				"creators":           {util.LoadString, true, nil, util.PackRules()},
+				"creatorIds":         {util.LoadStringArray, true, nil, util.PackRules()},
+				"creatorNames":       {util.LoadStringArray, true, nil, util.PackRules()},
 				"verifier":           {util.LoadString, true, nil, util.PackRules()},
 				"publisher":          {util.LoadString, true, nil, util.PackRules()},
 				"level_password":     {util.LoadString, false, nil, util.PackRules()},
@@ -60,15 +61,14 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				}
 
 				// Write new level record into db
-				record := models.NewRecord(collection)
-				form := forms.NewRecordUpsert(app, record)
-				form.SetDao(txDao)
+				levelRecord := models.NewRecord(collection)
+				levelForm := forms.NewRecordUpsert(app, levelRecord)
+				levelForm.SetDao(txDao)
 
-				err = form.LoadData(map[string]any{
+				err = levelForm.LoadData(map[string]any{
 					"level_id":           c.Get("level_id"),
 					"position":           position,
 					"name":               c.Get("name"),
-					"creators":           c.Get("creators"),
 					"verifier":           c.Get("verifier"),
 					"publisher":          c.Get("publisher"),
 					"level_password":     c.Get("level_password"),
@@ -79,7 +79,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				if err != nil {
 					return apis.NewApiError(500, "Error placing level", nil)
 				}
-				err = form.Submit()
+				err = levelForm.Submit()
 				if err != nil {
 					switch err.(type) {
 					case validation.Errors:
@@ -88,16 +88,37 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 						return apis.NewApiError(500, "Error placing level", nil)
 					}
 				}
+				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
+				if err != nil {
+					return apis.NewApiError(500, "User collection could not be found", nil)
+				}
+				creatorIds := c.Get("creatorIds").([]string)
+				for _, creatorName := range c.Get("creatorNames").([]string) {
+					creatorRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, creatorName)
+					if err != nil {
+						return apis.NewApiError(500, "Failed to create placeholder user", nil)
+					}
+					creatorIds = append(creatorIds, creatorRecord.Id)
+				}
+				for _, creatorId := range creatorIds {
+					_, err := util.AddRecordByCollectionName(txDao, app, names.TableCreators, map[string]any{
+						"creator": creatorId,
+						"level":   levelRecord.Id,
+					})
+					if err != nil {
+						return apis.NewApiError(500, "Failed to create creator entry", nil)
+					}
+				}
 				err = points.UpdateListPointsByLevelRange(txDao, position, highestPosition+1)
 				if err != nil {
 					return apis.NewApiError(500, "Failed to update list points", nil)
 				}
 
 				_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
-					"level":        record.Id,
+					"level":        levelRecord.Id,
 					"action":       "placed",
 					"new_position": position,
-					"cause":        record.Id,
+					"cause":        levelRecord.Id,
 					"action_by":    userRecord.Id,
 				})
 				if err != nil {
@@ -112,7 +133,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				`).Bind(dbx.Params{
 					"minPos":    position,
 					"maxPos":    highestPosition,
-					"cause":     record.Id,
+					"cause":     levelRecord.Id,
 					"action_by": userRecord.Id,
 				}).Execute()
 				if err != nil {
