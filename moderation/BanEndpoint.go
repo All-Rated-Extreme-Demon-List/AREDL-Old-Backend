@@ -18,7 +18,7 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listHelper", "listMod", "listAdmin", "developer"),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"discord_id": {util.LoadString, true, nil, util.PackRules()},
 			}),

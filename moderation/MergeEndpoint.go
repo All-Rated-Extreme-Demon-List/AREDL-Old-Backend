@@ -126,7 +126,7 @@ func registerMergeDirectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Path:   pathPrefix + "/merge/direct",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermission("listAdmin", "developer"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"user_id":     {util.LoadString, true, nil, util.PackRules()},
 				"to_merge_id": {util.LoadString, true, nil, util.PackRules()},
