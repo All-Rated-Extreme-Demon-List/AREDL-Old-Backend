@@ -128,13 +128,31 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
+					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
+					if !exists {
+						userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, level.Verifier)
+						if err != nil {
+							return err
+						}
+						verifierId = userRecord.Id
+						knownUsers[strings.ToLower(level.Verifier)] = verifierId
+					}
+					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
+					if !exists {
+						userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, level.Author)
+						if err != nil {
+							return err
+						}
+						publisherId = userRecord.Id
+						knownUsers[strings.ToLower(level.Author)] = publisherId
+					}
 
 					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
 						"position":           position + 1,
 						"name":               level.Name,
-						"verifier":           level.Verifier,
-						"publisher":          level.Author,
-						"video_id":           level.Verification,
+						"verifier":           verifierId,
+						"publisher":          publisherId,
+						"verification":       level.Verification,
 						"level_id":           level.Id,
 						"level_password":     level.Password,
 						"qualifying_percent": level.PercentToQualify,

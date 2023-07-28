@@ -1,0 +1,191 @@
+package moderation
+
+import (
+	"AREDL/names"
+	"AREDL/util"
+	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/daos"
+	"github.com/pocketbase/pocketbase/models"
+	"net/http"
+)
+
+func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/name-change/accept",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				requestRecord, err := txDao.FindRecordById(names.TableNameChangeRequests, c.Get("request_id").(string))
+				if err != nil {
+					return apis.NewBadRequestError("Request not found", nil)
+				}
+				userRecord, err := txDao.FindRecordById(names.TableUsers, requestRecord.GetString("user"))
+				if err != nil {
+					return apis.NewApiError(500, "Could not find user in request", nil)
+				}
+				userRecord.Set("global_name", requestRecord.GetString("new_name"))
+				err = txDao.SaveRecord(userRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to change username", nil)
+				}
+				err = txDao.DeleteRecord(requestRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to delete request", nil)
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
+
+func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/name-change/reject",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				requestRecord, err := txDao.FindRecordById(names.TableNameChangeRequests, c.Get("request_id").(string))
+				if err != nil {
+					return apis.NewBadRequestError("Request not found", nil)
+				}
+				err = txDao.DeleteRecord(requestRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to delete request", nil)
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
+
+func registerCreatePlaceholderUser(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/create-placeholder",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"username": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				userRecord, _ := txDao.FindFirstRecordByData(names.TableUsers, "global_name", c.Get("username").(string))
+				if userRecord != nil && userRecord.GetBool("placeholder") {
+					return apis.NewBadRequestError("Placeholder user with that name already exists", nil)
+				}
+				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to load user collection", nil)
+				}
+				_, err = util.CreatePlaceholderUser(app, txDao, userCollection, c.Get("username").(string))
+				if err != nil {
+					return apis.NewApiError(500, "Failed to create placeholder user", nil)
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
+
+func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/ban",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"discord_id": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				authUserRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if authUserRecord == nil {
+					return apis.NewApiError(500, "User not found", nil)
+				}
+				userRecord, err := txDao.FindFirstRecordByData(names.TableUsers, "discord_id", c.Get("discord_id"))
+				if err != nil {
+					return apis.NewBadRequestError("Could not fin user by discord id", nil)
+				}
+				if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
+					return apis.NewBadRequestError("You are not privileged to ban that user", nil)
+				}
+				userRecord.Set("banned_from_list", true)
+				err = txDao.SaveRecord(userRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to ban user", nil)
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
+
+func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/unban",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermission("listHelper", "listMod", "listAdmin", "developer"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"discord_id": {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				authUserRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if authUserRecord == nil {
+					return apis.NewApiError(500, "User not found", nil)
+				}
+				userRecord, err := txDao.FindFirstRecordByData(names.TableUsers, "discord_id", c.Get("discord_id"))
+				if err != nil {
+					return apis.NewBadRequestError("Could not fin user by discord id", nil)
+				}
+				if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
+					return apis.NewBadRequestError("You are not privileged to unban that user", nil)
+				}
+				userRecord.Set("banned_from_list", false)
+				err = txDao.SaveRecord(userRecord)
+				if err != nil {
+					return apis.NewApiError(500, "Failed to unban user", nil)
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
