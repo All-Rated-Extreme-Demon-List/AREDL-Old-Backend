@@ -52,16 +52,16 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				}
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				// Move all levels down from the placement position
 				_, err = txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
 				if err != nil {
-					return apis.NewApiError(500, "Error placing level", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 				}
 				collection, err := txDao.FindCollectionByNameOrId(names.TableLevels)
 				if err != nil {
-					return apis.NewApiError(500, "Error placing level", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 				}
 
 				// Write new level record into db
@@ -82,7 +82,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"qualifying_percent": c.Get("qualifying_percent"),
 				})
 				if err != nil {
-					return apis.NewApiError(500, "Error placing level", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 				}
 				err = levelForm.Submit()
 				if err != nil {
@@ -90,7 +90,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					case validation.Errors:
 						return apis.NewBadRequestError(err.Error(), nil)
 					default:
-						return apis.NewApiError(500, "Error placing level", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 					}
 				}
 
@@ -105,7 +105,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 						case validation.Errors:
 							return apis.NewBadRequestError(err.Error(), nil)
 						default:
-							return apis.NewApiError(500, "Error placing level", nil)
+							return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 						}
 					}
 				}
@@ -122,12 +122,12 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"raw_footage":     c.Get("verification_raw_footage"),
 				})
 				if err != nil {
-					return apis.NewApiError(500, "Failed to add verification submission"+err.Error(), nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to add verification submission"+err.Error(), nil)
 				}
 
 				err = points.UpdateListPointsByLevelRange(txDao, position, highestPosition+1)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to update list points", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update list points", nil)
 				}
 
 				_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
@@ -138,7 +138,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"action_by":    userRecord.Id,
 				})
 				if err != nil {
-					return apis.NewApiError(500, "Failed to write place into the position history", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to write place into the position history", nil)
 				}
 
 				_, err = txDao.DB().NewQuery(`
@@ -153,7 +153,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					"action_by": userRecord.Id,
 				}).Execute()
 				if err != nil {
-					return apis.NewApiError(500, "Failed to write to position history", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to write to position history", nil)
 				}
 				return nil
 			})
@@ -185,7 +185,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				// Get current position of the level
 				record, err := txDao.FindRecordById(names.TableLevels, recordId.(string))
@@ -228,12 +228,12 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 						maxPos,
 					))
 				if _, err = query.Execute(); err != nil {
-					return apis.NewApiError(500, "Failed to update", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update", nil)
 				}
 				// update list points for the new positions
 				err = points.UpdateListPointsByLevelRange(txDao, minPos, maxPos)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to update", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update", nil)
 				}
 
 				_, err = util.AddRecordByCollectionName(txDao, app, names.TableLevelHistory, map[string]any{
@@ -248,7 +248,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 					case validation.Errors:
 						return apis.NewBadRequestError(err.Error(), nil)
 					default:
-						return apis.NewApiError(500, "Failed to write place into the position history", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to write place into the position history", nil)
 					}
 				}
 
@@ -266,7 +266,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 					"newPos":    newPos,
 				}).Execute()
 				if err != nil {
-					return apis.NewApiError(500, "Failed to write to position history", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to write to position history", nil)
 				}
 				return nil
 			})
@@ -322,12 +322,12 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 					case validation.Errors:
 						return apis.NewBadRequestError(err.Error(), nil)
 					default:
-						return apis.NewApiError(500, "Failed to update levels", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to update levels", nil)
 					}
 				}
 				err = levelForm.Submit()
 				if err != nil {
-					return apis.NewApiError(500, "Failed to save level record", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to save level record", nil)
 				}
 				// Delete old creators
 				type Creator struct {
@@ -336,7 +336,7 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 				var currentCreatorsData []Creator
 				err = txDao.DB().Select("creator").From(names.TableCreators).Where(dbx.HashExp{"level": levelRecord.Id}).All(&currentCreatorsData)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to fetch current creators"+err.Error(), nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to fetch current creators"+err.Error(), nil)
 				}
 				currentCreators := util.MapSlice(currentCreatorsData, func(t Creator) string {
 					return t.ID
@@ -350,11 +350,11 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 				for _, creator := range creatorsToRemove {
 					creatorRecord, err := txDao.FindFirstRecordByData(names.TableCreators, "creator", creator)
 					if err != nil {
-						return apis.NewApiError(500, "Failed to load to be removed creator", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to load to be removed creator", nil)
 					}
 					err = txDao.DeleteRecord(creatorRecord)
 					if err != nil {
-						return apis.NewApiError(500, "Failed to remove to be removed creator", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to remove to be removed creator", nil)
 					}
 				}
 				for _, creator := range creatorsToAdd {
@@ -363,7 +363,7 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 						"level":   levelRecord.Id,
 					})
 					if err != nil {
-						return apis.NewApiError(500, "Failed to add creator", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to add creator", nil)
 					}
 				}
 				return nil
@@ -390,9 +390,9 @@ func registerUpdatePointsEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		Handler: func(c echo.Context) error {
 			err := points.UpdateListPointsByLevelRange(app.Dao(), c.Get("min_position").(int), c.Get("max_position").(int))
 			if err != nil {
-				return apis.NewApiError(500, "Failed to update", nil)
+				return apis.NewApiError(http.StatusInternalServerError, "Failed to update", nil)
 			}
-			return c.String(200, "Updated points")
+			return nil
 		},
 	})
 	return err

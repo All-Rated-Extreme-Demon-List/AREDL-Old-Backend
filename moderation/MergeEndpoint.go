@@ -26,7 +26,7 @@ func mergeAccounts(dao *daos.Dao, userId string, toMergeId string) error {
 		submission.Set("submitted_by", userRecord.Id)
 		err = dao.SaveRecord(submission)
 		if err != nil {
-			return apis.NewApiError(500, "Failed updating submissions: "+err.Error(), nil)
+			return apis.NewApiError(http.StatusInternalServerError, "Failed updating submissions: "+err.Error(), nil)
 		}
 	}
 	createdLevels, err := dao.FindRecordsByExpr(names.TableCreators, dbx.HashExp{"creator": otherRecord.Id})
@@ -41,17 +41,17 @@ func mergeAccounts(dao *daos.Dao, userId string, toMergeId string) error {
 	for _, completedPack := range completedPacks {
 		err = dao.DeleteRecord(completedPack)
 		if err != nil {
-			return apis.NewApiError(500, "Failed deleting packs", nil)
+			return apis.NewApiError(http.StatusInternalServerError, "Failed deleting packs", nil)
 		}
 	}
 
 	err = dao.DeleteRecord(otherRecord)
 	if err != nil {
-		return apis.NewApiError(500, "Failed to delete legacy user", nil)
+		return apis.NewApiError(http.StatusInternalServerError, "Failed to delete legacy user", nil)
 	}
 	err = points.UpdateCompletedPacksByUser(dao, userRecord.Id)
 	if err != nil {
-		return apis.NewApiError(500, "Failed to update packs", nil)
+		return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 	}
 	err = points.UpdateUserPointsByUserId(dao, userRecord.Id)
 	return nil
@@ -73,7 +73,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				requestRecord, err := txDao.FindRecordById(names.TableMergeRequests, c.Get("request_id").(string))
 				if err != nil {
-					return apis.NewApiError(500, "Could not find merge request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Could not find merge request", nil)
 				}
 				err = mergeAccounts(txDao, requestRecord.GetString("user"), requestRecord.GetString("to_merge"))
 				if err != nil {
@@ -81,7 +81,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 				}
 				err = txDao.DeleteRecord(requestRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to delete request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
 				}
 				return nil
 			})

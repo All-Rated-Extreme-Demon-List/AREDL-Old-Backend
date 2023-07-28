@@ -31,16 +31,16 @@ func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				}
 				userRecord, err := txDao.FindRecordById(names.TableUsers, requestRecord.GetString("user"))
 				if err != nil {
-					return apis.NewApiError(500, "Could not find user in request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Could not find user in request", nil)
 				}
 				userRecord.Set("global_name", requestRecord.GetString("new_name"))
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to change username", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to change username", nil)
 				}
 				err = txDao.DeleteRecord(requestRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to delete request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
 				}
 				return nil
 			})
@@ -70,7 +70,7 @@ func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				}
 				err = txDao.DeleteRecord(requestRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to delete request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
 				}
 				return nil
 			})
@@ -100,11 +100,11 @@ func registerCreatePlaceholderUser(e *echo.Echo, app *pocketbase.PocketBase) err
 				}
 				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to load user collection", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to load user collection", nil)
 				}
 				_, err = util.CreatePlaceholderUser(app, txDao, userCollection, c.Get("username").(string))
 				if err != nil {
-					return apis.NewApiError(500, "Failed to create placeholder user", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to create placeholder user", nil)
 				}
 				return nil
 			})
@@ -130,7 +130,7 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				authUserRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if authUserRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				userRecord, err := txDao.FindFirstRecordByData(names.TableUsers, "discord_id", c.Get("discord_id"))
 				if err != nil {
@@ -142,7 +142,7 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				userRecord.Set("banned_from_list", true)
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to ban user", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to ban user", nil)
 				}
 				return nil
 			})
@@ -168,7 +168,7 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				authUserRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if authUserRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				userRecord, err := txDao.FindFirstRecordByData(names.TableUsers, "discord_id", c.Get("discord_id"))
 				if err != nil {
@@ -180,7 +180,7 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 				userRecord.Set("banned_from_list", false)
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to unban user", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to unban user", nil)
 				}
 				return nil
 			})

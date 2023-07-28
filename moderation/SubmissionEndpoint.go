@@ -39,7 +39,7 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				submissionRecord, err := txDao.FindRecordById(names.TableSubmissions, c.Get("submission_id").(string))
 				if err != nil {
@@ -60,19 +60,19 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 					"raw_footage": util.UseOtherIfNil(c.Get("raw_footage"), submissionRecord.GetString("raw_footage")),
 				})
 				if err != nil {
-					return apis.NewApiError(500, "Failed to load record data", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to load record data", nil)
 				}
 				err = submissionForm.Submit()
 				if err != nil {
-					return apis.NewApiError(500, "Failed to submit changes", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to submit changes", nil)
 				}
 				err = points.UpdateCompletedPacksByUser(txDao, submissionRecord.GetString("submitted_by"))
 				if err != nil {
-					return apis.NewApiError(500, "Failed to update packs", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 				}
 				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
 				if err != nil {
-					return apis.NewApiError(500, "Failed tu update user points", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed tu update user points", nil)
 				}
 				return nil
 			})
@@ -101,7 +101,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				submissionRecord, err := txDao.FindRecordById(names.TableSubmissions, c.Get("submission_id").(string))
 				if err != nil {
@@ -121,7 +121,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 						"status":       "pending",
 					})
 					if err != nil {
-						return apis.NewApiError(500, "Failed to get all pending records", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to get all pending records", nil)
 					}
 					for _, submission := range submissionRecords {
 						if submission.Id == submissionRecord.Id {
@@ -129,21 +129,21 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 						}
 						err = rejectSubmissionRecord(app, txDao, submission, userRecord.Id, reason, retryable)
 						if err != nil {
-							return apis.NewApiError(500, "Failed to update submission", nil)
+							return apis.NewApiError(http.StatusInternalServerError, "Failed to update submission", nil)
 						}
 					}
 				}
 				err = rejectSubmissionRecord(app, txDao, submissionRecord, userRecord.Id, reason, retryable)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to update submission", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update submission", nil)
 				}
 				err = points.UpdateCompletedPacksByUser(txDao, submissionRecord.GetString("submitted_by"))
 				if err != nil {
-					return apis.NewApiError(500, "Failed to update packs", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 				}
 				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
 				if err != nil {
-					return apis.NewApiError(500, "Failed tu update user points", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed tu update user points", nil)
 				}
 				return nil
 			})

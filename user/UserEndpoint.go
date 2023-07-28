@@ -14,5 +14,6 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		registerSubmissionWithdrawEndpoint,
 		registerMergeRequestEndpoint,
 		registerNameChangeRequestEndpoint,
+		registerBasicListEndpoint,
 	)
 }

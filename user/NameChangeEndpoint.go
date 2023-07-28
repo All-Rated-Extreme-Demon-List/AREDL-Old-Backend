@@ -31,19 +31,19 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				sameAsOld := userRecord.GetString("global_name") == c.Get("new_name")
 				requestRecord, _ := txDao.FindFirstRecordByData(names.TableNameChangeRequests, "user", userRecord.Id)
 				if requestRecord == nil {
 					requestCollection, err := txDao.FindCollectionByNameOrId(names.TableNameChangeRequests)
 					if err != nil {
-						return apis.NewApiError(500, "Failed to load collection", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to load collection", nil)
 					}
 					requestRecord = models.NewRecord(requestCollection)
 				} else if sameAsOld {
 					if err := txDao.DeleteRecord(requestRecord); err != nil {
-						return apis.NewApiError(500, "Failed to delete request", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
 					}
 					return nil
 				}
@@ -57,7 +57,7 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 					"new_name": c.Get("new_name"),
 				})
 				if err != nil {
-					return apis.NewApiError(500, "Failed to load data", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to load data", nil)
 				}
 				if err = requestForm.Submit(); err != nil {
 					return apis.NewBadRequestError("Invalid data", nil)

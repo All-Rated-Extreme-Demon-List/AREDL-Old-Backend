@@ -38,7 +38,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(500, "User not found", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 				}
 				if userRecord.GetBool("banned_from_list") {
 					return apis.NewBadRequestError("Banned from submissions", nil)
@@ -50,7 +50,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				// check if there already is a submission by that player
 				submissionCollection, err := txDao.FindCollectionByNameOrId(names.TableSubmissions)
 				if err != nil {
-					return apis.NewApiError(500, "Error processing request", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Error processing request", nil)
 				}
 				var placementOrder int
 				submissionRecord := &models.Record{}
@@ -89,7 +89,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				})
 				submissionForm.SetDao(txDao)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to submit", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to submit", nil)
 				}
 				err = submissionForm.Submit()
 				if err != nil {
@@ -97,7 +97,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 					case validation.Errors:
 						return apis.NewBadRequestError(err.Error(), nil)
 					default:
-						return apis.NewApiError(500, "Error placing level", nil)
+						return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
 					}
 				}
 				return nil
@@ -138,7 +138,7 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase
 				}
 				err = txDao.DeleteRecord(submissionRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to delete submission", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete submission", nil)
 				}
 				return nil
 			})
