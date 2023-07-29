@@ -35,67 +35,6 @@
     "options": {}
   },
   {
-    "id": "5j8zdz81z885dqu",
-    "name": "packs",
-    "type": "base",
-    "system": false,
-    "schema": [
-      {
-        "id": "t8nthryp",
-        "name": "name",
-        "type": "text",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "akm0vlpt",
-        "name": "colour",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "nr6wpvao",
-        "name": "placement_order",
-        "type": "number",
-        "system": false,
-        "required": true,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "mod5cfam",
-        "name": "points",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      }
-    ],
-    "indexes": [],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {}
-  },
-  {
     "id": "wb9j0i55wyxiykg",
     "name": "points",
     "type": "view",
@@ -922,6 +861,69 @@
     ],
     "listRule": "",
     "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "5j8zdz81z885dqu",
+    "name": "packs",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "t8nthryp",
+        "name": "name",
+        "type": "text",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "akm0vlpt",
+        "name": "colour",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "nr6wpvao",
+        "name": "placement_order",
+        "type": "number",
+        "system": false,
+        "required": true,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "mod5cfam",
+        "name": "points",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_X3cW06U` ON `packs` (`name`)"
+    ],
+    "listRule": null,
+    "viewRule": null,
     "createRule": null,
     "updateRule": null,
     "deleteRule": null,

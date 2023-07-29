@@ -53,7 +53,7 @@ func mergeAccounts(dao *daos.Dao, userId string, toMergeId string) error {
 	if err != nil {
 		return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 	}
-	err = points.UpdateUserPointsByUserId(dao, userRecord.Id)
+	err = points.UpdateUserPointsByUserIds(dao, userRecord.Id)
 	return nil
 }
 

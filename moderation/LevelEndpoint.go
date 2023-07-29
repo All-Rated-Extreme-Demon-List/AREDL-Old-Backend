@@ -13,15 +13,14 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
+	"modernc.org/mathutil"
 	"net/http"
 )
-
-const pathLevelPrefix = pathPrefix + "/level"
 
 func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathLevelPrefix + "/place",
+		Path:   pathPrefix + "/level/place",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
@@ -57,7 +56,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				// Move all levels down from the placement position
 				_, err = txDao.DB().Update(names.TableLevels, dbx.Params{"position": dbx.NewExp("position+1")}, dbx.NewExp("position>={:position}", dbx.Params{"position": position})).Execute()
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
+					return apis.NewApiError(http.StatusInternalServerError, "Error moving other levels", nil)
 				}
 				collection, err := txDao.FindCollectionByNameOrId(names.TableLevels)
 				if err != nil {
@@ -169,7 +168,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathLevelPrefix + "/move",
+		Path:   pathPrefix + "/level/move",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
@@ -205,15 +204,10 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 
 				// Determine in what direction the level was moved.
 				// Move down
-				minPos := oldPos
-				maxPos := newPos
 				moveInc := -1
 				movedStatus := "movedDown"
 				otherStatus := "movedPastDown"
 				if newPos < oldPos {
-					// Move up
-					minPos = newPos
-					maxPos = oldPos
 					moveInc = 1
 					movedStatus = "movedUp"
 					otherStatus = "movedPastUp"
@@ -224,14 +218,14 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 					dbx.Params{"position": dbx.NewExp("CASE WHEN position = {:old} THEN {:new} ELSE position + {:inc} END",
 						dbx.Params{"old": oldPos, "new": newPos, "inc": moveInc})},
 					dbx.Between("position",
-						minPos,
-						maxPos,
+						mathutil.Min(newPos, oldPos),
+						mathutil.Max(newPos, oldPos),
 					))
 				if _, err = query.Execute(); err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed to update", nil)
 				}
 				// update list points for the new positions
-				err = points.UpdateListPointsByLevelRange(txDao, minPos, maxPos)
+				err = points.UpdateListPointsByLevelRange(txDao, mathutil.Min(newPos, oldPos), mathutil.Max(newPos, oldPos))
 				if err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed to update", nil)
 				}
@@ -259,8 +253,8 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 				WHERE l.position BETWEEN {:minPos} AND {:maxPos} AND l.position <> {:newPos}
 				`).Bind(dbx.Params{
 					"status":    otherStatus,
-					"minPos":    minPos,
-					"maxPos":    maxPos,
+					"minPos":    mathutil.Min(newPos, oldPos),
+					"maxPos":    mathutil.Max(newPos, oldPos),
 					"cause":     record.Id,
 					"action_by": userRecord.Id,
 					"newPos":    newPos,
@@ -282,7 +276,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathLevelPrefix + "/update",
+		Path:   pathPrefix + "/level/update",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.RequirePermission("listMod", "listAdmin", "developer"),
@@ -377,7 +371,7 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 func registerUpdatePointsEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathLevelPrefix + "/update-points",
+		Path:   pathPrefix + "/level/update-points",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			// high requirement, because this is used in very rare occasions i.e. when the point curve changes.

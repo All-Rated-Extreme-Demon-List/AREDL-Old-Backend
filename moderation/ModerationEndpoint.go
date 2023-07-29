@@ -24,5 +24,8 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		registerSubmissionAcceptEndpoint,
 		registerSubmissionRejectEndpoint,
 		registerCreatePlaceholderUser,
+		registerPackCreate,
+		registerPackDelete,
+		registerPackUpdate,
 	)
 }

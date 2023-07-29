@@ -70,7 +70,7 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				if err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 				}
-				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
+				err = points.UpdateUserPointsByUserIds(txDao, submissionRecord.GetString("submitted_by"), "blabla")
 				if err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed tu update user points", nil)
 				}
@@ -141,7 +141,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				if err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
 				}
-				err = points.UpdateUserPointsByUserId(txDao, submissionRecord.GetString("submitted_by"))
+				err = points.UpdateUserPointsByUserIds(txDao, submissionRecord.GetString("submitted_by"))
 				if err != nil {
 					return apis.NewApiError(http.StatusInternalServerError, "Failed tu update user points", nil)
 				}
@@ -176,7 +176,7 @@ func rejectSubmissionRecord(app *pocketbase.PocketBase, dao *daos.Dao, record *m
 		}
 		if wasRejectedAlready {
 			// don't add reason to log if it already was rejected for a reason
-			// maybe update reason?
+			// TODO maybe update reason?
 			return nil
 		}
 		return err
