@@ -278,7 +278,7 @@ func Register(app *pocketbase.PocketBase) {
 				return nil
 			})
 			if err != nil {
-				print("Failed to migrate: ", err.Error())
+				println("Failed to migrate: ", err.Error())
 			} else {
 				println("Finished migrating")
 			}

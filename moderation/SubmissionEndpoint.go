@@ -107,7 +107,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 				if err != nil {
 					return apis.NewBadRequestError("Could not find submission by id", nil)
 				}
-				if list.ExistInSlice(submissionRecord.Get("status"), []any{"rejected, rejected_retryable"}) {
+				if list.ExistInSlice(submissionRecord.GetString("status"), []string{"rejected, rejected_retryable"}) {
 					return apis.NewBadRequestError("Submission is already rejected", nil)
 				}
 				reason := c.Get("reason").(string)
@@ -155,7 +155,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 
 func rejectSubmissionRecord(app *pocketbase.PocketBase, dao *daos.Dao, record *models.Record, reviewerId string, reason string, retryable bool) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
-		wasRejectedAlready := list.ExistInSlice(record.Get("status"), []any{"rejected", "rejected_retryable"})
+		wasRejectedAlready := list.ExistInSlice(record.GetString("status"), []string{"rejected", "rejected_retryable"})
 		status := "rejected"
 		if retryable {
 			status = "rejected_retryable"
