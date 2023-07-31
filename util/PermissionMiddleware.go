@@ -12,15 +12,6 @@ import (
 
 const KeyAffectedGroups = "affected_groups"
 
-func existCommonElementInSlices[T comparable](left []T, right []T) bool {
-	for _, a := range left {
-		if list.ExistInSlice(a, right) {
-			return true
-		}
-	}
-	return false
-}
-
 // RequirePermissionGroup checks if the authenticated user is an admin or has access to the given action.
 // Furthermore, it loads all roles the user can affect with the given action into the context using KeyAffectedGroups as key.
 func RequirePermissionGroup(app core.App, action string) echo.MiddlewareFunc {
