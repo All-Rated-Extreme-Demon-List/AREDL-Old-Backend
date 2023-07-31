@@ -23,7 +23,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("member"),
+			util.RequirePermissionGroup(app, "user_submissions"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id":          {util.LoadString, true, nil, util.PackRules()},
 				"fps":         {util.LoadInt, true, nil, util.PackRules(validation.Min(30), validation.Max(360))},
@@ -115,7 +115,7 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("member"),
+			util.RequirePermissionGroup(app, "user_submissions"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id": {util.LoadString, true, nil, util.PackRules()},
 			}),

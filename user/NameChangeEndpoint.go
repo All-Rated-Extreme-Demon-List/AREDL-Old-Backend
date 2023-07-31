@@ -21,7 +21,7 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("member"),
+			util.RequirePermissionGroup(app, "user_request_name_change"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				// Limit username
 				"new_name": {util.LoadString, true, nil, util.PackRules(validation.Match(regexp.MustCompile("^([a-zA-Z0-9 ._]{4,20}$)")))},

@@ -24,7 +24,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_levels"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"level_id":                 {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"position":                 {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
@@ -172,7 +172,7 @@ func registerLevelMoveEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_levels"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id":           {util.LoadString, true, nil, util.PackRules()},
 				"new_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
@@ -279,7 +279,7 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Path:   pathPrefix + "/level/update",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_levels"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"id":                 {util.LoadString, true, nil, util.PackRules()},
 				"level_id":           {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
@@ -374,8 +374,7 @@ func registerUpdatePointsEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		Path:   pathPrefix + "/level/update-points",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			// high requirement, because this is used in very rare occasions i.e. when the point curve changes.
-			util.RequirePermission("listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "update_listpoints"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"min_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
 				"max_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},

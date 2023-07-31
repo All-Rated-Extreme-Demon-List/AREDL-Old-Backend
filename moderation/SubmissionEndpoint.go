@@ -24,7 +24,7 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listHelper", "listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "submission_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"submission_id": {util.LoadString, true, nil, util.PackRules()},
 				"fps":           {util.LoadInt, false, nil, util.PackRules(validation.Min(30), validation.Max(360))},
@@ -89,7 +89,7 @@ func registerSubmissionRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listHelper", "listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "submission_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"submission_id":      {util.LoadString, true, nil, util.PackRules()},
 				"reason":             {util.LoadString, true, nil, util.PackRules()},

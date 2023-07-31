@@ -19,7 +19,7 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("member"),
+			util.RequirePermissionGroup(app, "user_request_merge"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"placeholder_name": {util.LoadString, true, nil, util.PackRules()},
 			}),

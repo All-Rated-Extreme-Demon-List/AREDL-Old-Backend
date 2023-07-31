@@ -35,198 +35,6 @@
     "options": {}
   },
   {
-    "id": "wb9j0i55wyxiykg",
-    "name": "points",
-    "type": "view",
-    "system": false,
-    "schema": [
-      {
-        "id": "t055jwyu",
-        "name": "points",
-        "type": "json",
-        "system": false,
-        "required": false,
-        "options": {}
-      }
-    ],
-    "indexes": [],
-    "listRule": null,
-    "viewRule": null,
-    "createRule": null,
-    "updateRule": null,
-    "deleteRule": null,
-    "options": {
-      "query": "WITH gen AS (\n  SELECT 1 AS pos\n  UNION ALL\n  SELECT pos+1 FROM gen WHERE pos+1 <= 1000\n)\nSELECT pos as id, \n  (\n  SELECT max(T.V) \n  FROM (SELECT \n  --Formular for point curve\n  ROUND(400 / SQRT((CAST(pos as FLOAT) - 1) / 50 + 0.444444) - 100, 1) \n  --------------------------\n  AS V UNION SELECT 0 AS V) T\n  )\n  as points FROM gen"
-    }
-  },
-  {
-    "id": "_pb_users_auth_",
-    "name": "users",
-    "type": "auth",
-    "system": false,
-    "schema": [
-      {
-        "id": "dkmlwssq",
-        "name": "global_name",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "zwxtlqbi",
-        "name": "gd_username",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "duqsgqtm",
-        "name": "permissions",
-        "type": "select",
-        "system": false,
-        "required": false,
-        "options": {
-          "maxSelect": 5,
-          "values": [
-            "member",
-            "developer",
-            "listHelper",
-            "listMod",
-            "listAdmin"
-          ]
-        }
-      },
-      {
-        "id": "v9t0zywx",
-        "name": "description",
-        "type": "editor",
-        "system": false,
-        "required": false,
-        "options": {}
-      },
-      {
-        "id": "iqiaqewn",
-        "name": "country",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": 2,
-          "max": 2,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "xgcyztnq",
-        "name": "aredl_verified",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "options": {}
-      },
-      {
-        "id": "lwnnnmhh",
-        "name": "badges",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "iijcjtxx",
-        "name": "aredl_points",
-        "type": "number",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null
-        }
-      },
-      {
-        "id": "vsvxeybi",
-        "name": "banned_from_list",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "options": {}
-      },
-      {
-        "id": "sgaxkwez",
-        "name": "avatar_url",
-        "type": "url",
-        "system": false,
-        "required": false,
-        "options": {
-          "exceptDomains": null,
-          "onlyDomains": null
-        }
-      },
-      {
-        "id": "vugyrr23",
-        "name": "placeholder",
-        "type": "bool",
-        "system": false,
-        "required": false,
-        "options": {}
-      },
-      {
-        "id": "fxliqoof",
-        "name": "banner_color",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      },
-      {
-        "id": "sxsazgr6",
-        "name": "discord_id",
-        "type": "text",
-        "system": false,
-        "required": false,
-        "options": {
-          "min": null,
-          "max": null,
-          "pattern": ""
-        }
-      }
-    ],
-    "indexes": [],
-    "listRule": "",
-    "viewRule": "",
-    "createRule": "",
-    "updateRule": "",
-    "deleteRule": "",
-    "options": {
-      "allowEmailAuth": false,
-      "allowOAuth2Auth": true,
-      "allowUsernameAuth": false,
-      "exceptEmailDomains": null,
-      "manageRule": null,
-      "minPasswordLength": 8,
-      "onlyEmailDomains": null,
-      "requireEmail": false
-    }
-  },
-  {
     "id": "r7lznhkp6yhv78m",
     "name": "completed_packs",
     "type": "base",
@@ -922,6 +730,286 @@
     "indexes": [
       "CREATE UNIQUE INDEX `idx_X3cW06U` ON `packs` (`name`)"
     ],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {}
+  },
+  {
+    "id": "wb9j0i55wyxiykg",
+    "name": "points",
+    "type": "view",
+    "system": false,
+    "schema": [
+      {
+        "id": "ummntl3l",
+        "name": "points",
+        "type": "json",
+        "system": false,
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [],
+    "listRule": null,
+    "viewRule": null,
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null,
+    "options": {
+      "query": "WITH gen AS (\n  SELECT 1 AS pos\n  UNION ALL\n  SELECT pos+1 FROM gen WHERE pos+1 <= 1000\n)\nSELECT pos as id, \n  (\n  SELECT max(T.V) \n  FROM (SELECT \n  --Formular for point curve\n  ROUND(400 / SQRT((CAST(pos as FLOAT) - 1) / 50 + 0.444444) - 100, 1) \n  --------------------------\n  AS V UNION SELECT 0 AS V) T\n  )\n  as points FROM gen"
+    }
+  },
+  {
+    "id": "_pb_users_auth_",
+    "name": "users",
+    "type": "auth",
+    "system": false,
+    "schema": [
+      {
+        "id": "dkmlwssq",
+        "name": "global_name",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "zwxtlqbi",
+        "name": "gd_username",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "duqsgqtm",
+        "name": "role",
+        "type": "select",
+        "system": false,
+        "required": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "member",
+            "developer",
+            "listHelper",
+            "listMod",
+            "listAdmin"
+          ]
+        }
+      },
+      {
+        "id": "v9t0zywx",
+        "name": "description",
+        "type": "editor",
+        "system": false,
+        "required": false,
+        "options": {}
+      },
+      {
+        "id": "iqiaqewn",
+        "name": "country",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": 2,
+          "max": 2,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "iijcjtxx",
+        "name": "aredl_points",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      },
+      {
+        "id": "xgcyztnq",
+        "name": "aredl_verified",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "options": {}
+      },
+      {
+        "id": "lwnnnmhh",
+        "name": "badges",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "vsvxeybi",
+        "name": "banned_from_list",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "options": {}
+      },
+      {
+        "id": "sgaxkwez",
+        "name": "avatar_url",
+        "type": "url",
+        "system": false,
+        "required": false,
+        "options": {
+          "exceptDomains": null,
+          "onlyDomains": null
+        }
+      },
+      {
+        "id": "vugyrr23",
+        "name": "placeholder",
+        "type": "bool",
+        "system": false,
+        "required": false,
+        "options": {}
+      },
+      {
+        "id": "fxliqoof",
+        "name": "banner_color",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "sxsazgr6",
+        "name": "discord_id",
+        "type": "text",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "id": "ha9gf2r0",
+        "name": "rank",
+        "type": "number",
+        "system": false,
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null
+        }
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX `idx_IzqznQE` ON `users` (`aredl_points`)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "",
+    "options": {
+      "allowEmailAuth": false,
+      "allowOAuth2Auth": true,
+      "allowUsernameAuth": false,
+      "exceptEmailDomains": null,
+      "manageRule": null,
+      "minPasswordLength": 8,
+      "onlyEmailDomains": null,
+      "requireEmail": false
+    }
+  },
+  {
+    "id": "pcvmly4qscvycsf",
+    "name": "role_permissions",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "id": "1eac2vkh",
+        "name": "role",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 6,
+          "values": [
+            "member",
+            "listHelper",
+            "listMod",
+            "listAdmin",
+            "developer",
+            "listOwner"
+          ]
+        }
+      },
+      {
+        "id": "pfnysesm",
+        "name": "action",
+        "type": "select",
+        "system": false,
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "submission_review",
+            "name_change_review",
+            "create_placeholder",
+            "manage_bans",
+            "manage_packs",
+            "merge_review",
+            "direct_merge",
+            "manage_levels",
+            "update_listpoints",
+            "user_request_merge",
+            "user_request_name_change",
+            "user_submissions"
+          ]
+        }
+      },
+      {
+        "id": "lwivwcb6",
+        "name": "affected_roles",
+        "type": "select",
+        "system": false,
+        "required": false,
+        "options": {
+          "maxSelect": 6,
+          "values": [
+            "member",
+            "listHelper",
+            "listMod",
+            "listAdmin",
+            "developer",
+            "listOwner"
+          ]
+        }
+      }
+    ],
+    "indexes": [],
     "listRule": null,
     "viewRule": null,
     "createRule": null,

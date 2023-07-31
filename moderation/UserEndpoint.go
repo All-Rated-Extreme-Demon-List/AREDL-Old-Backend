@@ -18,7 +18,7 @@ func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "name_change_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -57,7 +57,7 @@ func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "name_change_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -87,7 +87,7 @@ func registerCreatePlaceholderUser(e *echo.Echo, app *pocketbase.PocketBase) err
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "create_placeholder"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"username": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -121,7 +121,7 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_bans"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"discord_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -136,9 +136,10 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 				if err != nil {
 					return apis.NewBadRequestError("Could not fin user by discord id", nil)
 				}
-				if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
+				// TODO change to new perm system
+				/*if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
 					return apis.NewBadRequestError("You are not privileged to ban that user", nil)
-				}
+				}*/
 				userRecord.Set("banned_from_list", true)
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {
@@ -159,7 +160,7 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listHelper", "listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_bans"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"discord_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -174,9 +175,10 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 				if err != nil {
 					return apis.NewBadRequestError("Could not fin user by discord id", nil)
 				}
-				if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
+				// TODO change to new perm system
+				/*if util.IsPrivileged(authUserRecord.GetStringSlice("permissions"), userRecord.GetStringSlice("permissions")) {
 					return apis.NewBadRequestError("You are not privileged to unban that user", nil)
-				}
+				}*/
 				userRecord.Set("banned_from_list", false)
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {

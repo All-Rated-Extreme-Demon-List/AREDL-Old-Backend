@@ -64,7 +64,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "merge_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -97,7 +97,7 @@ func registerMergeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Path:   pathPrefix + "/merge/reject",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "merge_review"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"request_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
@@ -126,7 +126,7 @@ func registerMergeDirectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		Path:   pathPrefix + "/merge/direct",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
-			util.RequirePermission("listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "direct_merge"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"user_id":     {util.LoadString, true, nil, util.PackRules()},
 				"to_merge_id": {util.LoadString, true, nil, util.PackRules()},
@@ -134,6 +134,7 @@ func registerMergeDirectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				// TODO check affected roles
 				err := mergeAccounts(txDao, c.Get("user_id").(string), c.Get("to_merge_id").(string))
 				return err
 			})

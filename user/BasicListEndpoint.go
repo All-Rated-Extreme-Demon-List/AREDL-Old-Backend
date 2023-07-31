@@ -10,7 +10,7 @@ import (
 
 func registerBasicListEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodGet,
 		Path:   pathPrefix + "/list",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

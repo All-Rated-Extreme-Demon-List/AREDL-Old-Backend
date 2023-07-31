@@ -22,7 +22,7 @@ func registerPackCreate(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_packs"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"name":      {util.LoadString, true, nil, util.PackRules()},
 				"colour":    {util.LoadString, true, nil, util.PackRules()},
@@ -101,7 +101,7 @@ func registerPackUpdate(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_packs"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"pack_id":   {util.LoadString, true, nil, util.PackRules()},
 				"name":      {util.LoadString, false, nil, util.PackRules()},
@@ -208,7 +208,7 @@ func registerPackDelete(e *echo.Echo, app *pocketbase.PocketBase) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
-			util.RequirePermission("listMod", "listAdmin", "developer"),
+			util.RequirePermissionGroup(app, "manage_packs"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"pack_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
