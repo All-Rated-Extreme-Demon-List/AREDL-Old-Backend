@@ -11,6 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
+	"github.com/pocketbase/pocketbase/tools/list"
 	"modernc.org/mathutil"
 	"net/http"
 )
@@ -162,7 +163,7 @@ func registerPackUpdate(e *echo.Echo, app *pocketbase.PocketBase) error {
 						return apis.NewApiError(http.StatusInternalServerError, "Failed to fetch current pack levels", nil)
 					}
 					oldLevels := util.MapSlice(oldLevelData, func(value LevelData) string { return value.Id })
-					addedLevels := util.SliceDifference(newLevels, oldLevels)
+					addedLevels := list.SubtractSlice(newLevels, oldLevels)
 					for _, level := range addedLevels {
 						_, err = util.AddRecordByCollectionName(txDao, app, names.TablePackLevels, map[string]any{
 							"level": level,
@@ -172,9 +173,8 @@ func registerPackUpdate(e *echo.Echo, app *pocketbase.PocketBase) error {
 							return apis.NewApiError(http.StatusInternalServerError, "Failed to add new level to pack", nil)
 						}
 					}
-					removedLevels := util.SliceDifference(oldLevels, newLevels)
-					removedLevelsAsInterface := util.MapSlice(removedLevels, func(value string) interface{} { return value })
-					_, err = txDao.DB().Delete(names.TablePackLevels, dbx.In("level", removedLevelsAsInterface...)).Execute()
+					removedLevels := list.SubtractSlice(oldLevels, newLevels)
+					_, err = txDao.DB().Delete(names.TablePackLevels, dbx.In("level", list.ToInterfaceSlice(removedLevels)...)).Execute()
 					if err != nil {
 						return apis.NewApiError(http.StatusInternalServerError, "Failed to remove pack level", nil)
 					}

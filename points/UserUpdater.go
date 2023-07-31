@@ -83,7 +83,7 @@ func updateRanks(dao *daos.Dao) error {
 	WITH ranking AS (
 		SELECT id, RANK() OVER (ORDER BY aredl_points DESC) AS position
 		FROM ` + names.TableUsers + `
-		WHERE banned_from_list = 0
+		WHERE banned_from_list = 0 AND aredl_points > 0
 	)
 	UPDATE ` + names.TableUsers + `
 	SET rank = position

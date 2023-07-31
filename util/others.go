@@ -4,7 +4,6 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/list"
 	"math/rand"
 )
 
@@ -38,18 +37,6 @@ func CreatePlaceholderUser(app *pocketbase.PocketBase, dao *daos.Dao, userCollec
 		"passwordConfirm": password,
 	})
 	return userRecord, err
-}
-
-// SliceDifference generates the set difference of the given slices
-func SliceDifference[T comparable](left []T, right []T) []T {
-	result := make([]T, 0)
-
-	for _, lItem := range left {
-		if !list.ExistInSlice(lItem, right) {
-			result = append(result, lItem)
-		}
-	}
-	return result
 }
 
 // MapSlice maps a slice using the mapper function

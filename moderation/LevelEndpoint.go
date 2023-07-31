@@ -13,6 +13,7 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/list"
 	"modernc.org/mathutil"
 	"net/http"
 )
@@ -339,8 +340,8 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 				if c.Get("creator_ids") != nil {
 					newCreators = c.Get("creator_ids").([]string)
 				}
-				creatorsToRemove := util.SliceDifference(currentCreators, newCreators)
-				creatorsToAdd := util.SliceDifference(newCreators, currentCreators)
+				creatorsToRemove := list.SubtractSlice(currentCreators, newCreators)
+				creatorsToAdd := list.SubtractSlice(newCreators, currentCreators)
 				for _, creator := range creatorsToRemove {
 					creatorRecord, err := txDao.FindFirstRecordByData(names.TableCreators, "creator", creator)
 					if err != nil {
