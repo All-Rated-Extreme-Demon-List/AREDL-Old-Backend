@@ -79,16 +79,27 @@ func UpdateUserPointsByPackId(dao *daos.Dao, packId string) error {
 }
 
 func updateRanks(dao *daos.Dao) error {
-	_, err := dao.DB().NewQuery(`
-	WITH ranking AS (
-		SELECT id, RANK() OVER (ORDER BY aredl_points DESC) AS position
-		FROM ` + names.TableUsers + `
-		WHERE banned_from_list = 0 AND aredl_points > 0
-	)
-	UPDATE ` + names.TableUsers + `
-	SET rank = position
-	FROM ranking
-	WHERE ranking.id = ` + names.TableUsers + `.id
-	`).Execute()
+	// apparently it's faster to do two queries than reseting and setting in one query
+	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
+		_, err := txDao.DB().NewQuery(`
+		UPDATE ` + names.TableUsers + `
+		SET rank = NULL
+		`).Execute()
+		if err != nil {
+			return err
+		}
+		_, err = txDao.DB().NewQuery(`
+		WITH ranking AS (
+			SELECT id, RANK() OVER (ORDER BY aredl_points DESC) AS position
+			FROM ` + names.TableUsers + `
+			WHERE banned_from_list = 0 AND aredl_points > 0
+		)
+		UPDATE ` + names.TableUsers + `
+		SET rank = position
+		FROM ranking
+		WHERE ranking.id = ` + names.TableUsers + `.id
+		`).Execute()
+		return err
+	})
 	return err
 }
