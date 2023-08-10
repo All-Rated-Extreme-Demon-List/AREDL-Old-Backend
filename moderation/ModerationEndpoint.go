@@ -25,5 +25,6 @@ func RegisterEndpoints(app *pocketbase.PocketBase) {
 		registerPackCreate,
 		registerPackDelete,
 		registerPackUpdate,
+		registerChangeRoleEndpoint,
 	)
 }

@@ -198,3 +198,45 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 	})
 	return err
 }
+
+func registerChangeRoleEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodPost,
+		Path:   pathPrefix + "/user/role",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.CheckBanned(),
+			util.RequirePermissionGroup(app, "change_role"),
+			util.ValidateAndLoadParam(map[string]util.ValidationData{
+				"user_id": {util.LoadString, true, nil, util.PackRules()},
+				"role":    {util.LoadString, true, nil, util.PackRules()},
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				authUserRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if authUserRecord == nil {
+					return util.NewErrorResponse(nil, "User not found")
+				}
+				userRecord, err := txDao.FindRecordById(names.TableUsers, c.Get("user_id").(string))
+				if err != nil {
+					return util.NewErrorResponse(err, "Could not find given user")
+				}
+				if !util.CanAffectRole(c, userRecord.GetString("role")) {
+					return util.NewErrorResponse(nil, "Not allowed to change the rank of the given user")
+				}
+				if !util.CanAffectRole(c, c.Get("role").(string)) {
+					return util.NewErrorResponse(nil, "Not allowed to change to given rank")
+				}
+				userRecord.Set("role", c.Get("role").(string))
+				err = txDao.SaveRecord(userRecord)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to update role")
+				}
+				return nil
+			})
+			return err
+		},
+	})
+	return err
+}
