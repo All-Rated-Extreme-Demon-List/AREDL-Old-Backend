@@ -1,9 +1,10 @@
 package moderation
 
 import (
+	"AREDL/demonlist"
 	"AREDL/names"
-	"AREDL/points"
 	"AREDL/util"
+	"fmt"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -13,48 +14,78 @@ import (
 )
 
 func mergeAccounts(dao *daos.Dao, userId string, toMergeId string) error {
-	userRecord, err := dao.FindRecordById(names.TableUsers, userId)
-	if err != nil {
-		return apis.NewBadRequestError("Could not find user", nil)
-	}
-	otherRecord, err := dao.FindRecordById(names.TableUsers, toMergeId)
-	if err != nil {
-		return apis.NewBadRequestError("Could not find user to merge", nil)
-	}
-	submissions, err := dao.FindRecordsByExpr(names.TableSubmissions, dbx.In("submitted_by", otherRecord.Id))
-	for _, submission := range submissions {
-		submission.Set("submitted_by", userRecord.Id)
-		err = dao.SaveRecord(submission)
+	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
+		userRecord, err := txDao.FindRecordById(names.TableUsers, userId)
 		if err != nil {
-			return apis.NewApiError(http.StatusInternalServerError, "Failed updating submissions: "+err.Error(), nil)
+			return util.NewErrorResponse(err, "Could not find user")
 		}
-	}
-	createdLevels, err := dao.FindRecordsByExpr(names.TableCreators, dbx.HashExp{"creator": otherRecord.Id})
-	for _, createdLevel := range createdLevels {
-		createdLevel.Set("creator", userRecord.Id)
-		err = dao.SaveRecord(createdLevel)
+		otherRecord, err := txDao.FindRecordById(names.TableUsers, toMergeId)
 		if err != nil {
-			return apis.NewApiError(500, "Failed updating created levels: "+err.Error(), nil)
+			return util.NewErrorResponse(err, "Could not find user to merge")
 		}
-	}
-	completedPacks, err := dao.FindRecordsByExpr(names.TableCompletedPacks, dbx.In("user", otherRecord.Id))
-	for _, completedPack := range completedPacks {
-		err = dao.DeleteRecord(completedPack)
+		aredl := demonlist.Aredl()
+		type ColumnData struct {
+			Table  string
+			Column string
+		}
+		// remove conflicting records from old user
+		_, err = txDao.DB().Delete(aredl.CreatorTableName,
+			dbx.And(
+				dbx.HashExp{"creator": otherRecord.Id},
+				dbx.Exists(dbx.NewExp(fmt.Sprintf(`
+					SELECT NULL FROM %s c
+					WHERE c.creator = {:userId} AND c.level = %s.level`,
+					aredl.CreatorTableName,
+					aredl.CreatorTableName),
+					dbx.Params{"userId": userRecord.Id})))).Execute()
 		if err != nil {
-			return apis.NewApiError(http.StatusInternalServerError, "Failed deleting packs", nil)
+			return util.NewErrorResponse(err, "Failed to delete duplicate creators")
 		}
-	}
-
-	err = dao.DeleteRecord(otherRecord)
-	if err != nil {
-		return apis.NewApiError(http.StatusInternalServerError, "Failed to delete legacy user", nil)
-	}
-	err = points.UpdateCompletedPacksByUser(dao, userRecord.Id)
-	if err != nil {
-		return apis.NewApiError(http.StatusInternalServerError, "Failed to update packs", nil)
-	}
-	err = points.UpdateUserPointsByUserIds(dao, userRecord.Id)
-	return nil
+		_, err = txDao.DB().Delete(aredl.SubmissionTableName,
+			dbx.And(
+				dbx.HashExp{"submitted_by": otherRecord.Id},
+				dbx.Exists(dbx.NewExp(fmt.Sprintf(`
+					SELECT NULL FROM %s rs
+					WHERE rs.submitted_by = {:userId} AND rs.level = %s.level`,
+					aredl.SubmissionTableName,
+					aredl.SubmissionTableName),
+					dbx.Params{"userId": userRecord.Id})))).Execute()
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to delete duplicate submissions")
+		}
+		// merge
+		columnsToChange := []ColumnData{
+			{aredl.SubmissionTableName, "submitted_by"},
+			{aredl.SubmissionTableName, "reviewer"},
+			{aredl.CreatorTableName, "creator"},
+			{aredl.HistoryTableName, "action_by"},
+			{aredl.LevelTableName, "publisher"},
+		}
+		for _, data := range columnsToChange {
+			_, err = txDao.DB().Update(data.Table, dbx.Params{data.Column: userRecord.Id}, dbx.HashExp{data.Column: otherRecord.Id}).Execute()
+			if err != nil {
+				return util.NewErrorResponse(err, "Failed to merge "+data.Table)
+			}
+		}
+		_, err = txDao.DB().Delete(aredl.LeaderboardTableName, dbx.HashExp{"user": otherRecord.Id}).Execute()
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to delete leaderboard entry")
+		}
+		_, err = txDao.DB().Delete(aredl.Packs.CompletedPacksTableName, dbx.HashExp{"user": otherRecord.Id}).Execute()
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to delete completed packs")
+		}
+		err = txDao.DeleteRecord(otherRecord)
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to delete merged user")
+		}
+		err = demonlist.UpdateLeaderboardAndPacksForUser(txDao, aredl, userRecord.Id)
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to update leaderboard")
+		}
+		return nil
+	})
+	return err
 }
 
 func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
@@ -73,7 +104,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				requestRecord, err := txDao.FindRecordById(names.TableMergeRequests, c.Get("request_id").(string))
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Could not find merge request", nil)
+					return util.NewErrorResponse(err, "Could not find merge request")
 				}
 				err = mergeAccounts(txDao, requestRecord.GetString("user"), requestRecord.GetString("to_merge"))
 				if err != nil {
@@ -81,7 +112,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 				}
 				err = txDao.DeleteRecord(requestRecord)
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
+					return util.NewErrorResponse(err, "Failed to delete request")
 				}
 				return nil
 			})
@@ -106,11 +137,11 @@ func registerMergeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				requestRecord, err := txDao.FindRecordById(names.TableMergeRequests, c.Get("request_id").(string))
 				if err != nil {
-					return apis.NewApiError(500, "Could not find merge request", nil)
+					return util.NewErrorResponse(err, "Could not find merge request")
 				}
 				err = txDao.DeleteRecord(requestRecord)
 				if err != nil {
-					return apis.NewApiError(500, "Failed to delete request", nil)
+					return util.NewErrorResponse(err, "Failed to delete request")
 				}
 				return nil
 			})

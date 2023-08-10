@@ -1,18 +1,15 @@
 package user
 
 import (
-	"AREDL/names"
+	"AREDL/demonlist"
 	"AREDL/util"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/daos"
-	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/inflector"
 	"net/http"
 )
 
@@ -25,82 +22,40 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_submissions"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"id":          {util.LoadString, true, nil, util.PackRules()},
+				"level":       {util.LoadString, true, nil, util.PackRules()},
 				"fps":         {util.LoadInt, true, nil, util.PackRules(validation.Min(30), validation.Max(360))},
 				"video_url":   {util.LoadString, true, nil, util.PackRules(is.URL)},
-				"device":      {util.LoadString, true, nil, util.PackRules(validation.In("pc", "mobile"))},
+				"mobile":      {util.LoadBool, true, nil, util.PackRules()},
 				"percentage":  {util.LoadInt, false, 100, util.PackRules(validation.Min(1), validation.Max(100))},
 				"ldm_id":      {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
-				"raw_footage": {util.LoadString, false, "", util.PackRules(is.URL)},
+				"raw_footage": {util.LoadString, false, nil, util.PackRules(is.URL)},
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				aredl := demonlist.Aredl()
+				userRecord := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
+					return util.NewErrorResponse(nil, "User not found")
 				}
-				if userRecord.GetBool("banned_from_list") {
-					return apis.NewBadRequestError("Banned from submissions", nil)
-				}
-				levelRecord, err := txDao.FindRecordById(names.TableLevels, c.Get("id").(string))
+				levelRecord, err := txDao.FindRecordById(aredl.LevelTableName, c.Get("level").(string))
 				if err != nil {
 					return apis.NewBadRequestError("Could not find level", nil)
 				}
-				// check if there already is a submission by that player
-				submissionCollection, err := txDao.FindCollectionByNameOrId(names.TableSubmissions)
-				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Error processing request", nil)
+				submissionData := map[string]interface{}{
+					"level":        levelRecord.Id,
+					"status":       demonlist.StatusPending,
+					"fps":          c.Get("fps"),
+					"video_url":    c.Get("video_url"),
+					"mobile":       c.Get("mobile"),
+					"percentage":   c.Get("percentage"),
+					"submitted_by": userRecord.Id,
 				}
-				var placementOrder int
-				submissionRecord := &models.Record{}
-				err = txDao.RecordQuery(submissionCollection).
-					AndWhere(dbx.HashExp{
-						inflector.Columnify("level"):        levelRecord.Id,
-						inflector.Columnify("submitted_by"): userRecord.Id,
-					}).Limit(1).One(submissionRecord)
-				if err == nil {
-					// submission exists
-					if submissionRecord.GetString("status") != "rejected_retryable" {
-						return apis.NewBadRequestError("Already submitted", nil)
-					}
-					placementOrder = submissionRecord.GetInt("placement_order")
-				} else {
-					// create new submission
-					submissionRecord = models.NewRecord(submissionCollection)
-					err = txDao.DB().Select("max(placement_order)").From(names.TableSubmissions).Where(dbx.HashExp{
-						inflector.Columnify("level"): levelRecord.Id,
-					}).Row(&placementOrder)
-					placementOrder++
-				}
-				submissionForm := forms.NewRecordUpsert(app, submissionRecord)
-
-				err = submissionForm.LoadData(map[string]any{
-					"status":          "pending",
-					"fps":             c.Get("fps"),
-					"video_url":       c.Get("video_url"),
-					"device":          c.Get("device"),
-					"percentage":      c.Get("percentage"),
-					"ldm_id":          c.Get("ldm_id"),
-					"raw_footage":     c.Get("raw_footage"),
-					"submitted_by":    userRecord.Id,
-					"level":           levelRecord.Id,
-					"placement_order": placementOrder,
-				})
-				submissionForm.SetDao(txDao)
-				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Failed to submit", nil)
-				}
-				err = submissionForm.Submit()
-				if err != nil {
-					switch err.(type) {
-					case validation.Errors:
-						return apis.NewBadRequestError(err.Error(), nil)
-					default:
-						return apis.NewApiError(http.StatusInternalServerError, "Error placing level", nil)
-					}
-				}
-				return nil
+				util.AddToMapIfNotNil(submissionData, "ldm_id", c.Get("ldm_id"))
+				util.AddToMapIfNotNil(submissionData, "raw_footage", c.Get("raw_footage"))
+				allowedOriginalStatus := []demonlist.SubmissionStatus{demonlist.StatusRejectedRetryable}
+				_, err = demonlist.UpsertSubmission(txDao, app, aredl, submissionData, allowedOriginalStatus)
+				return err
 			})
 			return err
 		},
@@ -117,28 +72,29 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_submissions"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"id": {util.LoadString, true, nil, util.PackRules()},
+				"record_id": {util.LoadString, true, nil, util.PackRules()},
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewBadRequestError("User was not found", nil)
+					return util.NewErrorResponse(nil, "Could not load user")
 				}
-				submissionRecord, err := txDao.FindRecordById(names.TableSubmissions, c.Get("id").(string))
+				aredl := demonlist.Aredl()
+				submissionRecord, err := txDao.FindRecordById(aredl.SubmissionTableName, c.Get("record_id").(string))
 				if err != nil {
-					return apis.NewBadRequestError("Submission was not found", nil)
+					return util.NewErrorResponse(err, "Submission was not found")
 				}
 				if submissionRecord.GetString("submitted_by") != userRecord.Id {
-					return apis.NewBadRequestError("Submission was not by the requesting user", nil)
+					return util.NewErrorResponse(err, "Submission does not belong to the user")
 				}
 				if submissionRecord.GetString("status") != "pending" {
-					return apis.NewBadRequestError("Submission was already processed", nil)
+					return util.NewErrorResponse(err, "Submission was already processed")
 				}
-				err = txDao.DeleteRecord(submissionRecord)
+				err = demonlist.DeleteSubmission(txDao, aredl, submissionRecord.Id)
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Failed to delete submission", nil)
+					return err
 				}
 				return nil
 			})

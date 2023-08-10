@@ -30,7 +30,7 @@ func PackRules(rules ...validation.Rule) ValidationFunc {
 type ValidationData struct {
 	LoadType       LoadType
 	Required       bool
-	Default        any
+	Default        interface{}
 	ValidationFunc ValidationFunc
 }
 

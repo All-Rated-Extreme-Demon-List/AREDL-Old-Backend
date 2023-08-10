@@ -1,18 +1,14 @@
 package util
 
 import (
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"math/rand"
+	"net/http"
 )
-
-func UseOtherIfNil[T comparable](value interface{}, other T) interface{} {
-	if value == nil {
-		return other
-	}
-	return value
-}
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
@@ -29,7 +25,7 @@ func CreatePlaceholderUser(app *pocketbase.PocketBase, dao *daos.Dao, userCollec
 	usedName := RandString(10)
 	userRecord, err := AddRecord(dao, app, userCollection, map[string]any{
 		"username":    usedName,
-		"permissions": "member",
+		"role":        "member",
 		"global_name": name,
 		"placeholder": true,
 		//"email":           usedName + "@none.com",
@@ -46,4 +42,22 @@ func MapSlice[T, U any](slice []T, mapper func(T) U) []U {
 		result[i] = mapper(slice[i])
 	}
 	return result
+}
+
+func NewErrorResponse(err error, message string) error {
+	if err == nil {
+		return apis.NewApiError(http.StatusInternalServerError, message, nil)
+	}
+	switch err.(type) {
+	case validation.Errors:
+		return apis.NewApiError(http.StatusInternalServerError, "Invalid data: "+err.Error(), nil)
+	default:
+		return apis.NewApiError(http.StatusInternalServerError, message, nil)
+	}
+}
+
+func AddToMapIfNotNil[U comparable](container map[U]interface{}, key U, value interface{}) {
+	if value != nil {
+		container[key] = value
+	}
 }

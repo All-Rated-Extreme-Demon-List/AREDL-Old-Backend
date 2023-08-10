@@ -12,7 +12,7 @@ func CheckBanned() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			record, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 			if record != nil && record.GetBool("banned_from_list") {
-				return apis.NewForbiddenError("Banned from list", nil)
+				return apis.NewForbiddenError("Banned from demonlist", nil)
 			}
 			return next(c)
 		}

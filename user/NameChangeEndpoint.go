@@ -29,26 +29,26 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				userRecord := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
+					return util.NewErrorResponse(nil, "User not found")
 				}
 				sameAsOld := userRecord.GetString("global_name") == c.Get("new_name")
 				requestRecord, _ := txDao.FindFirstRecordByData(names.TableNameChangeRequests, "user", userRecord.Id)
 				if requestRecord == nil {
 					requestCollection, err := txDao.FindCollectionByNameOrId(names.TableNameChangeRequests)
 					if err != nil {
-						return apis.NewApiError(http.StatusInternalServerError, "Failed to load collection", nil)
+						return util.NewErrorResponse(err, "Failed to load collection")
 					}
 					requestRecord = models.NewRecord(requestCollection)
 				} else if sameAsOld {
 					if err := txDao.DeleteRecord(requestRecord); err != nil {
-						return apis.NewApiError(http.StatusInternalServerError, "Failed to delete request", nil)
+						return util.NewErrorResponse(err, "Failed to delete request")
 					}
 					return nil
 				}
 				if sameAsOld {
-					return apis.NewBadRequestError("New name is the same as the old one", nil)
+					return util.NewErrorResponse(nil, "New name is the same as the old one")
 				}
 				requestForm := forms.NewRecordUpsert(app, requestRecord)
 				requestForm.SetDao(txDao)
@@ -57,10 +57,10 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase)
 					"new_name": c.Get("new_name"),
 				})
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Failed to load data", nil)
+					return util.NewErrorResponse(err, "Failed to load data")
 				}
 				if err = requestForm.Submit(); err != nil {
-					return apis.NewBadRequestError("Invalid data", nil)
+					return util.NewErrorResponse(err, "Invalid data")
 				}
 				return nil
 			})

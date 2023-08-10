@@ -26,16 +26,16 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				userRecord := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 				if userRecord == nil {
-					return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
+					return util.NewErrorResponse(nil, "User not found")
 				}
 				if record, _ := txDao.FindFirstRecordByData(names.TableMergeRequests, "user", userRecord.Id); record != nil {
-					return apis.NewBadRequestError("Merge request already exists", nil)
+					return util.NewErrorResponse(nil, "Merge request already exists")
 				}
 				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Could not load collection", nil)
+					return util.NewErrorResponse(err, "Could not load collection")
 				}
 				legacyRecord := &models.Record{}
 				err = txDao.RecordQuery(userCollection).
@@ -44,14 +44,14 @@ func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 						"placeholder": true,
 					}).Limit(1).One(legacyRecord)
 				if err != nil {
-					return apis.NewBadRequestError("Unknown legacy user", nil)
+					return util.NewErrorResponse(err, "Unknown legacy user")
 				}
 				_, err = util.AddRecordByCollectionName(txDao, app, names.TableMergeRequests, map[string]any{
 					"user":     userRecord.Id,
 					"to_merge": legacyRecord.Id,
 				})
 				if err != nil {
-					return apis.NewApiError(http.StatusInternalServerError, "Failed to create request", nil)
+					return util.NewErrorResponse(err, "Failed to create request")
 				}
 				return nil
 			})

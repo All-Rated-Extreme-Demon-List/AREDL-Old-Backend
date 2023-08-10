@@ -1,8 +1,8 @@
 package migration
 
 import (
+	"AREDL/demonlist"
 	"AREDL/names"
-	"AREDL/points"
 	"AREDL/util"
 	"encoding/json"
 	"errors"
@@ -10,6 +10,7 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
+	"github.com/pocketbase/pocketbase/models"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
@@ -69,7 +70,17 @@ func Register(app *pocketbase.PocketBase) {
 			path := args[0]
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				println("Deleting current data")
-				deleteDataTables := []string{names.TableLevels, names.TableLevelHistory, names.TableSubmissions, names.TablePacks, names.TableCompletedPacks, names.TablePackLevels, names.TableMergeRequests, names.TableNameChangeRequests}
+				aredl := demonlist.Aredl()
+				deleteDataTables := []string{
+					aredl.LeaderboardTableName,
+					aredl.LevelTableName,
+					aredl.HistoryTableName,
+					aredl.SubmissionTableName,
+					aredl.Packs.PackTableName,
+					aredl.Packs.CompletedPacksTableName,
+					aredl.Packs.PackLevelTableName,
+					names.TableMergeRequests,
+					names.TableNameChangeRequests}
 				for _, table := range deleteDataTables {
 					_, err := txDao.DB().Delete(table, nil).Execute()
 					if err != nil {
@@ -91,7 +102,7 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				levelCollection, err := txDao.FindCollectionByNameOrId(names.TableLevels)
+				levelCollection, err := txDao.FindCollectionByNameOrId(aredl.LevelTableName)
 				if err != nil {
 					return err
 				}
@@ -99,23 +110,23 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				submissionCollection, err := txDao.FindCollectionByNameOrId(names.TableSubmissions)
+				submissionCollection, err := txDao.FindCollectionByNameOrId(aredl.SubmissionTableName)
 				if err != nil {
 					return err
 				}
-				packCollection, err := txDao.FindCollectionByNameOrId(names.TablePacks)
+				packCollection, err := txDao.FindCollectionByNameOrId(aredl.Packs.PackTableName)
 				if err != nil {
 					return err
 				}
-				packLevelCollection, err := txDao.FindCollectionByNameOrId(names.TablePackLevels)
+				packLevelCollection, err := txDao.FindCollectionByNameOrId(aredl.Packs.PackLevelTableName)
 				if err != nil {
 					return err
 				}
-				creatorCollection, err := txDao.FindCollectionByNameOrId(names.TableCreators)
+				creatorCollection, err := txDao.FindCollectionByNameOrId(aredl.CreatorTableName)
 				if err != nil {
 					return err
 				}
-				positionHistoryCollection, err := txDao.FindCollectionByNameOrId(names.TableLevelHistory)
+				positionHistoryCollection, err := txDao.FindCollectionByNameOrId(aredl.HistoryTableName)
 				if err != nil {
 					return err
 				}
@@ -150,9 +161,7 @@ func Register(app *pocketbase.PocketBase) {
 					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
 						"position":           position + 1,
 						"name":               level.Name,
-						"verifier":           verifierId,
 						"publisher":          publisherId,
-						"verification":       level.Verification,
 						"level_id":           level.Id,
 						"level_password":     level.Password,
 						"qualifying_percent": level.PercentToQualify,
@@ -191,22 +200,17 @@ func Register(app *pocketbase.PocketBase) {
 					}
 
 					// level submissions
-					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) error {
+					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
 							userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, username)
 							if err != nil {
-								return err
+								return nil, err
 							}
 							playerId = userRecord.Id
 							knownUsers[strings.ToLower(username)] = playerId
 						}
-
-						device := "pc"
-						if mobile {
-							device = "mobile"
-						}
-						_, err := util.AddRecord(txDao, app, submissionCollection, map[string]any{
+						submissionRecord, err := util.AddRecord(txDao, app, submissionCollection, map[string]any{
 							"status":          "accepted",
 							"video_url":       strings.Replace(url, " ", "", -1),
 							"level":           levelRecord.Id,
@@ -214,21 +218,26 @@ func Register(app *pocketbase.PocketBase) {
 							"fps":             framerate,
 							"percentage":      percent,
 							"placement_order": recordOrder + 1,
-							"device":          device,
+							"mobile":          mobile,
 						})
 						if err != nil {
-							return err
+							return nil, err
 						}
-						return nil
+						return submissionRecord, nil
 					}
 
-					err = addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
+					verificationRecord, err := addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
+					if err != nil {
+						return err
+					}
+					levelRecord.Set("verification", verificationRecord.Id)
+					err = txDao.SaveRecord(levelRecord)
 					if err != nil {
 						return err
 					}
 
 					for submissionOrder, playerRecord := range level.Records {
-						err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
+						_, err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
 						if err != nil {
 							return err
 						}
@@ -266,12 +275,12 @@ func Register(app *pocketbase.PocketBase) {
 					}
 				}
 				println("Updating users")
-				err = points.UpdateAllCompletedPacks(txDao)
+				err = demonlist.UpdateAllCompletedPacks(txDao, aredl)
 				if err != nil {
 					return err
 				}
-				println("Updating list points")
-				err = points.UpdateListPointsByLevelRange(txDao, 1, len(levelNames))
+				println("Updating demonlist")
+				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, 1, len(levelNames))
 				if err != nil {
 					return err
 				}

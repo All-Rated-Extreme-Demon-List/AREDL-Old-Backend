@@ -10,7 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase/tools/list"
 )
 
-const KeyAffectedGroups = "affected_groups"
+const KeyAffectedRoles = "affected_groups"
 
 // RequirePermissionGroup checks if the authenticated user is an admin or has access to the given action.
 // Furthermore, it loads all roles the user can affect with the given action into the context using KeyAffectedGroups as key.
@@ -47,9 +47,17 @@ func RequirePermissionGroup(app core.App, action string) echo.MiddlewareFunc {
 			if !foundRole {
 				return apis.NewForbiddenError("You are not allowed to access this endpoint", nil)
 			}
-			c.Set(KeyAffectedGroups, allAffectedRoles)
+			c.Set(KeyAffectedRoles, allAffectedRoles)
 
 			return next(c)
 		}
 	}
+}
+
+func CanAffectRole(c echo.Context, role string) bool {
+	if c.Get(KeyAffectedRoles) != nil {
+		affectedRoles := c.Get(KeyAffectedRoles).([]string)
+		return list.ExistInSlice(role, affectedRoles)
+	}
+	return false
 }
