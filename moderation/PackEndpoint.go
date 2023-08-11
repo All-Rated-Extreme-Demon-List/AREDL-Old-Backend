@@ -19,7 +19,7 @@ func registerPackCreate(e *echo.Echo, app core.App) error {
 			util.RequirePermissionGroup(app, "manage_packs"),
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"name":      {util.LoadString, true, nil, util.PackRules()},
-				"colour":    {util.LoadString, true, nil, util.PackRules()},
+				"color":     {util.LoadString, true, nil, util.PackRules()},
 				"placement": {util.LoadInt, false, nil, util.PackRules()},
 				"levels":    {util.LoadStringArray, true, nil, util.PackRules()},
 			}),
@@ -28,7 +28,7 @@ func registerPackCreate(e *echo.Echo, app core.App) error {
 			aredl := demonlist.Aredl()
 			packData := map[string]interface{}{
 				"name":   c.Get("name"),
-				"colour": c.Get("colour"),
+				"color":  c.Get("color"),
 				"levels": c.Get("levels"),
 			}
 			util.AddToMapIfNotNil(packData, "placement_order", c.Get("placement"))
@@ -50,7 +50,7 @@ func registerPackUpdate(e *echo.Echo, app core.App) error {
 			util.ValidateAndLoadParam(map[string]util.ValidationData{
 				"record_id": {util.LoadString, true, nil, util.PackRules()},
 				"name":      {util.LoadString, false, nil, util.PackRules()},
-				"colour":    {util.LoadString, false, nil, util.PackRules()},
+				"color":     {util.LoadString, false, nil, util.PackRules()},
 				"placement": {util.LoadInt, false, nil, util.PackRules()},
 				"levels":    {util.LoadStringArray, false, nil, util.PackRules()},
 			}),
@@ -61,7 +61,7 @@ func registerPackUpdate(e *echo.Echo, app core.App) error {
 				"id": c.Get("record_id"),
 			}
 			util.AddToMapIfNotNil(packData, "name", c.Get("name"))
-			util.AddToMapIfNotNil(packData, "colour", c.Get("colour"))
+			util.AddToMapIfNotNil(packData, "color", c.Get("color"))
 			util.AddToMapIfNotNil(packData, "placement_order", c.Get("placement"))
 			util.AddToMapIfNotNil(packData, "levels", c.Get("levels"))
 			err := demonlist.UpsertPack(app.Dao(), app, aredl, packData)

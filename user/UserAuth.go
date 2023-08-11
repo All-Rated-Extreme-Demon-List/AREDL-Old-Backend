@@ -17,7 +17,7 @@ func RegisterUserAuth(app core.App) {
 			e.Record.Set("discord_id", meta.RawUser["id"])
 		}
 		e.Record.Set("avatar_url", meta.AvatarUrl)
-		e.Record.Set("banner_colour", meta.RawUser["banner_colour"])
+		e.Record.Set("banner_color", meta.RawUser["banner_color"])
 		err := app.Dao().SaveRecord(e.Record)
 		if err != nil {
 			return err
