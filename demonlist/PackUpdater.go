@@ -132,36 +132,32 @@ func updateCompletedPacksByUser(dao *daos.Dao, list ListData, userId string) err
 }
 
 func updateCompletedPacksByPackId(dao *daos.Dao, list ListData, packId string) ([]interface{}, error) {
-	var usersToRemove []interface{}
+	var removedUsers []interface{}
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		type UserData struct {
 			Id string `db:"user"`
 		}
-		var usersToRemoveData []UserData
+		var removedUserData []UserData
 		err := txDao.DB().NewQuery(fmt.Sprintf(`
-			SELECT user
-			FROM %s
+			DELETE FROM %s
 			WHERE (
 				SELECT COUNT(*) FROM %s pl 
 				WHERE pl.pack = %s.pack
 			) <> (
 				SELECT COUNT(*) FROM %s pl, %s rs 
 				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user AND rs.status='accepted'
-			) AND pack = {:packId}`,
+			) AND pack = {:packId}
+			RETURNING user`,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
 			list.SubmissionTableName,
-			list.Packs.CompletedPacksTableName)).Bind(dbx.Params{"packId": packId}).All(&usersToRemoveData)
+			list.Packs.CompletedPacksTableName)).Bind(dbx.Params{"packId": packId}).All(&removedUserData)
 		if err != nil {
 			return err
 		}
-		usersToRemove = util.MapSlice(usersToRemoveData, func(value UserData) interface{} { return value.Id })
-		_, err = txDao.DB().Delete(list.Packs.CompletedPacksTableName, dbx.And(dbx.In("user", usersToRemove...), dbx.HashExp{"pack": packId})).Execute()
-		if err != nil {
-			return err
-		}
+		removedUsers = util.MapSlice(removedUserData, func(value UserData) interface{} { return value.Id })
 		_, err = txDao.DB().NewQuery(fmt.Sprintf(`
 			INSERT INTO %s (user, pack) 
 			SELECT u.id as user, p.id as pack 
@@ -180,7 +176,7 @@ func updateCompletedPacksByPackId(dao *daos.Dao, list ListData, packId string) (
 			list.SubmissionTableName)).Bind(dbx.Params{"packId": packId}).Execute()
 		return err
 	})
-	return usersToRemove, err
+	return removedUsers, err
 }
 
 func UpsertPack(dao *daos.Dao, app core.App, listData ListData, packData map[string]interface{}) error {
