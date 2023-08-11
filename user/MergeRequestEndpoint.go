@@ -5,14 +5,14 @@ import (
 	"AREDL/util"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"net/http"
 )
 
-func registerMergeRequestEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerMergeRequestEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/merge-request",

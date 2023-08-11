@@ -5,14 +5,14 @@ import (
 	"AREDL/names"
 	"AREDL/util"
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"net/http"
 )
 
-func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerNameChangeAcceptEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/name-change/accept",
@@ -51,7 +51,7 @@ func registerNameChangeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 	return err
 }
 
-func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerNameChangeRejectEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/name-change/reject",
@@ -81,7 +81,7 @@ func registerNameChangeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) 
 	return err
 }
 
-func registerCreatePlaceholderUser(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerCreatePlaceholderUser(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/create-placeholder",
@@ -115,7 +115,7 @@ func registerCreatePlaceholderUser(e *echo.Echo, app *pocketbase.PocketBase) err
 	return err
 }
 
-func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerBanAccountEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/ban",
@@ -159,7 +159,7 @@ func registerBanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 	return err
 }
 
-func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerUnbanAccountEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/unban",
@@ -199,7 +199,7 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app *pocketbase.PocketBase) erro
 	return err
 }
 
-func registerChangeRoleEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerChangeRoleEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/user/role",

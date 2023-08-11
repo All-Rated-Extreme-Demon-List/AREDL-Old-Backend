@@ -5,12 +5,12 @@ import (
 	"AREDL/util"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"net/http"
 )
 
-func registerBasicListEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodGet,
 		Path:   pathPrefix + "/demonlist",

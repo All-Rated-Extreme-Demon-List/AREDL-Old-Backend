@@ -15,6 +15,7 @@ func main() {
 
 	moderation.RegisterEndpoints(app)
 	user.RegisterEndpoints(app)
+	user.RegisterUserAuth(app)
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)

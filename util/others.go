@@ -2,8 +2,8 @@ package util
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"math/rand"
@@ -20,7 +20,7 @@ func RandString(n int) string {
 	return string(b)
 }
 
-func CreatePlaceholderUser(app *pocketbase.PocketBase, dao *daos.Dao, userCollection *models.Collection, name string) (*models.Record, error) {
+func CreatePlaceholderUser(app core.App, dao *daos.Dao, userCollection *models.Collection, name string) (*models.Record, error) {
 	password := RandString(20)
 	usedName := RandString(10)
 	userRecord, err := AddRecord(dao, app, userCollection, map[string]any{

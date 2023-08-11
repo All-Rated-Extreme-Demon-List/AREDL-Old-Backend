@@ -4,12 +4,12 @@ import (
 	"AREDL/demonlist"
 	"AREDL/util"
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"net/http"
 )
 
-func registerPackCreate(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerPackCreate(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/pack/create",
@@ -39,7 +39,7 @@ func registerPackCreate(e *echo.Echo, app *pocketbase.PocketBase) error {
 	return err
 }
 
-func registerPackUpdate(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerPackUpdate(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/pack/update",
@@ -71,7 +71,7 @@ func registerPackUpdate(e *echo.Echo, app *pocketbase.PocketBase) error {
 	return err
 }
 
-func registerPackDelete(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerPackDelete(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/pack/delete",

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"net/http"
 )
@@ -88,7 +88,7 @@ func mergeAccounts(dao *daos.Dao, userId string, toMergeId string) error {
 	return err
 }
 
-func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerMergeAcceptEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/merge/accept",
@@ -122,7 +122,7 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 	return err
 }
 
-func registerMergeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerMergeRejectEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/merge/reject",
@@ -151,7 +151,7 @@ func registerMergeRejectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error
 	return err
 }
 
-func registerMergeDirectEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerMergeDirectEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/merge/direct",

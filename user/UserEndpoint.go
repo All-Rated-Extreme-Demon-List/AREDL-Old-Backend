@@ -2,13 +2,13 @@ package user
 
 import (
 	"AREDL/util"
-	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/core"
 )
 
 const pathPrefix = "/api/user"
 
 // RegisterEndpoints registers all routes that are used by users
-func RegisterEndpoints(app *pocketbase.PocketBase) {
+func RegisterEndpoints(app core.App) {
 	util.RegisterEndpoints(app,
 		registerSubmissionEndpoint,
 		registerSubmissionWithdrawEndpoint,

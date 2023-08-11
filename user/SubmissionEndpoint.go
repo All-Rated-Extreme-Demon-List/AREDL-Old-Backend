@@ -6,14 +6,14 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"net/http"
 )
 
-func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/submit",
@@ -63,7 +63,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error 
 	return err
 }
 
-func registerSubmissionWithdrawEndpoint(e *echo.Echo, app *pocketbase.PocketBase) error {
+func registerSubmissionWithdrawEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
 		Path:   pathPrefix + "/withdraw",
