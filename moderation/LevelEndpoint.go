@@ -57,6 +57,7 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app core.App) error {
 			creatorIds := c.Get("creator_ids").([]string)
 
 			err := demonlist.PlaceLevel(app.Dao(), app, userRecord.Id, aredl, levelData, verificationData, creatorIds)
+
 			return err
 		},
 	})
