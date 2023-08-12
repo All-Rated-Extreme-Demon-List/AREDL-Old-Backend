@@ -96,8 +96,8 @@ func registerMergeAcceptEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "merge_review"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"request_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -129,8 +129,8 @@ func registerMergeRejectEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.RequirePermissionGroup(app, "merge_review"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"request_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -158,9 +158,9 @@ func registerMergeDirectEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.RequirePermissionGroup(app, "direct_merge"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"user_id":     {util.LoadString, true, nil, util.PackRules()},
-				"to_merge_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"user_id":     util.LoadString(true),
+				"to_merge_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {

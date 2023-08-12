@@ -20,8 +20,8 @@ func registerNameChangeAcceptEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "name_change_review"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"request_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -59,8 +59,8 @@ func registerNameChangeRejectEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "name_change_review"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"request_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"request_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -89,8 +89,8 @@ func registerCreatePlaceholderUser(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "create_placeholder"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"username": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"username": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -123,8 +123,8 @@ func registerBanAccountEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_bans"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"discord_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"discord_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -167,8 +167,8 @@ func registerUnbanAccountEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_bans"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"discord_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"discord_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -207,9 +207,9 @@ func registerChangeRoleEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "change_role"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"user_id": {util.LoadString, true, nil, util.PackRules()},
-				"role":    {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"user_id": util.LoadString(true),
+				"role":    util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {

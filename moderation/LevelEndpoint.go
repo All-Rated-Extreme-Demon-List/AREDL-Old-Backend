@@ -21,47 +21,41 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_levels"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level_id":                 {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
-				"position":                 {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
-				"name":                     {util.LoadString, true, nil, util.PackRules()},
-				"creator_ids":              {util.LoadStringArray, true, nil, util.PackRules()},
-				"verifier":                 {util.LoadString, true, nil, util.PackRules()},
-				"publisher":                {util.LoadString, true, nil, util.PackRules()},
-				"level_password":           {util.LoadString, false, nil, util.PackRules()},
-				"custom_song":              {util.LoadString, false, nil, util.PackRules()},
-				"qualifying_percent":       {util.LoadInt, false, 100, util.PackRules(validation.Min(1), validation.Max(100))},
-				"legacy":                   {util.LoadBool, false, false, util.PackRules()},
-				"verification_video":       {util.LoadString, true, nil, util.PackRules(is.URL)},
-				"verification_fps":         {util.LoadInt, true, nil, util.PackRules(validation.Min(30), validation.Max(360))},
-				"verification_device":      {util.LoadString, true, nil, util.PackRules(validation.In("pc", "mobile"))},
-				"verification_raw_footage": {util.LoadString, false, nil, util.PackRules(is.URL)},
+			util.LoadParam(util.LoadData{
+				"creator_ids": util.LoadStringArray(true),
+				"levelData": util.LoadMap("", util.LoadData{
+					"level_id":           util.LoadInt(true, validation.Min(1)),
+					"position":           util.LoadInt(true, validation.Min(1)),
+					"name":               util.LoadString(true),
+					"publisher":          util.LoadString(true),
+					"level_password":     util.LoadString(false),
+					"custom_song":        util.LoadString(false),
+					"qualifying_percent": util.AddDefault(100, util.LoadInt(false, validation.Min(1), validation.Max(100))),
+					"legacy":             util.AddDefault(false, util.LoadBool(false)),
+				}),
+				"verificationData": util.LoadMap("verification_", util.LoadData{
+					"submitted_by": util.LoadString(true),
+					"video_url":    util.LoadString(true, is.URL),
+					"fps":          util.LoadInt(true, validation.Min(30), validation.Max(360)),
+					"mobile":       util.LoadBool(true),
+					"raw_footage":  util.LoadString(false),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 			if userRecord == nil {
-				return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
+				return util.NewErrorResponse(nil, "User not found")
 			}
 			aredl := demonlist.Aredl()
-			levelData := map[string]interface{}{
-				"level_id":           c.Get("level_id"),
-				"position":           c.Get("position"),
-				"name":               c.Get("name"),
-				"publisher":          c.Get("publisher"),
-				"level_password":     c.Get("level_password"),
-				"custom_song":        c.Get("custom_song"),
-				"qualifying_percent": c.Get("qualifying_percent"),
-				"legacy":             c.Get("legacy"),
-			}
-			verificationData := map[string]interface{}{
-				"fps":          c.Get("verification_fps"),
-				"video_url":    c.Get("verification_video"),
-				"device":       c.Get("verification_device"),
-				"percentage":   100,
-				"submitted_by": c.Get("verifier"),
-				"raw_footage":  c.Get("verification_raw_footage")}
+
+			levelData := c.Get("levelData").(map[string]interface{})
+
+			verificationData := c.Get("verificationData").(map[string]interface{})
+			verificationData["percentage"] = 100
+
 			creatorIds := c.Get("creator_ids").([]string)
+
 			err := demonlist.PlaceLevel(app.Dao(), app, userRecord.Id, aredl, levelData, verificationData, creatorIds)
 			return err
 		},
@@ -76,18 +70,20 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.RequirePermissionGroup(app, "manage_levels"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"id":                 {util.LoadString, true, nil, util.PackRules()},
-				"level_id":           {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
-				"name":               {util.LoadString, false, nil, util.PackRules()},
-				"verification":       {util.LoadString, false, nil, util.PackRules()},
-				"creator_ids":        {util.LoadStringArray, false, nil, util.PackRules()},
-				"publisher":          {util.LoadString, false, nil, util.PackRules()},
-				"level_password":     {util.LoadString, false, nil, util.PackRules()},
-				"custom_song":        {util.LoadString, false, nil, util.PackRules()},
-				"legacy":             {util.LoadBool, false, nil, util.PackRules()},
-				"position":           {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
-				"qualifying_percent": {util.LoadInt, false, nil, util.PackRules(validation.Min(1), validation.Max(100))},
+			util.LoadParam(util.LoadData{
+				"id":          util.LoadString(true),
+				"creator_ids": util.LoadStringArray(false),
+				"levelData": util.LoadMap("", util.LoadData{
+					"level_id":           util.LoadInt(false),
+					"name":               util.LoadString(false),
+					"verification":       util.LoadString(false),
+					"publisher":          util.LoadString(false),
+					"level_password":     util.LoadString(false),
+					"custom_song":        util.LoadString(false),
+					"legacy":             util.LoadBool(false),
+					"position":           util.LoadInt(false, validation.Min(1)),
+					"qualifying_percent": util.LoadInt(false, validation.Min(1), validation.Max(100)),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -96,16 +92,7 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app core.App) error {
 				return apis.NewApiError(http.StatusInternalServerError, "User not found", nil)
 			}
 			aredl := demonlist.Aredl()
-			levelData := make(map[string]interface{})
-			util.AddToMapIfNotNil(levelData, "level_id", c.Get("level_id"))
-			util.AddToMapIfNotNil(levelData, "name", c.Get("name"))
-			util.AddToMapIfNotNil(levelData, "publisher", c.Get("publisher"))
-			util.AddToMapIfNotNil(levelData, "level_password", c.Get("level_password"))
-			util.AddToMapIfNotNil(levelData, "custom_song", c.Get("custom_song"))
-			util.AddToMapIfNotNil(levelData, "legacy", c.Get("legacy"))
-			util.AddToMapIfNotNil(levelData, "qualifying_percent", c.Get("qualifying_percent"))
-			util.AddToMapIfNotNil(levelData, "position", c.Get("position"))
-			util.AddToMapIfNotNil(levelData, "verification", c.Get("verification"))
+			levelData := c.Get("levelData").(map[string]interface{})
 			return demonlist.UpdateLevel(app.Dao(), app, c.Get("id").(string), userRecord.Id, aredl, levelData, c.Get("creator_ids"))
 		},
 	})
@@ -119,9 +106,9 @@ func registerUpdateListEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			util.RequirePermissionGroup(app, "update_listpoints"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"min_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
-				"max_position": {util.LoadInt, true, nil, util.PackRules(validation.Min(1))},
+			util.LoadParam(util.LoadData{
+				"min_position": util.LoadInt(true, validation.Min(1)),
+				"max_position": util.LoadInt(true, validation.Min(1)),
 			}),
 		},
 		Handler: func(c echo.Context) error {

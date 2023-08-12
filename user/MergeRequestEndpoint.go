@@ -20,8 +20,8 @@ func registerMergeRequestEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_request_merge"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"placeholder_name": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"placeholder_name": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {

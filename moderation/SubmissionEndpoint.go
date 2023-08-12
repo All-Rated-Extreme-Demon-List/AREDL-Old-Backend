@@ -21,18 +21,20 @@ func registerSubmissionUpdateEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "submission_review"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"record_id":        {util.LoadString, true, nil, util.PackRules()},
-				"fps":              {util.LoadInt, false, nil, util.PackRules(validation.Min(30), validation.Max(360))},
-				"video_url":        {util.LoadString, false, nil, util.PackRules(is.URL)},
-				"level":            {util.LoadString, false, nil, util.PackRules()},
-				"mobile":           {util.LoadBool, false, nil, util.PackRules()},
-				"percentage":       {util.LoadInt, false, nil, util.PackRules(validation.Min(1), validation.Max(100))},
-				"ldm_id":           {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
-				"raw_footage":      {util.LoadString, false, nil, util.PackRules(is.URL)},
-				"placement":        {util.LoadInt, false, nil, util.PackRules()},
-				"status":           {util.LoadString, false, nil, util.PackRules(validation.In(string(demonlist.StatusRejected), string(demonlist.StatusAccepted), string(demonlist.StatusRejectedRetryable), string(demonlist.StatusPending)))},
-				"rejection_reason": {util.LoadString, false, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"submissionData": util.LoadMap("", util.LoadData{
+					"id":               util.LoadString(true),
+					"level":            util.LoadString(false),
+					"status":           util.LoadString(false, validation.In(string(demonlist.StatusRejected), string(demonlist.StatusAccepted), string(demonlist.StatusRejectedRetryable), string(demonlist.StatusPending))),
+					"fps":              util.LoadInt(false, validation.Min(30), validation.Max(360)),
+					"video_url":        util.LoadString(false, is.URL),
+					"mobile":           util.LoadBool(false),
+					"percentage":       util.LoadInt(false, validation.Min(1), validation.Max(100)),
+					"ldm_id":           util.LoadInt(false, validation.Min(1)),
+					"raw_footage":      util.LoadString(false, is.URL),
+					"placement_order":  util.LoadInt(false, validation.Min(1)),
+					"rejection_reason": util.LoadString(false),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -41,19 +43,7 @@ func registerSubmissionUpdateEndpoint(e *echo.Echo, app core.App) error {
 				return util.NewErrorResponse(nil, "User not found")
 			}
 			aredl := demonlist.Aredl()
-			submissionData := map[string]interface{}{
-				"id": c.Get("record_id"),
-			}
-			util.AddToMapIfNotNil(submissionData, "status", c.Get("status"))
-			util.AddToMapIfNotNil(submissionData, "fps", c.Get("fps"))
-			util.AddToMapIfNotNil(submissionData, "video_url", c.Get("video_url"))
-			util.AddToMapIfNotNil(submissionData, "mobile", c.Get("mobile"))
-			util.AddToMapIfNotNil(submissionData, "level", c.Get("level"))
-			util.AddToMapIfNotNil(submissionData, "percentage", c.Get("percentage"))
-			util.AddToMapIfNotNil(submissionData, "ldm_id", c.Get("ldm_id"))
-			util.AddToMapIfNotNil(submissionData, "raw_footage", c.Get("raw_footage"))
-			util.AddToMapIfNotNil(submissionData, "placement_order", c.Get("placement"))
-			util.AddToMapIfNotNil(submissionData, "rejection_reason", c.Get("rejection_reason"))
+			submissionData := c.Get("submissionData").(map[string]interface{})
 			if submissionData["status"] != nil {
 				submissionData["reviewer"] = userRecord.Id
 				if list.ExistInSlice(submissionData["status"].(string), []string{string(demonlist.StatusRejectedRetryable), string(demonlist.StatusRejected)}) {

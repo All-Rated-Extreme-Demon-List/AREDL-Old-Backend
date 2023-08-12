@@ -22,9 +22,8 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_request_name_change"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				// Limit username
-				"new_name": {util.LoadString, true, nil, util.PackRules(validation.Match(regexp.MustCompile("^([a-zA-Z0-9 ._]{4,20}$)")))},
+			util.LoadParam(util.LoadData{
+				"new_name": util.LoadString(true, validation.Match(regexp.MustCompile("^([a-zA-Z0-9 ._]{4,20}$)"))),
 			}),
 		},
 		Handler: func(c echo.Context) error {

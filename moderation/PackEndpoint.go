@@ -17,21 +17,18 @@ func registerPackCreate(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_packs"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"name":      {util.LoadString, true, nil, util.PackRules()},
-				"color":     {util.LoadString, true, nil, util.PackRules()},
-				"placement": {util.LoadInt, false, nil, util.PackRules()},
-				"levels":    {util.LoadStringArray, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"packData": util.LoadMap("", util.LoadData{
+					"name":            util.LoadString(true),
+					"color":           util.LoadString(true),
+					"placement_order": util.LoadInt(false),
+					"levels":          util.LoadStringArray(true),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
-			packData := map[string]interface{}{
-				"name":   c.Get("name"),
-				"color":  c.Get("color"),
-				"levels": c.Get("levels"),
-			}
-			util.AddToMapIfNotNil(packData, "placement_order", c.Get("placement"))
+			packData := c.Get("packData").(map[string]interface{})
 			err := demonlist.UpsertPack(app.Dao(), app, aredl, packData)
 			return err
 		},
@@ -47,23 +44,19 @@ func registerPackUpdate(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_packs"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"record_id": {util.LoadString, true, nil, util.PackRules()},
-				"name":      {util.LoadString, false, nil, util.PackRules()},
-				"color":     {util.LoadString, false, nil, util.PackRules()},
-				"placement": {util.LoadInt, false, nil, util.PackRules()},
-				"levels":    {util.LoadStringArray, false, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"packData": util.LoadMap("", util.LoadData{
+					"id":              util.LoadString(true),
+					"name":            util.LoadString(false),
+					"color":           util.LoadString(false),
+					"placement_order": util.LoadInt(false),
+					"levels":          util.LoadStringArray(false),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
-			packData := map[string]interface{}{
-				"id": c.Get("record_id"),
-			}
-			util.AddToMapIfNotNil(packData, "name", c.Get("name"))
-			util.AddToMapIfNotNil(packData, "color", c.Get("color"))
-			util.AddToMapIfNotNil(packData, "placement_order", c.Get("placement"))
-			util.AddToMapIfNotNil(packData, "levels", c.Get("levels"))
+			packData := c.Get("packData").(map[string]interface{})
 			err := demonlist.UpsertPack(app.Dao(), app, aredl, packData)
 			return err
 		},
@@ -79,8 +72,8 @@ func registerPackDelete(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "manage_packs"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"record_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"record_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {

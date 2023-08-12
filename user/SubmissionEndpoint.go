@@ -21,14 +21,16 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_submissions"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"level":       {util.LoadString, true, nil, util.PackRules()},
-				"fps":         {util.LoadInt, true, nil, util.PackRules(validation.Min(30), validation.Max(360))},
-				"video_url":   {util.LoadString, true, nil, util.PackRules(is.URL)},
-				"mobile":      {util.LoadBool, true, nil, util.PackRules()},
-				"percentage":  {util.LoadInt, false, 100, util.PackRules(validation.Min(1), validation.Max(100))},
-				"ldm_id":      {util.LoadInt, false, nil, util.PackRules(validation.Min(1))},
-				"raw_footage": {util.LoadString, false, nil, util.PackRules(is.URL)},
+			util.LoadParam(util.LoadData{
+				"submissionData": util.LoadMap("", util.LoadData{
+					"level":       util.LoadString(true),
+					"fps":         util.LoadInt(true, validation.Min(30), validation.Max(360)),
+					"video_url":   util.LoadString(true, is.URL),
+					"mobile":      util.LoadBool(true),
+					"percentage":  util.AddDefault(100, util.LoadInt(false, validation.Min(1), validation.Max(100))),
+					"ldm_id":      util.LoadInt(false),
+					"raw_footage": util.LoadString(false, is.URL),
+				}),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -38,21 +40,15 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 				if userRecord == nil {
 					return util.NewErrorResponse(nil, "User not found")
 				}
-				levelRecord, err := txDao.FindRecordById(aredl.LevelTableName, c.Get("level").(string))
+				submissionData := c.Get("submissionData").(map[string]interface{})
+				submissionData["status"] = demonlist.StatusPending
+				submissionData["submitted_by"] = userRecord.Id
+
+				// verify that submitted level exists
+				_, err := txDao.FindRecordById(aredl.LevelTableName, submissionData["level"].(string))
 				if err != nil {
-					return apis.NewBadRequestError("Could not find level", nil)
+					return apis.NewBadRequestError("Invalid level", nil)
 				}
-				submissionData := map[string]interface{}{
-					"level":        levelRecord.Id,
-					"status":       demonlist.StatusPending,
-					"fps":          c.Get("fps"),
-					"video_url":    c.Get("video_url"),
-					"mobile":       c.Get("mobile"),
-					"percentage":   c.Get("percentage"),
-					"submitted_by": userRecord.Id,
-				}
-				util.AddToMapIfNotNil(submissionData, "ldm_id", c.Get("ldm_id"))
-				util.AddToMapIfNotNil(submissionData, "raw_footage", c.Get("raw_footage"))
 				allowedOriginalStatus := []demonlist.SubmissionStatus{demonlist.StatusRejectedRetryable}
 				_, err = demonlist.UpsertSubmission(txDao, app, aredl, submissionData, allowedOriginalStatus)
 				return err
@@ -71,8 +67,8 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			util.CheckBanned(),
 			util.RequirePermissionGroup(app, "user_submissions"),
-			util.ValidateAndLoadParam(map[string]util.ValidationData{
-				"record_id": {util.LoadString, true, nil, util.PackRules()},
+			util.LoadParam(util.LoadData{
+				"record_id": util.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
