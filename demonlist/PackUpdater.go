@@ -33,11 +33,20 @@ func updatePackPointsByPackId(dao *daos.Dao, list ListData, packId string) error
 func updatePackPoints(dao *daos.Dao, list ListData, condition string, params dbx.Params) error {
 	_, err := dao.DB().NewQuery(fmt.Sprintf(`
 		UPDATE %s 
-		SET points=(
+		SET points = CASE WHEN EXISTS (
+			SELECT NULL
+			FROM %s pl, %s l
+			WHERE %s.id = pl.pack AND pl.level = l.id AND l.legacy = true
+		) THEN 0 ELSE
+		(
 			SELECT ROUND(SUM(l.points)*%v,1) 
 			FROM %s pl, %v l 
 			WHERE %s.id = pl.pack AND pl.level = l.id
-		) %s`,
+		) END 
+		%s`,
+		list.Packs.PackTableName,
+		list.Packs.PackLevelTableName,
+		list.LevelTableName,
 		list.Packs.PackTableName,
 		list.Packs.PackMultiplier,
 		list.Packs.PackLevelTableName,
