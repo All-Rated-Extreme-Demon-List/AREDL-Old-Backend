@@ -5,7 +5,6 @@ import (
 	"AREDL/names"
 	"AREDL/util"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -226,12 +225,7 @@ func Register(app *pocketbase.PocketBase) {
 						return submissionRecord, nil
 					}
 
-					verificationRecord, err := addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
-					if err != nil {
-						return err
-					}
-					levelRecord.Set("verification", verificationRecord.Id)
-					err = txDao.SaveRecord(levelRecord)
+					_, err = addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
 					if err != nil {
 						return err
 					}
@@ -263,7 +257,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, levelName := range pack.Levels {
 						levelId, exists := knownLevels[levelName]
 						if !exists {
-							return errors.New("Unknown level: " + levelName)
+							println("Ignoring " + levelName + " for pack " + pack.Name)
 						}
 						_, err := util.AddRecord(txDao, app, packLevelCollection, map[string]any{
 							"level": levelId,
