@@ -34,7 +34,7 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 			if !hasLevelId && !hasId {
 				// return entire list
 				var list []queryhelper.AredlLevel
-				query, _, err := queryhelper.Build(app.Dao().DB(), list, []interface{}{"id", "position", "name", "level_id"})
+				query, _, err := queryhelper.Build(app.Dao().DB(), list, []interface{}{"id", "position", "name", "level_id", "legacy"})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to build query")
 				}
