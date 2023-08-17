@@ -34,21 +34,18 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				fields := []interface{}{
 					"id", "created", "global_name", "role", "description", "country", "badges", "aredl_verified", "aredl_plus", "banned_from_list", "placeholder", "avatar_url", "banner_color",
 				}
-				query, prefixTable, err := queryhelper.Build(txDao.DB(), result, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				err = query.Where(dbx.HashExp{prefixTable[""] + ".id": userId}).One(&result)
+				err := queryhelper.Build(txDao.DB(), &result, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					query.Where(dbx.HashExp{prefixResolver("id"): userId})
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user data")
 				}
 				fields = []interface{}{"name", "color", "points"}
-				query, prefixTable, err = queryhelper.Build(txDao.DB(), result.CompletedPacks, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				query.InnerJoin(demonlist.Aredl().Packs.CompletedPacksTableName+" cp", dbx.NewExp(prefixTable[""]+".id = cp.pack"))
-				err = query.Where(dbx.HashExp{"cp.user": result.Id}).OrderBy(prefixTable[""] + ".placement_order").All(&result.CompletedPacks)
+				err = queryhelper.Build(txDao.DB(), &result.CompletedPacks, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					query.InnerJoin(demonlist.Aredl().Packs.CompletedPacksTableName+" cp", dbx.NewExp(prefixResolver("id")+" = cp.pack"))
+					query.Where(dbx.HashExp{"cp.user": result.Id})
+					query.OrderBy(prefixResolver("placement_order"))
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user packs")
 				}
@@ -56,12 +53,10 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 					"fps", "mobile", "video_url",
 					queryhelper.Extend{FieldName: "Level", Fields: []interface{}{"name", "position", "points", "legacy", "level_id"}},
 				}
-				query, prefixTable, err = queryhelper.Build(txDao.DB(), result.CompletedLevels, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				err = query.Where(dbx.HashExp{prefixTable[""] + ".submitted_by": result.Id, prefixTable[""] + ".status": demonlist.StatusAccepted}).
-					OrderBy(prefixTable["level."] + ".position").All(&result.CompletedLevels)
+				err = queryhelper.Build(txDao.DB(), &result.CompletedLevels, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					query.Where(dbx.HashExp{prefixResolver("submitted_by"): result.Id, prefixResolver("status"): demonlist.StatusAccepted})
+					query.OrderBy(prefixResolver("level.position"))
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user levels")
 				}

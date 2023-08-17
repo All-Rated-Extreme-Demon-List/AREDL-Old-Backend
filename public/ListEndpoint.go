@@ -34,11 +34,10 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 			if !hasLevelId && !hasId {
 				// return entire list
 				var list []queryhelper.AredlLevel
-				query, _, err := queryhelper.Build(app.Dao().DB(), list, []interface{}{"id", "position", "name", "level_id", "legacy"})
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				err = query.OrderBy("position").All(&list)
+				fields := []interface{}{"id", "position", "name", "level_id", "legacy"}
+				err := queryhelper.Build(app.Dao().DB(), &list, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					query.OrderBy(prefixResolver("position"))
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}
@@ -59,58 +58,48 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 					"id", "position", "name", "points", "legacy", "level_id", "level_password", "custom_song",
 					queryhelper.Extend{FieldName: "Publisher", Fields: []interface{}{"id", "global_name"}},
 				}
-				query, prefixTable, err := queryhelper.Build(txDao.DB(), result.AredlLevel, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				whereExpression := dbx.HashExp{}
-				if hasLevelId {
-					whereExpression[prefixTable[""]+".level_id"] = c.Get("level_id")
-				}
-				if hasId {
-					whereExpression[prefixTable[""]+".id"] = c.Get("id")
-				}
-				err = query.Where(whereExpression).One(&result)
+				err := queryhelper.Build(txDao.DB(), &result.AredlLevel, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					if hasLevelId {
+						query.Where(dbx.HashExp{prefixResolver("level_id"): c.Get("level_id")})
+					}
+					if hasId {
+						query.Where(dbx.HashExp{prefixResolver("id"): c.Get("id")})
+					}
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}
+
 				if c.Get("includeVerification").(bool) {
-					query, prefixTable, err = queryhelper.Build(txDao.DB(), result.Verification,
-						[]interface{}{"id", "video_url", "fps", "mobile", queryhelper.Extend{
-							FieldName: "SubmittedBy", Fields: []interface{}{"id", "global_name"},
-						}})
-					if err != nil {
-						return util.NewErrorResponse(err, "Failed to build query")
-					}
-					err = query.Where(dbx.HashExp{prefixTable[""] + ".level": result.Id, prefixTable[""] + ".placement_order": 1}).One(&result.Verification)
+					fields = []interface{}{"id", "video_url", "fps", "mobile", queryhelper.Extend{
+						FieldName: "SubmittedBy", Fields: []interface{}{"id", "global_name"},
+					}}
+					err = queryhelper.Build(txDao.DB(), &result.Verification, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+						query.Where(dbx.HashExp{prefixResolver("level"): result.Id, prefixResolver("placement_order"): 1})
+					})
 					if err != nil {
 						return util.NewErrorResponse(err, "Failed to load demonlist data")
 					}
 				}
 				if c.Get("includeCreators").(bool) {
-					query, prefixTable, err = queryhelper.Build(txDao.DB(), result.Creators, []interface{}{"id", "global_name"})
-					if err != nil {
-						return util.NewErrorResponse(err, "Failed to build query")
-					}
-					query.InnerJoin(demonlist.Aredl().CreatorTableName+" c", dbx.NewExp(fmt.Sprintf("%v.id=c.creator", prefixTable[""])))
-					err = query.Where(dbx.HashExp{"c.level": result.Id}).All(&result.Creators)
+					fields = []interface{}{"id", "global_name"}
+					err = queryhelper.Build(txDao.DB(), &result.Creators, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+						query.InnerJoin(demonlist.Aredl().CreatorTableName+" c", dbx.NewExp(fmt.Sprintf("%v=c.creator", prefixResolver("id"))))
+						query.Where(dbx.HashExp{"c.level": result.Id})
+					})
 					if err != nil {
 						return util.NewErrorResponse(err, "Failed to load demonlist data")
 					}
 				}
 				if c.Get("includeRecords").(bool) {
-					query, prefixTable, err = queryhelper.Build(txDao.DB(), result.Verification,
-						[]interface{}{"id", "video_url", "fps", "mobile", queryhelper.Extend{
-							FieldName: "SubmittedBy", Fields: []interface{}{"id", "global_name"},
-						}})
-					if err != nil {
-						return util.NewErrorResponse(err, "Failed to build query")
-					}
-					err = query.
-						Where(dbx.HashExp{prefixTable[""] + ".level": result.Id, prefixTable[""] + ".status": demonlist.StatusAccepted}).
-						AndWhere(dbx.NewExp(prefixTable[""] + ".placement_order <> 1")).
-						OrderBy(prefixTable[""] + ".placement_order").
-						All(&result.Records)
+					fields = []interface{}{"id", "video_url", "fps", "mobile", queryhelper.Extend{
+						FieldName: "SubmittedBy", Fields: []interface{}{"id", "global_name"},
+					}}
+					err = queryhelper.Build(txDao.DB(), &result.Verification, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+						query.Where(dbx.HashExp{prefixResolver("level"): result.Id, prefixResolver("status"): demonlist.StatusAccepted})
+						query.AndWhere(dbx.NewExp(prefixResolver("placement_order") + " <> 1"))
+						query.OrderBy(prefixResolver("placement_order"))
+					})
 					if err != nil {
 						return util.NewErrorResponse(err, "Failed to load demonlist data")
 					}
@@ -150,18 +139,15 @@ func registerLevelHistoryEndpoint(e *echo.Echo, app core.App) error {
 					queryhelper.Extend{FieldName: "Level", Fields: []interface{}{}},
 					queryhelper.Extend{FieldName: "Cause", Fields: []interface{}{"id", "name", "level_id"}},
 				}
-				query, prefixTable, err := queryhelper.Build(txDao.DB(), result, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				whereExpression := dbx.HashExp{}
-				if hasLevelId {
-					whereExpression[prefixTable["level."]+".level_id"] = c.Get("level_id")
-				}
-				if hasId {
-					whereExpression[prefixTable["level."]+".id"] = c.Get("id")
-				}
-				err = query.Where(whereExpression).OrderBy(prefixTable[""] + ".created").All(&result)
+				err := queryhelper.Build(txDao.DB(), &result, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					if hasLevelId {
+						query.Where(dbx.HashExp{prefixResolver("level.level_id"): c.Get("level_id")})
+					}
+					if hasId {
+						query.Where(dbx.HashExp{prefixResolver("level.id"): c.Get("id")})
+					}
+					query.OrderBy(prefixResolver("created"))
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}

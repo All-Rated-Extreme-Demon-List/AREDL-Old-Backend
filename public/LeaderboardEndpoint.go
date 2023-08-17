@@ -33,14 +33,12 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 					"points", "rank",
 					queryhelper.Extend{FieldName: "User", Fields: []interface{}{"id", "global_name", "country"}},
 				}
-				query, prefixTable, err := queryhelper.Build(txDao.DB(), result, fields)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to build query")
-				}
-				if c.Get("name_filter") != nil {
-					query.Where(dbx.Like(prefixTable["user."]+".global_name", c.Get("name_filter").(string)))
-				}
-				err = query.Offset((page - 1) * perPage).Limit(perPage).OrderBy(prefixTable[""] + ".rank").All(&result)
+				err := queryhelper.Build(txDao.DB(), &result, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					if c.Get("name_filter") != nil {
+						query.Where(dbx.Like(prefixResolver("user.global_name"), c.Get("name_filter").(string)))
+					}
+					query.Offset((page - 1) * perPage).Limit(perPage).OrderBy(prefixResolver("rank"))
+				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}
