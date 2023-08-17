@@ -37,4 +37,4 @@ jobs:
           command: sudo systemctl restart aredl-backend
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          preivateKey: ${{ secrets.DEPLOY_KEY }}
+          privateKey: ${{ secrets.DEPLOY_KEY }}
