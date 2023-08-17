@@ -11,5 +11,9 @@ const pathPrefix = "/api"
 func RegisterEndpoints(app core.App) {
 	util.RegisterEndpoints(app,
 		registerBasicListEndpoint,
+		registerLevelHistoryEndpoint,
+		registerLeaderboardEndpoint,
+		registerUserEndpoint,
+		registerPackEndpoint,
 	)
 }

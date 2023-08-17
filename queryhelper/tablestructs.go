@@ -3,10 +3,17 @@ package queryhelper
 import (
 	"AREDL/demonlist"
 	"AREDL/names"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
+type BaseRecord struct {
+	Id      string          `db:"id" json:"id,omitempty"`
+	Created *types.DateTime `db:"created" json:"created,omitempty"`
+	Updated *types.DateTime `db:"updated" json:"updated,omitempty"`
+}
+
 type User struct {
-	Id             string `db:"id" json:"id,omitempty"`
+	BaseRecord
 	Username       string `db:"username" json:"username,omitempty"`
 	Email          string `db:"email" json:"email,omitempty"`
 	GlobalName     string `db:"global_name" json:"global_name,omitempty"`
@@ -30,7 +37,7 @@ func (User) TableName() string {
 }
 
 type AredlLevel struct {
-	Id                string  `db:"id" json:"id,omitempty"`
+	BaseRecord
 	Position          int     `db:"position" json:"position,omitempty"`
 	Name              string  `db:"name" json:"name,omitempty"`
 	Publisher         *User   `db:"publisher" json:"publisher,omitempty"`
@@ -47,7 +54,7 @@ func (AredlLevel) TableName() string {
 }
 
 type AredlSubmission struct {
-	Id              string      `db:"id" json:"id,omitempty"`
+	BaseRecord
 	Status          string      `db:"status" json:"status,omitempty"`
 	Level           *AredlLevel `db:"level" json:"level,omitempty"`
 	SubmittedBy     *User       `db:"submitted_by" json:"submitted_by,omitempty"`
@@ -63,4 +70,40 @@ type AredlSubmission struct {
 
 func (AredlSubmission) TableName() string {
 	return demonlist.Aredl().SubmissionTableName
+}
+
+type HistoryEntry struct {
+	BaseRecord
+	Level       *AredlLevel `db:"level" json:"level,omitempty"`
+	Action      string      `db:"action" json:"action,omitempty"`
+	NewPosition int         `db:"new_position" json:"new_position,omitempty"`
+	Cause       *AredlLevel `db:"cause" json:"cause,omitempty"`
+	ActionBy    *User       `db:"action_by" json:"action_by,omitempty"`
+}
+
+func (HistoryEntry) TableName() string {
+	return demonlist.Aredl().HistoryTableName
+}
+
+type LeaderboardEntry struct {
+	BaseRecord
+	User   *User   `db:"user" json:"user,omitempty"`
+	Points float64 `db:"points" json:"points,omitempty"`
+	Rank   int     `db:"rank" json:"rank,omitempty"`
+}
+
+func (LeaderboardEntry) TableName() string {
+	return demonlist.Aredl().LeaderboardTableName
+}
+
+type Pack struct {
+	BaseRecord
+	Name           string  `db:"name" json:"name,omitempty"`
+	Color          string  `db:"color" json:"color,omitempty"`
+	PlacementOrder int     `db:"placement_order" json:"placement_order,omitempty"`
+	Points         float64 `db:"points" json:"points,omitempty"`
+}
+
+func (Pack) TableName() string {
+	return demonlist.Aredl().Packs.PackTableName
 }

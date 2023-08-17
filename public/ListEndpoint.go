@@ -122,3 +122,53 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 	})
 	return err
 }
+
+func registerLevelHistoryEndpoint(e *echo.Echo, app core.App) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodGet,
+		Path:   pathPrefix + "/level-history",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.LoadParam(util.LoadData{
+				"level_id": util.LoadInt(false, validation.Min(1)),
+				"id":       util.LoadString(false),
+			}),
+		},
+		Handler: func(c echo.Context) error {
+			hasLevelId := c.Get("level_id") != nil
+			hasId := c.Get("id") != nil
+			if !hasLevelId && !hasId {
+				return util.NewErrorResponse(nil, "level_id or id has to be set")
+			}
+			if hasLevelId && hasId {
+				return util.NewErrorResponse(nil, "Can't query for level_id and id at the same time")
+			}
+			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				var result []queryhelper.HistoryEntry
+				fields := []interface{}{
+					"action", "new_position",
+					queryhelper.Extend{FieldName: "Level", Fields: []interface{}{}},
+					queryhelper.Extend{FieldName: "Cause", Fields: []interface{}{"id", "name", "level_id"}},
+				}
+				query, prefixTable, err := queryhelper.Build(txDao.DB(), result, fields)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to build query")
+				}
+				whereExpression := dbx.HashExp{}
+				if hasLevelId {
+					whereExpression[prefixTable["level."]+".level_id"] = c.Get("level_id")
+				}
+				if hasId {
+					whereExpression[prefixTable["level."]+".id"] = c.Get("id")
+				}
+				err = query.Where(whereExpression).OrderBy(prefixTable[""] + ".created").All(&result)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to load demonlist data")
+				}
+				return c.JSON(http.StatusOK, result)
+			})
+			return err
+		},
+	})
+	return err
+}
