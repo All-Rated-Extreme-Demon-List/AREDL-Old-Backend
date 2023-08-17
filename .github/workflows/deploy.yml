@@ -30,3 +30,11 @@ jobs:
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Restart service
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: sudo systemctl restart aredl-backend
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          preivateKey: ${{ secrets.DEPLOY_KEY }}
