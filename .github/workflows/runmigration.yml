@@ -34,13 +34,13 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.DEPLOY_KEY }}
-          known_hosts: ''
+          known_hosts: 't'
 
       - name: Adding Known Hosts
         run: ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
       - name: Download db from server
-        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}${{ secrets.DEPLOY_PATH }}/pb_data/data.db ./data.db
+        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db ./data.db
 
   start_service:
     runs-on: ubuntu-latest
