@@ -1,0 +1,38 @@
+name: Run migration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy_db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Stop service
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            sudo systemctl stop aredl-backend
+            while [[ $(systemctl is-active aredl-backend) == "active" ]]; do
+              echo "Service is still active. Waiting..."
+              sleep 2
+            done
+
+      - name: Fetch database file
+        run: |
+            rsync -avz -e "ssh -i ${{ secrets.DEPLOY_KEY }}" \
+              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
+
+      - name: Start service
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: sudo systemctl stop aredl-backend
