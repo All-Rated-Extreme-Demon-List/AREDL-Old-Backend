@@ -29,6 +29,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Download db
+        uses: nicklasfrahm/scp-action@main
+        with:
+          direction: download
+          host: ${{ sectets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: ${{ secrets.DEPLOY_PATH }}/pb_data/data.db
+          target: ./data.db
+
       - name: Fetch database file
         run: |
             echo ${{ secrets.DEPLOY_KEY }} | rsync -avz -e "ssh -i /dev/stdin" \
