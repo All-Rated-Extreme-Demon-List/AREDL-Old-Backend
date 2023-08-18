@@ -35,7 +35,7 @@ jobs:
           direction: download
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          fingerprint: ${ secrets.DEPLOY_FINGERPRINT }}
+          fingerprint: ${{ secrets.DEPLOY_FINGERPRINT }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: ${{ secrets.DEPLOY_PATH }}/pb_data/data.db
           target: ./data.db
