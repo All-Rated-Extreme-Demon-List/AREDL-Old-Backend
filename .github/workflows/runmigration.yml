@@ -6,7 +6,6 @@ on:
 
 jobs:
   migrate:
-    needs: stop_service
     runs-on: ubuntu-latest
 
     steps:
