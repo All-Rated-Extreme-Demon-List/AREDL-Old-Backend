@@ -31,12 +31,13 @@ jobs:
 
       - name: Fetch database file
         run: |
-            rsync -avz -e "ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_KEY }}" \
+            rsync -avz -e "ssh -i ${{ secrets.DEPLOY_KEY }}" \
               ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
 
   start_service:
-    needs: stop_service
     runs-on: ubuntu-latest
+    needs: deploy_db
+    if: always()
 
     steps:
       - name: Start service
@@ -45,4 +46,4 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          script: sudo systemctl stop aredl-backend
+          script: sudo systemctl start aredl-backend
