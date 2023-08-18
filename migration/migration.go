@@ -248,7 +248,7 @@ func Register(app *pocketbase.PocketBase) {
 					packRecord, err := util.AddRecord(txDao, app, packCollection, map[string]any{
 						"placement_order": packOrder + 1,
 						"name":            pack.Name,
-						"colour":          pack.Colour,
+						"color":           pack.Colour,
 					})
 					if err != nil {
 						return err

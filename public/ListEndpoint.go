@@ -26,6 +26,7 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 				"includeRecords":      util.AddDefault(false, util.LoadBool(false)),
 				"includeCreators":     util.AddDefault(false, util.LoadBool(false)),
 				"includeVerification": util.AddDefault(false, util.LoadBool(false)),
+				"includePacks":        util.AddDefault(false, util.LoadBool(false)),
 			}),
 		},
 		Handler: func(c echo.Context) error {
@@ -52,6 +53,7 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 					Verification *queryhelper.AredlSubmission   `json:"verification,omitempty"`
 					Creators     *[]queryhelper.User            `json:"creators,omitempty"`
 					Records      *[]queryhelper.AredlSubmission `json:"records,omitempty"`
+					Pack         *[]queryhelper.Pack            `json:"packs,omitempty"`
 				}
 				var result ResultData
 				fields := []interface{}{
@@ -103,6 +105,16 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 					if err != nil {
 						return util.NewErrorResponse(err, "Failed to load demonlist data")
 					}
+				}
+				if c.Get("includePacks").(bool) {
+					fields = []interface{}{"id", "name", "color", "points"}
+					err = queryhelper.Build(txDao.DB(), &result.Pack, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+						query.Where(dbx.Exists(dbx.NewExp(fmt.Sprintf(
+							`SELECT NULL FROM %v pl WHERE pl.level = {:levelId} AND pl.pack = %v`,
+							demonlist.Aredl().Packs.PackLevelTableName,
+							prefixResolver("id")), dbx.Params{"levelId": result.Id})))
+						query.OrderBy(prefixResolver("placement_order"))
+					})
 				}
 				return c.JSON(http.StatusOK, result)
 			})
