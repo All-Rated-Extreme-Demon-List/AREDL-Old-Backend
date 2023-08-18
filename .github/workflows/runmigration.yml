@@ -31,7 +31,7 @@ jobs:
 
       - name: Fetch database file
         run: |
-            rsync -avz -e "ssh -i ${{ secrets.DEPLOY_KEY }}" \
+            echo ${{ secrets.DEPLOY_KEY }} | rsync -avz -e "ssh -i /dev/stdin" \
               ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
 
   start_service:
