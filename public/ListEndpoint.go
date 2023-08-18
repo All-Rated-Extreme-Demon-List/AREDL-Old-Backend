@@ -97,7 +97,7 @@ func registerBasicListEndpoint(e *echo.Echo, app core.App) error {
 					fields = []interface{}{"id", "video_url", "fps", "mobile", queryhelper.Extend{
 						FieldName: "SubmittedBy", Fields: []interface{}{"id", "global_name"},
 					}}
-					err = queryhelper.Build(txDao.DB(), &result.Verification, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+					err = queryhelper.Build(txDao.DB(), &result.Records, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
 						query.Where(dbx.HashExp{prefixResolver("level"): result.Id, prefixResolver("status"): demonlist.StatusAccepted})
 						query.AndWhere(dbx.NewExp(prefixResolver("placement_order") + " <> 1"))
 						query.OrderBy(prefixResolver("placement_order"))
