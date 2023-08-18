@@ -26,7 +26,7 @@ jobs:
 
       - name: Fetch database file
         run: |
-            rsync -avz -e "ssh -i ${{ secrets.DEPLOY_KEY }}" \
+            rsync -avz -e "ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_KEY }}" \
               ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
 
       - name: Start service
