@@ -1,4 +1,5 @@
 name: Run migration
+concurrency: deployment
 
 on:
   workflow_dispatch:
