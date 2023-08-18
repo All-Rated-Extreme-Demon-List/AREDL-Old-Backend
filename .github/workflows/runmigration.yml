@@ -4,13 +4,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy_db:
+  stop_service:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
       - name: Stop service
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -24,11 +21,24 @@ jobs:
               sleep 2
             done
 
+  deploy_db:
+    needs: stop_service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Fetch database file
         run: |
             rsync -avz -e "ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_KEY }}" \
               ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
 
+  start_service:
+    needs: stop_service
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Start service
         uses: appleboy/ssh-action@v1.0.0
         with:
