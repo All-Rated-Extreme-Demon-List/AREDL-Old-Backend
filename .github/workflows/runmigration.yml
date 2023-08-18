@@ -33,16 +33,11 @@ jobs:
         uses: nicklasfrahm/scp-action@main
         with:
           direction: download
-          host: ${{ sectets.DEPLOY_HOST }}
+          host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           source: ${{ secrets.DEPLOY_PATH }}/pb_data/data.db
           target: ./data.db
-
-      - name: Fetch database file
-        run: |
-            echo ${{ secrets.DEPLOY_KEY }} | rsync -avz -e "ssh -i /dev/stdin" \
-              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:"${{ secrets.DEPLOY_PATH }}/pb_data/data.db" ./data.db
 
   start_service:
     runs-on: ubuntu-latest
