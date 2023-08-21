@@ -1,6 +1,7 @@
 package main
 
 import (
+	"AREDL/demonlist"
 	"AREDL/migration"
 	"AREDL/moderation"
 	"AREDL/public"
@@ -18,6 +19,8 @@ func main() {
 	user.RegisterEndpoints(app)
 	user.RegisterUserAuth(app)
 	public.RegisterEndpoints(app)
+
+	demonlist.RegisterUpdatePoints(app)
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
