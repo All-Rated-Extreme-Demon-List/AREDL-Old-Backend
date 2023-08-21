@@ -196,7 +196,7 @@ func registerListDisplayNamesEndpoint(e *echo.Echo, app core.App) error {
 				if user.AredlPlus {
 					result["aredl_plus"] = append(result["aredl_plus"], user)
 				}
-				if user.Role == "member" && !user.AredlPlus {
+				if user.Role == "member" {
 					continue
 				}
 				list, exists := result[user.Role]
