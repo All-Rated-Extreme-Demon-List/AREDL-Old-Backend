@@ -170,3 +170,43 @@ func registerLevelHistoryEndpoint(e *echo.Echo, app core.App) error {
 	})
 	return err
 }
+
+func registerListDisplayNamesEndpoint(e *echo.Echo, app core.App) error {
+	_, err := e.AddRoute(echo.Route{
+		Method: http.MethodGet,
+		Path:   pathPrefix + "/display-names",
+		Middlewares: []echo.MiddlewareFunc{
+			apis.ActivityLogger(app),
+			util.LoadParam(util.LoadData{}),
+		},
+		Handler: func(c echo.Context) error {
+			var users []queryhelper.User
+			fields := []interface{}{
+				"id", "global_name", "role", "aredl_plus",
+			}
+			err := queryhelper.Build(app.Dao().DB(), &users, fields, func(query *dbx.SelectQuery, prefixResolver queryhelper.PrefixResolver) {
+				query.Where(dbx.Or(dbx.NotIn(prefixResolver("role"), "member"), dbx.HashExp{"aredl_plus": true}))
+			})
+			if err != nil {
+				return util.NewErrorResponse(err, "failed to query data")
+			}
+			result := make(map[string][]queryhelper.User)
+			result["aredl_plus"] = make([]queryhelper.User, 0)
+			for _, user := range users {
+				if user.AredlPlus {
+					result["aredl_plus"] = append(result["aredl_plus"], user)
+				}
+				if user.Role == "member" && !user.AredlPlus {
+					continue
+				}
+				list, exists := result[user.Role]
+				if !exists {
+					list = make([]queryhelper.User, 0)
+				}
+				result[user.Role] = append(list, user)
+			}
+			return c.JSON(200, result)
+		},
+	})
+	return err
+}

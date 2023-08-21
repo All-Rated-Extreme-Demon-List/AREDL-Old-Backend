@@ -15,5 +15,6 @@ func RegisterEndpoints(app core.App) {
 		registerLeaderboardEndpoint,
 		registerUserEndpoint,
 		registerPackEndpoint,
+		registerListDisplayNamesEndpoint,
 	)
 }
