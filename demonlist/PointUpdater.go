@@ -24,7 +24,7 @@ func RegisterUpdatePoints(app core.App) {
 				return math.Sqrt(value), nil
 			},
 		}
-		formular, err := govaluate.NewEvaluableExpressionWithFunctions(e.Record.GetString("formular"), functions)
+		formular, err := govaluate.NewEvaluableExpressionWithFunctions(e.Record.GetString("formula"), functions)
 		if err != nil {
 			return err
 		}
