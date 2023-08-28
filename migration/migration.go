@@ -50,6 +50,7 @@ type Level struct {
 	PercentToQualify int      `json:"percentToQualify"`
 	Password         string   `json:"password"`
 	Records          []Record `json:"records"`
+	Legacy           bool     `json:"-"`
 }
 
 type Pack struct {
@@ -120,6 +121,11 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
+				var legacyLevelNames []string
+				err = readFileIntoJson(path+"/_legacy.json", &legacyLevelNames)
+				if err != nil {
+					return err
+				}
 				levelCollection, err := txDao.FindCollectionByNameOrId(aredl.LevelTableName)
 				if err != nil {
 					return err
@@ -146,10 +152,18 @@ func Register(app *pocketbase.PocketBase) {
 				}
 				knownUsers := make(map[string]string)
 				knownLevels := make(map[string]string)
-				for position, levelName := range levelNames {
-					fmt.Printf("[%d/%d] %s\n", position+1, len(levelNames), levelName)
+				type LevelData struct {
+					Name   string
+					Legacy bool
+				}
+				levels := util.MapSlice(levelNames, func(name string) LevelData { return LevelData{name, false} })
+				for _, name := range legacyLevelNames {
+					levels = append(levels, LevelData{name, true})
+				}
+				for position, levelData := range levels {
+					fmt.Printf("[%d/%d] %s%v\n", position+1, len(levels), levelData.Name, util.If(levelData.Legacy, "(legacy)", ""))
 					var level Level
-					err = readFileIntoJson(path+"/"+levelName+".json", &level)
+					err = readFileIntoJson(path+"/"+levelData.Name+".json", &level)
 					if err != nil {
 						return err
 					}
@@ -179,11 +193,12 @@ func Register(app *pocketbase.PocketBase) {
 						"level_id":           level.Id,
 						"level_password":     level.Password,
 						"qualifying_percent": level.PercentToQualify,
+						"legacy":             levelData.Legacy,
 					})
 					if err != nil {
 						return err
 					}
-					knownLevels[levelName] = levelRecord.Id
+					knownLevels[levelData.Name] = levelRecord.Id
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
