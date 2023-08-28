@@ -58,6 +58,25 @@ type Pack struct {
 	Levels []string `json:"levels"`
 }
 
+func addPlaceholder(txDao *daos.Dao, username string) (string, error) {
+	userId := util.RandString(14)
+	usedName := util.RandString(10)
+	userToken := util.RandString(10)
+	_, err := txDao.DB().Insert(names.TableUsers, dbx.Params{
+		"id":           userId,
+		"username":     usedName,
+		"role":         "member",
+		"global_name":  username,
+		"placeholder":  true,
+		"passwordHash": "",
+		"tokenKey":     userToken,
+	}).Execute()
+	if err != nil {
+		return "", err
+	}
+	return userId, nil
+}
+
 func Register(app *pocketbase.PocketBase) {
 	app.RootCmd.AddCommand(&cobra.Command{
 		Use: "migrate",
@@ -105,10 +124,6 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				userCollection, err := txDao.FindCollectionByNameOrId(names.TableUsers)
-				if err != nil {
-					return err
-				}
 				submissionCollection, err := txDao.FindCollectionByNameOrId(aredl.SubmissionTableName)
 				if err != nil {
 					return err
@@ -140,20 +155,20 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
 					if !exists {
-						userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, level.Verifier)
+						userId, err := addPlaceholder(txDao, level.Verifier)
 						if err != nil {
 							return err
 						}
-						verifierId = userRecord.Id
+						verifierId = userId
 						knownUsers[strings.ToLower(level.Verifier)] = verifierId
 					}
 					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
 					if !exists {
-						userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, level.Author)
+						userId, err := addPlaceholder(txDao, level.Author)
 						if err != nil {
 							return err
 						}
-						publisherId = userRecord.Id
+						publisherId = userId
 						knownUsers[strings.ToLower(level.Author)] = publisherId
 					}
 
@@ -172,11 +187,10 @@ func Register(app *pocketbase.PocketBase) {
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
-							userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, creator)
+							creatorId, err = addPlaceholder(txDao, creator)
 							if err != nil {
 								return err
 							}
-							creatorId = userRecord.Id
 							knownUsers[strings.ToLower(creator)] = creatorId
 						}
 						_, err = util.AddRecord(txDao, app, creatorCollection, map[string]any{
@@ -202,11 +216,11 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							userRecord, err := util.CreatePlaceholderUser(app, txDao, userCollection, username)
+							userId, err := addPlaceholder(txDao, username)
 							if err != nil {
 								return nil, err
 							}
-							playerId = userRecord.Id
+							playerId = userId
 							knownUsers[strings.ToLower(username)] = playerId
 						}
 						submissionRecord, err := util.AddRecord(txDao, app, submissionCollection, map[string]any{
