@@ -1196,7 +1196,7 @@ paths:
   /mod/user/role:
     post:
       description: |-
-        Unbans a user
+        Promote or demote a user
         Requires user permission: user_change_role
         Additionally the user needs to be able to affect the user with their permission and give the user the new role
       parameters:
@@ -1223,7 +1223,7 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: Unban user
+      summary: Change user role
       tags:
       - moderation
   /mod/user/unban:

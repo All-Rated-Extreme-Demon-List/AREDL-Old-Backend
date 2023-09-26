@@ -1275,14 +1275,14 @@ const docTemplate = `{
         },
         "/mod/user/role": {
             "post": {
-                "description": "Unbans a user\nRequires user permission: user_change_role\nAdditionally the user needs to be able to affect the user with their permission and give the user the new role",
+                "description": "Promote or demote a user\nRequires user permission: user_change_role\nAdditionally the user needs to be able to affect the user with their permission and give the user the new role",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "moderation"
                 ],
-                "summary": "Unban user",
+                "summary": "Change user role",
                 "parameters": [
                     {
                         "type": "string",

@@ -12,10 +12,10 @@ import (
 	"net/http"
 )
 
-// registerUnbanAccountEndpoint godoc
+// registerChangeRoleEndpoint godoc
 //
-//	@Summary		Unban user
-//	@Description	Unbans a user
+//	@Summary		Change user role
+//	@Description	Promote or demote a user
 //	@Description	Requires user permission: user_change_role
 //	@Description	Additionally the user needs to be able to affect the user with their permission and give the user the new role
 //	@Tags			moderation
