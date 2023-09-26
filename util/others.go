@@ -44,20 +44,18 @@ func MapSlice[T, U any](slice []T, mapper func(T) U) []U {
 	return result
 }
 
+type ErrorResponse struct {
+	apis.ApiError
+}
+
 func NewErrorResponse(err error, message string) error {
 	if err == nil {
-		return apis.NewApiError(http.StatusInternalServerError, message, nil)
+		return apis.NewApiError(http.StatusBadRequest, message, nil)
 	}
 	switch err.(type) {
 	case validation.Errors:
-		return apis.NewApiError(http.StatusInternalServerError, "Invalid data: "+err.Error(), nil)
+		return apis.NewApiError(http.StatusBadRequest, "Invalid data: "+err.Error(), nil)
 	default:
-		return apis.NewApiError(http.StatusInternalServerError, message, nil)
-	}
-}
-
-func AddToMapIfNotNil[U comparable](container map[U]interface{}, key U, value interface{}) {
-	if value != nil {
-		container[key] = value
+		return apis.NewApiError(http.StatusBadRequest, message, nil)
 	}
 }
