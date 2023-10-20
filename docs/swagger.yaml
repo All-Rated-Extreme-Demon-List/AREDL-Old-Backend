@@ -27,21 +27,28 @@ definitions:
       timestamp:
         $ref: '#/definitions/types.DateTime'
     type: object
-  aredl_public.LeaderboardEntry:
+  aredl_public.Leaderboard:
     properties:
-      points:
-        type: number
-      rank:
+      list:
+        items:
+          properties:
+            points:
+              type: number
+            rank:
+              type: integer
+            user:
+              properties:
+                country:
+                  type: string
+                global_name:
+                  type: string
+                id:
+                  type: string
+              type: object
+          type: object
+        type: array
+      pages:
         type: integer
-      user:
-        properties:
-          country:
-            type: string
-          global_name:
-            type: string
-          id:
-            type: string
-        type: object
     type: object
   aredl_public.Level:
     properties:
@@ -204,6 +211,13 @@ definitions:
         type: array
       placeholder:
         type: boolean
+      rank:
+        properties:
+          points:
+            type: number
+          position:
+            type: integer
+        type: object
       records:
         items:
           properties:
@@ -366,9 +380,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/aredl_public.LeaderboardEntry'
-            type: array
+            $ref: '#/definitions/aredl_public.Leaderboard'
         "400":
           description: Bad Request
           schema:

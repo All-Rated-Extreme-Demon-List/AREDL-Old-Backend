@@ -104,3 +104,10 @@ func loadFields(query *dbx.SelectQuery, toLoad reflect.Type, currentPrefix strin
 	}
 	return nil
 }
+
+func IsNotNoResultError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return err.Error() != "sql: no rows in result set"
+}

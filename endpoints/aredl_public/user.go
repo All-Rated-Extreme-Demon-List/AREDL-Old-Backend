@@ -29,6 +29,10 @@ type User struct {
 	DiscordId      string         `db:"discord_id" json:"discord_id,omitempty"`
 	AvatarUrl      string         `db:"avatar_url" json:"avatar_url,omitempty"`
 	BannerColor    string         `db:"banner_color" json:"banner_color,omitempty"`
+	Rank           *struct {
+		Position int     `db:"rank" json:"position"`
+		Points   float64 `db:"points" json:"points"`
+	} `json:"rank,omitempty"`
 	CompletedPacks []struct {
 		Id     string  `db:"id" json:"id,omitempty"`
 		Name   string  `db:"name" json:"name,omitempty"`
@@ -102,6 +106,14 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user levels")
+				}
+				tableNames["base"] = aredl.LeaderboardTableName
+				err = util.LoadFromDb(txDao.DB(), &user.Rank, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
+					query.Where(dbx.HashExp{prefixResolver("user"): user.Id})
+				})
+				// ignore error if it's because the user is not on the leaderboard
+				if util.IsNotNoResultError(err) {
+					return util.NewErrorResponse(err, "Failed to load user rank")
 				}
 				return c.JSON(http.StatusOK, user)
 			})

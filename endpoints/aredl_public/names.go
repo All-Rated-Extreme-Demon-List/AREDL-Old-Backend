@@ -48,10 +48,10 @@ func registerNamesEndpoint(e *echo.Echo, app core.App) error {
 				return util.NewErrorResponse(err, "failed to query data")
 			}
 			result := make(map[string][]NameUser)
-			result["aredl_plus"] = make([]NameUser, 0)
+			result["aredlPlus"] = make([]NameUser, 0)
 			for _, user := range users {
 				if user.AredlPlus {
-					result["aredl_plus"] = append(result["aredl_plus"], user)
+					result["aredlPlus"] = append(result["aredlPlus"], user)
 				}
 				if user.Role == "member" {
 					continue

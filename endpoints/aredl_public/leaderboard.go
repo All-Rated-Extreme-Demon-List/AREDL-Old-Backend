@@ -5,6 +5,7 @@ import (
 	"AREDL/middlewares"
 	"AREDL/names"
 	"AREDL/util"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
@@ -14,14 +15,17 @@ import (
 	"net/http"
 )
 
-type LeaderboardEntry struct {
-	Rank   int     `db:"rank" json:"rank,omitempty"`
-	Points float64 `db:"points" json:"points,omitempty"`
-	User   struct {
-		Id         string `db:"id" json:"id,omitempty"`
-		GlobalName string `db:"global_name" json:"global_name,omitempty"`
-		Country    string `db:"country" json:"country,omitempty"`
-	} `db:"user" json:"user,omitempty" extend:"user,users,id"`
+type Leaderboard struct {
+	List []struct {
+		Rank   int     `db:"rank" json:"rank,omitempty"`
+		Points float64 `db:"points" json:"points,omitempty"`
+		User   struct {
+			Id         string `db:"id" json:"id,omitempty"`
+			GlobalName string `db:"global_name" json:"global_name,omitempty"`
+			Country    string `db:"country" json:"country,omitempty"`
+		} `db:"user" json:"user,omitempty" extend:"user,users,id"`
+	} `json:"list"`
+	Pages int `json:"pages"`
 }
 
 // registerLeaderboardEndpoint godoc
@@ -34,7 +38,7 @@ type LeaderboardEntry struct {
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
 //	@Produce		json
-//	@Success		200	{object}	[]LeaderboardEntry
+//	@Success		200	{object}	Leaderboard
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Router			/aredl/leaderboard [get]
 func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
@@ -52,13 +56,14 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 		Handler: func(c echo.Context) error {
 			page := int64(c.Get("page").(int))
 			perPage := int64(c.Get("per_page").(int))
+			aredl := demonlist.Aredl()
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				var result []LeaderboardEntry
+				var result Leaderboard
 				tableNames := map[string]string{
-					"base":  demonlist.Aredl().LeaderboardTableName,
+					"base":  aredl.LeaderboardTableName,
 					"users": names.TableUsers,
 				}
-				err := util.LoadFromDb(txDao.DB(), &result, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
+				err := util.LoadFromDb(txDao.DB(), &result.List, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 					if c.Get("name_filter") != nil {
 						query.Where(dbx.Like(prefixResolver("user.global_name"), c.Get("name_filter").(string)))
 					}
@@ -66,6 +71,17 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
+				}
+				query := txDao.DB().
+					Select(fmt.Sprintf("(count(*) / %v + 1)", perPage)).
+					From(fmt.Sprintf("%v %v", aredl.LeaderboardTableName, "lb"))
+				if c.Get("name_filter") != nil {
+					query.InnerJoin(fmt.Sprintf("%v %v", names.TableUsers, "user"), dbx.NewExp("lb.user = user.id")).
+						Where(dbx.Like("user.global_name", c.Get("name_filter").(string)))
+				}
+				err = query.Row(&result.Pages)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to calculate page count")
 				}
 				return c.JSON(http.StatusOK, result)
 			})

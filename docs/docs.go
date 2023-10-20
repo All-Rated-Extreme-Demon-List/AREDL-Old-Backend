@@ -101,10 +101,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/aredl_public.LeaderboardEntry"
-                            }
+                            "$ref": "#/definitions/aredl_public.Leaderboard"
                         }
                     },
                     "400": {
@@ -1486,28 +1483,39 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.LeaderboardEntry": {
+        "aredl_public.Leaderboard": {
             "type": "object",
             "properties": {
-                "points": {
-                    "type": "number"
-                },
-                "rank": {
-                    "type": "integer"
-                },
-                "user": {
-                    "type": "object",
-                    "properties": {
-                        "country": {
-                            "type": "string"
-                        },
-                        "global_name": {
-                            "type": "string"
-                        },
-                        "id": {
-                            "type": "string"
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "points": {
+                                "type": "number"
+                            },
+                            "rank": {
+                                "type": "integer"
+                            },
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "country": {
+                                        "type": "string"
+                                    },
+                                    "global_name": {
+                                        "type": "string"
+                                    },
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
                         }
                     }
+                },
+                "pages": {
+                    "type": "integer"
                 }
             }
         },
@@ -1756,6 +1764,17 @@ const docTemplate = `{
                 },
                 "placeholder": {
                     "type": "boolean"
+                },
+                "rank": {
+                    "type": "object",
+                    "properties": {
+                        "points": {
+                            "type": "number"
+                        },
+                        "position": {
+                            "type": "integer"
+                        }
+                    }
                 },
                 "records": {
                     "type": "array",

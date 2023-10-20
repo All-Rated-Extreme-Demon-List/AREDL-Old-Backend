@@ -59,15 +59,29 @@ type Pack struct {
 	Levels []string `json:"levels"`
 }
 
-func addPlaceholder(txDao *daos.Dao, username string) (string, error) {
+type RoleList struct {
+	Role    string `json:"role"`
+	Members []struct {
+		Name string `json:"name"`
+		Link string `json:"link"`
+	} `json:"members"`
+}
+
+func addPlaceholder(txDao *daos.Dao, username string, role string) (string, error) {
 	userId := util.RandString(14)
 	usedName := util.RandString(10)
 	userToken := util.RandString(10)
+	aredlPlus := false
+	if role == "aredl_plus" {
+		aredlPlus = true
+		role = "member"
+	}
 	_, err := txDao.DB().Insert(names.TableUsers, dbx.Params{
 		"id":           userId,
 		"username":     usedName,
-		"role":         "member",
+		"role":         role,
 		"global_name":  username,
+		"aredl_plus":   aredlPlus,
 		"placeholder":  true,
 		"passwordHash": "",
 		"tokenKey":     userToken,
@@ -76,6 +90,24 @@ func addPlaceholder(txDao *daos.Dao, username string) (string, error) {
 		return "", err
 	}
 	return userId, nil
+}
+
+func resolveRole(role string) string {
+	switch role {
+	case "owner":
+		return "listOwner"
+	case "admin":
+		return "listAdmin"
+	case "trial":
+		return "listMod"
+	case "helper":
+		return "listHelper"
+	case "dev":
+		return "developer"
+	case "patreon":
+		return "aredl_plus"
+	}
+	return "member"
 }
 
 func Register(app *pocketbase.PocketBase) {
@@ -115,6 +147,23 @@ func Register(app *pocketbase.PocketBase) {
 						return err
 					}
 				}
+				knownUsers := make(map[string]string)
+				knownLevels := make(map[string]string)
+				println("Loading editors")
+				var editors []RoleList
+				err = readFileIntoJson(path+"/_editors.json", &editors)
+				if err != nil {
+					return err
+				}
+				for _, editorList := range editors {
+					for _, member := range editorList.Members {
+						memberId, err := addPlaceholder(txDao, member.Name, resolveRole(editorList.Role))
+						if err != nil {
+							return err
+						}
+						knownUsers[strings.ToLower(member.Name)] = memberId
+					}
+				}
 				println("Migrating levels & records")
 				var levelNames []string
 				err = readFileIntoJson(path+"/_list.json", &levelNames)
@@ -150,8 +199,6 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				knownUsers := make(map[string]string)
-				knownLevels := make(map[string]string)
 				type LevelData struct {
 					Name   string
 					Legacy bool
@@ -167,9 +214,13 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
+					if len(level.Creators) == 0 {
+						level.Creators = []string{level.Author}
+					}
+
 					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Verifier)
+						userId, err := addPlaceholder(txDao, level.Verifier, "member")
 						if err != nil {
 							return err
 						}
@@ -178,7 +229,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Author)
+						userId, err := addPlaceholder(txDao, level.Author, "member")
 						if err != nil {
 							return err
 						}
@@ -202,7 +253,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
-							creatorId, err = addPlaceholder(txDao, creator)
+							creatorId, err = addPlaceholder(txDao, creator, "member")
 							if err != nil {
 								return err
 							}
@@ -231,7 +282,7 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							userId, err := addPlaceholder(txDao, username)
+							userId, err := addPlaceholder(txDao, username, "member")
 							if err != nil {
 								return nil, err
 							}
