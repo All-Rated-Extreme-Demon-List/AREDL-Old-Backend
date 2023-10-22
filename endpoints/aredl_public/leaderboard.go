@@ -25,6 +25,7 @@ type Leaderboard struct {
 			Country    string `db:"country" json:"country,omitempty"`
 		} `db:"user" json:"user,omitempty" extend:"user,users,id"`
 	} `json:"list"`
+	Page  int `json:"page"`
 	Pages int `json:"pages"`
 }
 
@@ -33,7 +34,8 @@ type Leaderboard struct {
 //	@Summary		Aredl leaderboard
 //	@Description	Gives leaderboard as a paged list ordered by rank. Players with zero list points are omitted
 //	@Tags			aredl_public
-//	@Param			page		query	int		false	"select page"					default(1)	minimum(1)
+//	@Param			page		query	int		false	"select page"	default(1)	minimum(1)
+//	@Param			user_id		query	string	false	"get the page the given user is on instead of the given page, does not work with name filter active"
 //	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)	maximum(200)
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
@@ -49,16 +51,28 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 			apis.ActivityLogger(app),
 			middlewares.LoadParam(middlewares.LoadData{
 				"page":        middlewares.AddDefault(1, middlewares.LoadInt(false, validation.Min(1))),
+				"user_id":     middlewares.LoadString(false),
 				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1), validation.Max(200))),
 				"name_filter": middlewares.LoadString(false),
 			}),
 		},
 		Handler: func(c echo.Context) error {
-			page := int64(c.Get("page").(int))
-			perPage := int64(c.Get("per_page").(int))
+			page := c.Get("page").(int)
+			perPage := c.Get("per_page").(int)
 			aredl := demonlist.Aredl()
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				if c.Get("user_id") != nil {
+					if c.Get("name_filter") != nil {
+						return util.NewErrorResponse(nil, "Cannot use name_filter with user_id")
+					}
+					userId := c.Get("user_id").(string)
+					err := txDao.DB().Select(fmt.Sprintf("(rank / %v) + 1 AS rank", perPage)).From(aredl.LeaderboardTableName).Where(dbx.HashExp{"user": userId}).Row(&page)
+					if util.IsNotNoResultError(err) {
+						return util.NewErrorResponse(err, "Failed to request user page")
+					}
+				}
 				var result Leaderboard
+				result.Page = page
 				tableNames := map[string]string{
 					"base":  aredl.LeaderboardTableName,
 					"users": names.TableUsers,
@@ -67,7 +81,7 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 					if c.Get("name_filter") != nil {
 						query.Where(dbx.Like(prefixResolver("user.global_name"), c.Get("name_filter").(string)))
 					}
-					query.Offset((page - 1) * perPage).Limit(perPage).OrderBy(prefixResolver("rank"))
+					query.Offset(int64((page - 1) * perPage)).Limit(int64(perPage)).OrderBy(prefixResolver("rank"))
 				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")

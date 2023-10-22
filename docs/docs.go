@@ -82,6 +82,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "get the page the given user is on instead of the given page, does not work with name filter active",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
                         "maximum": 200,
                         "minimum": 1,
                         "type": "integer",
@@ -1513,6 +1519,9 @@ const docTemplate = `{
                             }
                         }
                     }
+                },
+                "page": {
+                    "type": "integer"
                 },
                 "pages": {
                     "type": "integer"
