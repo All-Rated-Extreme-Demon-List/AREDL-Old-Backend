@@ -66,7 +66,7 @@ func registerLeaderboardEndpoint(e *echo.Echo, app core.App) error {
 						return util.NewErrorResponse(nil, "Cannot use name_filter with user_id")
 					}
 					userId := c.Get("user_id").(string)
-					err := txDao.DB().Select(fmt.Sprintf("(rank / %v) + 1 AS rank", perPage)).From(aredl.LeaderboardTableName).Where(dbx.HashExp{"user": userId}).Row(&page)
+					err := txDao.DB().Select(fmt.Sprintf("((rank - 1) / %v) + 1 AS rank", perPage)).From(aredl.LeaderboardTableName).Where(dbx.HashExp{"user": userId}).Row(&page)
 					if util.IsNotNoResultError(err) {
 						return util.NewErrorResponse(err, "Failed to request user page")
 					}
