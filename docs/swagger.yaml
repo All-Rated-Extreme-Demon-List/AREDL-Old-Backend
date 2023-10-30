@@ -314,7 +314,7 @@ definitions:
       message:
         type: string
     type: object
-host: 127.0.0.1:8090
+host: api.aredl.net
 info:
   contact:
     name: Discord server
