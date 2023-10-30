@@ -289,7 +289,7 @@ func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos i
 
 		_, err := query.Execute()
 		if err != nil {
-			return err
+			return util.NewErrorResponse(err, "Failed to update level list points")
 		}
 		err = updatePackPointsByLevelRange(txDao, list, minPos, maxPos)
 		if err != nil {
