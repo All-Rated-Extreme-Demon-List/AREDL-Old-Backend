@@ -409,9 +409,13 @@ func RegisterUpdatePoints(app core.App) {
 			}
 			maxPos, err := queryMaxPosition(txDao, listData, true)
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "Failed to query max pos")
 			}
-			return UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos, true)
+			err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos, true)
+			if err != nil {
+				return util.NewErrorResponse(nil, "Failed to update list points")
+			}
+			return nil
 		})
 		return err
 	})
