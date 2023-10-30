@@ -413,7 +413,7 @@ func RegisterUpdatePoints(app core.App) {
 			}
 			err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos, true)
 			if err != nil {
-				return util.NewErrorResponse(nil, "Failed to update list points")
+				return util.NewErrorResponse(err, "Failed to update list points")
 			}
 			return nil
 		})

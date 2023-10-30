@@ -56,6 +56,6 @@ func NewErrorResponse(err error, message string) error {
 	case validation.Errors:
 		return apis.NewApiError(http.StatusBadRequest, "Invalid data: "+err.Error(), nil)
 	default:
-		return apis.NewApiError(http.StatusBadRequest, message, nil)
+		return apis.NewApiError(http.StatusBadRequest, message+": "+err.Error(), nil)
 	}
 }
