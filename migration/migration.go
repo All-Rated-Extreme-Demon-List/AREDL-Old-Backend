@@ -354,7 +354,11 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				println("Updating demonlist")
-				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, 1, len(levelNames))
+				err = demonlist.UpdatePointTable(txDao, aredl)
+				if err != nil {
+					return err
+				}
+				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, 1, len(levelNames), true)
 				if err != nil {
 					return err
 				}

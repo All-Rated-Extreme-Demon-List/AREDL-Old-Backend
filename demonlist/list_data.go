@@ -2,6 +2,7 @@ package demonlist
 
 func Aredl() ListData {
 	return ListData{
+		Name:                 "aredl",
 		LeaderboardTableName: "aredl_leaderboard",
 		SubmissionTableName:  "record_submissions",
 		LevelTableName:       "aredl",
@@ -25,6 +26,7 @@ type PackData struct {
 }
 
 type ListData struct {
+	Name                 string
 	LeaderboardTableName string
 	SubmissionTableName  string
 	LevelTableName       string

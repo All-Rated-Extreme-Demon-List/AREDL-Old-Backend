@@ -1,6 +1,7 @@
 package demonlist
 
 import (
+	"AREDL/names"
 	"AREDL/util"
 	"fmt"
 	"github.com/pocketbase/dbx"
@@ -8,7 +9,10 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/tools/list"
+	"gopkg.in/Knetic/govaluate.v2"
+	"math"
 	"modernc.org/mathutil"
+	"strings"
 )
 
 func PlaceLevel(dao *daos.Dao, app core.App, userId string, listData ListData, levelData map[string]interface{}, verificationData map[string]interface{}, creatorIds []string) error {
@@ -62,7 +66,11 @@ func PlaceLevel(dao *daos.Dao, app core.App, userId string, listData ListData, l
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to update level verification")
 		}
-		err = UpdateLevelListPointsByPositionRange(txDao, listData, position, highestPosition)
+		err = UpdatePointTable(txDao, listData)
+		if err != nil {
+			return err
+		}
+		err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, highestPosition, true)
 		if err != nil {
 			return err
 		}
@@ -195,8 +203,12 @@ func moveLevel(dao *daos.Dao, app core.App, listData ListData, levelId string, u
 		if legacyChanged {
 			// moved into or out of legacy
 			levelMovedStatus = util.If(legacy, "movedToLegacy", "movedFromLegacy")
+			err := UpdatePointTable(txDao, listData)
+			if err != nil {
+				return err
+			}
 		}
-		err = UpdateLevelListPointsByPositionRange(txDao, listData, mathutil.Min(newPos, oldPos), mathutil.Max(newPos, oldPos))
+		err = UpdateLevelListPointsByPositionRange(txDao, listData, mathutil.Min(newPos, oldPos), mathutil.Max(newPos, oldPos), true)
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to update level listData points")
 		}
@@ -261,15 +273,15 @@ func updateCreators(dao *daos.Dao, listData ListData, recordId string, newCreato
 	return err
 }
 
-func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos int, maxPos int) error {
+func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos int, maxPos int, recalculateBasePoints bool) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		query := txDao.DB().NewQuery(fmt.Sprintf(`
 		UPDATE %s
-		SET points=(CASE WHEN legacy THEN 0 ELSE (
+		SET points=(
 			SELECT p.points 
 			FROM %s p 
 			WHERE p.id=position 
-		) END)
+		)
 		WHERE position BETWEEN {:minPos} AND {:maxPos}`, list.LevelTableName, list.PointLookupTableName)).Bind(dbx.Params{
 			"minPos": minPos,
 			"maxPos": maxPos,
@@ -287,6 +299,122 @@ func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos i
 		return err
 	})
 	return err
+}
+
+func UpdatePointTable(dao *daos.Dao, list ListData) error {
+	functions := map[string]govaluate.ExpressionFunction{
+		"sqrt": func(args ...interface{}) (interface{}, error) {
+			if len(args) != 1 {
+				return nil, fmt.Errorf("sqrt exactly takes one argument")
+			}
+			value, ok := args[0].(float64)
+			if !ok {
+				return nil, fmt.Errorf("argument must be a float64 for sqrt")
+			}
+			return math.Sqrt(value), nil
+		},
+	}
+	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
+		formulaData, err := txDao.FindFirstRecordByData("point_formula", "list", list.Name)
+		if err != nil {
+			return err
+		}
+		levelCount, err := queryMaxPosition(txDao, list, false)
+		if err != nil {
+			return err
+		}
+		levelCount--
+		totalLevelCount, err := queryMaxPosition(txDao, list, true)
+		if err != nil {
+			return err
+		}
+		totalLevelCount--
+		parameters := make(map[string]interface{}, 1)
+		parameters["level_count"] = levelCount
+		for _, precalc := range strings.Split(formulaData.GetString("precalc"), ",") {
+			if len(precalc) == 0 {
+				continue
+			}
+			calc := strings.SplitN(precalc, "=", 2)
+			if len(calc) != 2 {
+				return util.NewErrorResponse(nil, "invalid format")
+			}
+			calcFormula, err := govaluate.NewEvaluableExpressionWithFunctions(calc[1], functions)
+			if err != nil {
+				return err
+			}
+			result, err := calcFormula.Evaluate(parameters)
+			if err != nil {
+				return err
+			}
+			parameters[calc[0]] = result
+		}
+		formula, err := govaluate.NewEvaluableExpressionWithFunctions(formulaData.GetString("formula"), functions)
+		if err != nil {
+			return err
+		}
+		_, err = txDao.DB().Delete(list.PointLookupTableName, nil).Execute()
+		if err != nil {
+			return err
+		}
+		for i := 1; i <= levelCount+1; i++ {
+			parameters["x"] = float64(i)
+			result, err := formula.Evaluate(parameters)
+			if err != nil {
+				return err
+			}
+			value, ok := result.(float64)
+			if !ok {
+				return fmt.Errorf("resulting value is not a float64")
+			}
+			if value < 0.0 {
+				value = 0.0
+			}
+			_, err = txDao.DB().Insert(list.PointLookupTableName, dbx.Params{
+				"id":     i,
+				"points": fmt.Sprintf("%.1f", math.Round(value*10)/10),
+			}).Execute()
+			if err != nil {
+				return err
+			}
+		}
+		for i := levelCount + 2; i < totalLevelCount+1; i++ {
+			_, err = txDao.DB().Insert(list.PointLookupTableName, dbx.Params{
+				"id":     i,
+				"points": fmt.Sprintf("%.1f", 0.0),
+			}).Execute()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return err
+}
+
+func RegisterUpdatePoints(app core.App) {
+	app.OnRecordAfterUpdateRequest(names.TablePointFormular).Add(func(e *core.RecordUpdateEvent) error {
+		var listData ListData
+		listName := e.Record.GetString("list")
+		switch listName {
+		case "aredl":
+			listData = Aredl()
+		default:
+			return fmt.Errorf("unknown list %s", listName)
+		}
+		err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+			err := UpdatePointTable(txDao, listData)
+			if err != nil {
+				return err
+			}
+			maxPos, err := queryMaxPosition(txDao, listData, true)
+			if err != nil {
+				return err
+			}
+			return UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos, true)
+		})
+		return err
+	})
 }
 
 func queryMaxPosition(dao *daos.Dao, list ListData, includeLegacy bool) (int, error) {
