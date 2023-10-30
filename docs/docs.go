@@ -220,6 +220,13 @@ const docTemplate = `{
         },
         "/aredl/mod/level/place": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Places a new level into aredl. It automatically updates history and leaderboards\nRequires user permission: aredl.manage_levels",
                 "produces": [
                     "application/json"
@@ -357,6 +364,13 @@ const docTemplate = `{
         },
         "/aredl/mod/level/update": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Updates level data. It automatically updates history and leaderboards.\nRequires user permission: aredl.manage_levels",
                 "produces": [
                     "application/json"
@@ -458,6 +472,13 @@ const docTemplate = `{
         },
         "/aredl/mod/list/update": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Updates all points. Should be used if other automatic updates didn't work.\nRequires user permission: aredl.update_listpoints",
                 "produces": [
                     "application/json"
@@ -503,6 +524,13 @@ const docTemplate = `{
         },
         "/aredl/mod/pack/create": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Creates a new pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
                 "produces": [
                     "application/json"
@@ -565,6 +593,13 @@ const docTemplate = `{
         },
         "/aredl/mod/pack/delete": {
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Deletes a pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
                 "produces": [
                     "application/json"
@@ -603,6 +638,13 @@ const docTemplate = `{
         },
         "/aredl/mod/pack/update": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Updates a pack and updates all user points that now have or lost the new pack.\nRequires user permission: aredl.manage_packs",
                 "produces": [
                     "application/json"
@@ -669,6 +711,13 @@ const docTemplate = `{
         },
         "/aredl/mod/submission/update": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
                 "description": "Update metadata and status of submission. Used to review submissions.\nRequires user permission: aredl.submission_review",
                 "produces": [
                     "application/json"

@@ -16,6 +16,7 @@ import (
 //	@Summary		Update AREDL level
 //	@Description	Updates level data. It automatically updates history and leaderboards.
 //	@Description	Requires user permission: aredl.manage_levels
+//	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
 //	@Param			id					query	string		true	"internal level id"
 //	@Param			creator_ids			query	[]string	false	"list of all creators using their internal user ids"

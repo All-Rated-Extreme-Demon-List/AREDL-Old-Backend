@@ -17,6 +17,7 @@ import (
 //	@Summary		Update AREDL points and leaderboard
 //	@Description	Updates all points. Should be used if other automatic updates didn't work.
 //	@Description	Requires user permission: aredl.update_listpoints
+//	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
 //	@Param			min_position	query	int	true	"min list position from what to update"
 //	@Param			max_position	query	int	true	"max list position from what to update"

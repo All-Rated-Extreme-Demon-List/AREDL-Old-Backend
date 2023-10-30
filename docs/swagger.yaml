@@ -561,6 +561,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Place AREDL level
       tags:
       - aredl_moderation
@@ -633,6 +636,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Update AREDL level
       tags:
       - aredl_moderation
@@ -665,6 +671,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Update AREDL points and leaderboard
       tags:
       - aredl_moderation
@@ -709,6 +718,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Create a new AREDL pack
       tags:
       - aredl_moderation
@@ -736,6 +748,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Delete an AREDL pack
       tags:
       - aredl_moderation
@@ -783,6 +798,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Update a AREDL pack
       tags:
       - aredl_moderation
@@ -856,6 +874,9 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
       summary: Update AREDL submission
       tags:
       - aredl_moderation

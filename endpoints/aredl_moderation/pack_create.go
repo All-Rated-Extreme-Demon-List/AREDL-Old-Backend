@@ -14,6 +14,7 @@ import (
 //	@Summary		Create a new AREDL pack
 //	@Description	Creates a new pack and updates all user points that now have the new pack.
 //	@Description	Requires user permission: aredl.manage_packs
+//	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
 //	@Param			name			query	string		true	"display name"
 //	@Param			color			query	string		true	"display color"

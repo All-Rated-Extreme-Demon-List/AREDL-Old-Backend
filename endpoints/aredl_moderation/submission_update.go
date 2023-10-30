@@ -19,6 +19,7 @@ import (
 //	@Summary		Update AREDL submission
 //	@Description	Update metadata and status of submission. Used to review submissions.
 //	@Description	Requires user permission: aredl.submission_review
+//	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
 //	@Param			id					query	string	true	"internal submission id"
 //	@Param			level				query	string	false	"internal level id"
