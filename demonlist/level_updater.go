@@ -277,11 +277,11 @@ func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos i
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		query := txDao.DB().NewQuery(fmt.Sprintf(`
 		UPDATE %s
-		SET points=(
+		SET points=COALESCE((
 			SELECT p.points 
 			FROM %s p 
 			WHERE p.id=position 
-		)
+		), 0)
 		WHERE position BETWEEN {:minPos} AND {:maxPos}`, list.LevelTableName, list.PointLookupTableName)).Bind(dbx.Params{
 			"minPos": minPos,
 			"maxPos": maxPos,
