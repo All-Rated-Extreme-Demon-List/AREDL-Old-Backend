@@ -317,16 +317,16 @@ func UpdatePointTable(dao *daos.Dao, list ListData) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		formulaData, err := txDao.FindFirstRecordByData("point_formula", "list", list.Name)
 		if err != nil {
-			return err
+			return util.NewErrorResponse(nil, "failed to load formula data")
 		}
 		levelCount, err := queryMaxPosition(txDao, list, false)
 		if err != nil {
-			return err
+			return util.NewErrorResponse(nil, "failed to query max pos")
 		}
 		levelCount--
 		totalLevelCount, err := queryMaxPosition(txDao, list, true)
 		if err != nil {
-			return err
+			return util.NewErrorResponse(nil, "failed to query max legacy pos")
 		}
 		totalLevelCount--
 		parameters := make(map[string]interface{}, 1)
@@ -341,27 +341,27 @@ func UpdatePointTable(dao *daos.Dao, list ListData) error {
 			}
 			calcFormula, err := govaluate.NewEvaluableExpressionWithFunctions(calc[1], functions)
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "failed to parse precalc formula")
 			}
 			result, err := calcFormula.Evaluate(parameters)
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "failed to evaluate precalc formula")
 			}
 			parameters[calc[0]] = result
 		}
 		formula, err := govaluate.NewEvaluableExpressionWithFunctions(formulaData.GetString("formula"), functions)
 		if err != nil {
-			return err
+			return util.NewErrorResponse(nil, "failed to parse formula")
 		}
 		_, err = txDao.DB().Delete(list.PointLookupTableName, nil).Execute()
 		if err != nil {
-			return err
+			return util.NewErrorResponse(nil, "failed to delete old points")
 		}
 		for i := 1; i <= levelCount+1; i++ {
 			parameters["x"] = float64(i)
 			result, err := formula.Evaluate(parameters)
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "failed to evaluate formula")
 			}
 			value, ok := result.(float64)
 			if !ok {
@@ -375,7 +375,7 @@ func UpdatePointTable(dao *daos.Dao, list ListData) error {
 				"points": fmt.Sprintf("%.1f", math.Round(value*10)/10),
 			}).Execute()
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "failed to insert new points")
 			}
 		}
 		for i := levelCount + 2; i < totalLevelCount+1; i++ {
@@ -384,7 +384,7 @@ func UpdatePointTable(dao *daos.Dao, list ListData) error {
 				"points": fmt.Sprintf("%.1f", 0.0),
 			}).Execute()
 			if err != nil {
-				return err
+				return util.NewErrorResponse(nil, "failed to insert new remaining legacy points")
 			}
 		}
 		return nil
