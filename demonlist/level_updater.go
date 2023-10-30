@@ -277,11 +277,11 @@ func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos i
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		query := txDao.DB().NewQuery(fmt.Sprintf(`
 		UPDATE %s
-		SET points=COALESCE((
+		SET points=COALESCE(
 			SELECT p.points 
 			FROM %s p 
 			WHERE p.id=position 
-		), 0)
+		)
 		WHERE position BETWEEN {:minPos} AND {:maxPos}`, list.LevelTableName, list.PointLookupTableName)).Bind(dbx.Params{
 			"minPos": minPos,
 			"maxPos": maxPos,
@@ -378,7 +378,7 @@ func UpdatePointTable(dao *daos.Dao, list ListData) error {
 				return util.NewErrorResponse(nil, "failed to insert new points")
 			}
 		}
-		for i := levelCount + 2; i < totalLevelCount+1; i++ {
+		for i := levelCount + 2; i <= totalLevelCount+1; i++ {
 			_, err = txDao.DB().Insert(list.PointLookupTableName, dbx.Params{
 				"id":     i,
 				"points": fmt.Sprintf("%.1f", 0.0),
