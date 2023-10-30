@@ -22,7 +22,7 @@ jobs:
         run: go build -v -o ./backend/ ./...
 
       - name: install rsync
-        run: sudo apt-get update && sudo apt-ger install rsync
+        run: sudo apt-get update && sudo apt-get install rsync
 
       - name: Deploy to server
         uses: burnett01/rsync-deployments@6.0.0
