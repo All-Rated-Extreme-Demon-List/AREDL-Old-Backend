@@ -44,6 +44,16 @@ func MapSlice[T, U any](slice []T, mapper func(T) U) []U {
 	return result
 }
 
+func First[T any](data []T, f func(T) bool) (T, bool) {
+	for _, v := range data {
+		if f(v) {
+			return v, true
+		}
+	}
+	var empty T
+	return empty, false
+}
+
 type ErrorResponse struct {
 	apis.ApiError
 }

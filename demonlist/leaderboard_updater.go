@@ -11,8 +11,8 @@ func updateLeaderboardByLevelRange(dao *daos.Dao, listData ListData, minPos int,
 	params := dbx.Params{}
 	condition := dao.DB().QueryBuilder().BuildWhere(dbx.Exists(dbx.NewExp(fmt.Sprintf(`
 		SELECT NULL FROM %s rs, %s l 
-		WHERE u.id = rs.submitted_by AND rs.status = 'accepted' AND rs.level = l.id AND l.position BETWEEN {:min} AND {:max}`,
-		listData.SubmissionTableName,
+		WHERE u.id = rs.submitted_by AND rs.level = l.id AND l.position BETWEEN {:min} AND {:max}`,
+		listData.RecordsTableName,
 		listData.LevelTableName,
 	), dbx.Params{"min": minPos, "max": maxPos})), params)
 	return updateLeaderboard(dao, listData, condition, params)
@@ -42,7 +42,7 @@ func updateLeaderboard(dao *daos.Dao, listData ListData, condition string, param
     			(
     				SELECT ROUND(COALESCE(SUM(l.points), 0), 1)
     				FROM %s rs, %s l
-    				WHERE u.id = rs.submitted_by AND rs.level = l.id AND rs.status = 'accepted'
+    				WHERE u.id = rs.submitted_by AND rs.level = l.id
     			) + (
     				SELECT ROUND(COALESCE(SUM(p.points), 0), 1)
     				FROM %s cp, %s p
@@ -53,7 +53,7 @@ func updateLeaderboard(dao *daos.Dao, listData ListData, condition string, param
 			%s 
 			ON CONFLICT DO UPDATE SET points = excluded.points`,
 			listData.LeaderboardTableName,
-			listData.SubmissionTableName,
+			listData.RecordsTableName,
 			listData.LevelTableName,
 			listData.Packs.CompletedPacksTableName,
 			listData.Packs.PackTableName,

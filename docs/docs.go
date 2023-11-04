@@ -709,7 +709,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/mod/submission/update": {
+        "/aredl/mod/submission/accept": {
             "post": {
                 "security": [
                     {
@@ -718,14 +718,14 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Update metadata and status of submission. Used to review submissions.\nRequires user permission: aredl.submission_review",
+                "description": "Requires user permission: aredl.submission_review",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "aredl_moderation"
                 ],
-                "summary": "Update AREDL submission",
+                "summary": "Accept AREDL submission.",
                 "parameters": [
                     {
                         "type": "string",
@@ -733,24 +733,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "internal level id",
-                        "name": "level",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "accepted",
-                            "pending",
-                            "rejected",
-                            "rejected_retryable"
-                        ],
-                        "type": "string",
-                        "description": "submission status",
-                        "name": "status",
-                        "in": "query"
                     },
                     {
                         "maximum": 360,
@@ -785,16 +767,55 @@ const docTemplate = `{
                         "description": "raw footage",
                         "name": "raw_footage",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/mod/submission/reject": {
+            "post": {
+                "security": [
                     {
-                        "type": "integer",
-                        "description": "new position to move submission in viewed order. position 0 is verification",
-                        "name": "placement_order",
-                        "in": "query"
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Requires user permission: aredl.submission_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl_moderation"
+                ],
+                "summary": "Reject AREDL submission.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal submission id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "description": "when add reason new status is rejected or rejected_retryable",
+                        "description": "rejection reason",
                         "name": "rejection_reason",
                         "in": "query"
                     }
@@ -904,6 +925,48 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/user/records": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Lists records ordered by the time they have been updated last.\nRequires user permission: aredl.user_record_list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl_user"
+                ],
+                "summary": "List records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/aredl_user.Submission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
                         }
@@ -1914,10 +1977,10 @@ const docTemplate = `{
                 "raw_footage": {
                     "type": "string"
                 },
-                "rejection_reason": {
-                    "type": "string"
+                "rejected": {
+                    "type": "boolean"
                 },
-                "status": {
+                "rejection_reason": {
                     "type": "string"
                 },
                 "updated": {

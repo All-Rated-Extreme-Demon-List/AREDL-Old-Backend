@@ -7,130 +7,113 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/list"
 	"modernc.org/mathutil"
 )
 
-type SubmissionStatus string
-
-const (
-	StatusAccepted          SubmissionStatus = "accepted"
-	StatusPending           SubmissionStatus = "pending"
-	StatusRejected          SubmissionStatus = "rejected"
-	StatusRejectedRetryable SubmissionStatus = "rejected_retryable"
-)
-
-func UpsertSubmission(dao *daos.Dao, app core.App, listData ListData, submissionData map[string]any, allowedOriginalStatus []SubmissionStatus) (*models.Record, error) {
-	submissionRecord := &models.Record{}
+func UpsertSubmission(dao *daos.Dao, app core.App, listData ListData, submissionData map[string]any) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
-		submissionRecords, err := txDao.FindRecordsByExpr(listData.SubmissionTableName,
+		submissions, err := txDao.FindRecordsByExpr(listData.SubmissionsTableName,
 			dbx.Or(
 				dbx.HashExp{"id": submissionData["id"]},
 				dbx.HashExp{"submitted_by": submissionData["submitted_by"], "level": submissionData["level"]}))
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to query for submissions")
 		}
-		if len(submissionRecords) == 0 {
-			if submissionData["id"] != nil {
-				// should have found at least one entry
-				return util.NewErrorResponse(nil, "Could not find submission")
+
+		if len(submissions) == 1 {
+			// update submission
+			submissionForm := forms.NewRecordUpsert(app, submissions[0])
+			submissionForm.SetDao(txDao)
+			submissionData["is_update"] = false
+			submissionData["rejected"] = false
+			err = submissionForm.LoadData(submissionData)
+			if err != nil {
+				return util.NewErrorResponse(err, "Failed to load data")
 			}
-			submissionCollection, err := txDao.FindCollectionByNameOrId(listData.SubmissionTableName)
+			err = submissionForm.Submit()
+			if err != nil {
+				return util.NewErrorResponse(err, "Failed to submit new submission data")
+			}
+		} else if len(submissions) == 0 {
+			// create submission
+			records, err := txDao.FindRecordsByExpr(listData.RecordsTableName,
+				dbx.Or(
+					dbx.HashExp{"id": submissionData["id"]},
+					dbx.HashExp{"submitted_by": submissionData["submitted_by"], "level": submissionData["level"]}))
+			if err != nil {
+				return util.NewErrorResponse(err, "Failed to query for records")
+			}
+			submissionRecord := &models.Record{}
+			submissionCollection, err := txDao.FindCollectionByNameOrId(listData.SubmissionsTableName)
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to load collection")
 			}
 			submissionRecord = models.NewRecord(submissionCollection)
-			var maxPlacementOrder int
-			err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.SubmissionTableName).Where(dbx.HashExp{
-				"level": submissionData["level"],
-			}).Row(&maxPlacementOrder)
+			if len(records) == 0 {
+				// new submission
+				var maxSubmissionsPlacement int
+				err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.SubmissionsTableName).Where(dbx.HashExp{
+					"level": submissionData["level"],
+				}).Row(&maxSubmissionsPlacement)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to max query submission order")
+				}
+				var maxRecordsPlacement int
+				err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.RecordsTableName).Where(dbx.HashExp{
+					"level": submissionData["level"],
+				}).Row(&maxRecordsPlacement)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to max query record order")
+				}
+				submissionData["is_update"] = false
+				submissionData["placement_order"] = mathutil.Max(maxRecordsPlacement, maxSubmissionsPlacement) + 1
+			} else {
+				// update record
+				record := records[0]
+				submissionData["is_update"] = true
+				submissionData["placement_order"] = record.GetInt("placement_order")
+			}
+			submissionForm := forms.NewRecordUpsert(app, submissionRecord)
+			submissionForm.SetDao(txDao)
+			err = submissionForm.LoadData(submissionData)
 			if err != nil {
-				return util.NewErrorResponse(err, "Failed to query order")
+				return util.NewErrorResponse(err, "Failed to load data")
 			}
-			submissionData["placement_order"] = maxPlacementOrder + 1
-		} else if len(submissionRecords) == 1 {
-			submissionRecord = submissionRecords[0]
-			// check if status change is valid
-			if !list.ExistInSlice(submissionRecord.GetString("status"), util.MapSlice(allowedOriginalStatus, func(s SubmissionStatus) string { return string(s) })) {
-				return util.NewErrorResponse(err, "Not allowed to change submission status")
-			}
-			// order changes
-			placement, existsPlacement := submissionData["placement_order"]
-			if existsPlacement {
-				var maxPlacementOrder int
-				err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.SubmissionTableName).Where(dbx.HashExp{
-					"level": submissionRecord.GetString("level"),
-				}).Row(&maxPlacementOrder)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to query order")
-				}
-				// move other levels
-				newPlacement := placement.(int)
-				if newPlacement < 1 || newPlacement > maxPlacementOrder+1 {
-					return util.NewErrorResponse(nil, "Placement position out of range")
-				}
-				oldPlacement := submissionRecord.GetInt("placement_order")
-				increment := util.If(newPlacement > oldPlacement, -1, 1)
-				_, err = txDao.DB().Update(
-					listData.SubmissionTableName,
-					dbx.Params{
-						"placement_order": dbx.NewExp("placement_order + {:inc}",
-							dbx.Params{"inc": increment})},
-					dbx.And(
-						dbx.Between("placement_order", mathutil.Min(newPlacement, oldPlacement), mathutil.Max(newPlacement, oldPlacement)),
-						dbx.HashExp{"level": submissionRecord.GetString("level")})).Execute()
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to change order for other records")
-				}
+			err = submissionForm.Submit()
+			if err != nil {
+				return util.NewErrorResponse(err, "Failed to submit new submission data")
 			}
 		} else {
-			return util.NewErrorResponse(nil, "Found too many records")
-		}
-		submissionForm := forms.NewRecordUpsert(app, submissionRecord)
-		submissionForm.SetDao(txDao)
-		err = submissionForm.LoadData(submissionData)
-		if err != nil {
-			return util.NewErrorResponse(err, "Failed to load data")
-		}
-		err = submissionForm.Submit()
-		if err != nil {
-			return util.NewErrorResponse(err, "Failed to submit new submission data")
-		}
-		// update leaderboard for user if submission status has changed
-		if submissionData["status"] != nil {
-			err = UpdateLeaderboardAndPacksForUser(txDao, listData, submissionRecord.GetString("submitted_by"))
-			if err != nil {
-				return util.NewErrorResponse(err, "Failed to update leaderboard")
-			}
+			return util.NewErrorResponse(nil, "Invalid state")
 		}
 		return nil
 	})
-	return submissionRecord, err
+	return err
 }
 
-func DeleteSubmission(dao *daos.Dao, listData ListData, submissionId string) error {
+func DeleteSubmission(dao *daos.Dao, listData ListData, submission *models.Record) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
-		submissionRecord, err := txDao.FindRecordById(listData.SubmissionTableName, submissionId)
-		if err != nil {
-			return util.NewErrorResponse(err, "Could not find submission")
-		}
-		err = txDao.DeleteRecord(submissionRecord)
+		err := txDao.DeleteRecord(submission)
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to delete submission")
 		}
 		_, err = txDao.DB().Update(
-			listData.SubmissionTableName,
+			listData.SubmissionsTableName,
 			dbx.Params{"placement_order": dbx.NewExp("placement_order - 1")},
 			dbx.And(
-				dbx.NewExp("placement_order >= {:placement}", dbx.Params{"placement": submissionRecord.GetInt("placement_order")}),
-				dbx.HashExp{"level": submissionRecord.GetString("level")})).Execute()
+				dbx.NewExp("placement_order >= {:placement}", dbx.Params{"placement": submission.GetInt("placement_order")}),
+				dbx.HashExp{"level": submission.GetString("level")})).Execute()
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to update other placement positions")
 		}
-		// update leaderboard
-		err = UpdateLeaderboardAndPacksForUser(txDao, listData, submissionRecord.GetString("submitted_by"))
+		_, err = txDao.DB().Update(
+			listData.RecordsTableName,
+			dbx.Params{"placement_order": dbx.NewExp("placement_order - 1")},
+			dbx.And(
+				dbx.NewExp("placement_order >= {:placement}", dbx.Params{"placement": submission.GetInt("placement_order")}),
+				dbx.HashExp{"level": submission.GetString("level")})).Execute()
 		if err != nil {
-			return util.NewErrorResponse(err, "Failed to update leaderboard")
+			return util.NewErrorResponse(err, "Failed to update other placement positions")
 		}
 		return nil
 	})

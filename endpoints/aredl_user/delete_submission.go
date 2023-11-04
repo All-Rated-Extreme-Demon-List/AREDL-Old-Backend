@@ -45,19 +45,23 @@ func registerSubmissionWithdrawEndpoint(e *echo.Echo, app core.App) error {
 					return util.NewErrorResponse(nil, "Could not load user")
 				}
 				aredl := demonlist.Aredl()
-				submissionRecord, err := txDao.FindRecordById(aredl.SubmissionTableName, c.Get("record_id").(string))
+				submissionRecord, err := txDao.FindRecordById(aredl.SubmissionsTableName, c.Get("id").(string))
 				if err != nil {
 					return util.NewErrorResponse(err, "Submission was not found")
 				}
 				if submissionRecord.GetString("submitted_by") != userRecord.Id {
 					return util.NewErrorResponse(err, "Submission does not belong to the user")
 				}
-				if submissionRecord.GetString("status") != "pending" {
+				if submissionRecord.GetBool("rejected") {
 					return util.NewErrorResponse(err, "Submission was already processed")
 				}
-				err = demonlist.DeleteSubmission(txDao, aredl, submissionRecord.Id)
+				err = demonlist.DeleteSubmission(txDao, aredl, submissionRecord)
 				if err != nil {
 					return err
+				}
+				err = txDao.DeleteRecord(submissionRecord)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to delete submission")
 				}
 				return nil
 			})

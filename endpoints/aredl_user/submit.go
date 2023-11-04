@@ -43,11 +43,10 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.RequirePermissionGroup(app, "aredl", "user_submit"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"submissionData": middlewares.LoadMap("", middlewares.LoadData{
-					"level":     middlewares.LoadString(true),
-					"fps":       middlewares.LoadInt(true, validation.Min(30), validation.Max(360)),
-					"video_url": middlewares.LoadString(true, is.URL),
-					"mobile":    middlewares.LoadBool(true),
-					//"percentage":  middlewares.AddDefault(100, middlewares.LoadInt(false, validation.Min(1), validation.Max(100))),
+					"level":       middlewares.LoadString(true),
+					"fps":         middlewares.LoadInt(true, validation.Min(30), validation.Max(360)),
+					"video_url":   middlewares.LoadString(true, is.URL),
+					"mobile":      middlewares.LoadBool(true),
 					"ldm_id":      middlewares.LoadInt(false),
 					"raw_footage": middlewares.LoadString(false, is.URL),
 				}),
@@ -61,7 +60,6 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 					return util.NewErrorResponse(nil, "User not found")
 				}
 				submissionData := c.Get("submissionData").(map[string]interface{})
-				submissionData["status"] = demonlist.StatusPending
 				submissionData["submitted_by"] = userRecord.Id
 
 				// verify that submitted level exists
@@ -69,8 +67,7 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return apis.NewBadRequestError("Invalid level", nil)
 				}
-				allowedOriginalStatus := []demonlist.SubmissionStatus{demonlist.StatusPending, demonlist.StatusRejectedRetryable}
-				_, err = demonlist.UpsertSubmission(txDao, app, aredl, submissionData, allowedOriginalStatus)
+				err = demonlist.UpsertSubmission(txDao, app, aredl, submissionData)
 				return err
 			})
 			return err

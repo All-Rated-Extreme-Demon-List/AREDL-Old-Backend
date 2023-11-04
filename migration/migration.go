@@ -126,7 +126,7 @@ func Register(app *pocketbase.PocketBase) {
 					aredl.LeaderboardTableName,
 					aredl.LevelTableName,
 					aredl.HistoryTableName,
-					aredl.SubmissionTableName,
+					aredl.RecordsTableName,
 					aredl.Packs.PackTableName,
 					aredl.Packs.CompletedPacksTableName,
 					aredl.Packs.PackLevelTableName,
@@ -179,7 +179,7 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				submissionCollection, err := txDao.FindCollectionByNameOrId(aredl.SubmissionTableName)
+				recordsCollection, err := txDao.FindCollectionByNameOrId(aredl.RecordsTableName)
 				if err != nil {
 					return err
 				}
@@ -289,13 +289,11 @@ func Register(app *pocketbase.PocketBase) {
 							playerId = userId
 							knownUsers[strings.ToLower(username)] = playerId
 						}
-						submissionRecord, err := util.AddRecord(txDao, app, submissionCollection, map[string]any{
-							"status":          "accepted",
+						submissionRecord, err := util.AddRecord(txDao, app, recordsCollection, map[string]any{
 							"video_url":       strings.Replace(url, " ", "", -1),
 							"level":           levelRecord.Id,
 							"submitted_by":    playerId,
 							"fps":             framerate,
-							"percentage":      percent,
 							"placement_order": recordOrder + 1,
 							"mobile":          mobile,
 						})
@@ -358,7 +356,7 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, 1, len(levelNames), true)
+				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, 1, len(levelNames))
 				if err != nil {
 					return err
 				}

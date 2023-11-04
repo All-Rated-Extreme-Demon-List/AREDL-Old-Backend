@@ -272,9 +272,9 @@ definitions:
         type: boolean
       raw_footage:
         type: string
+      rejected:
+        type: boolean
       rejection_reason:
-        type: string
-      status:
         type: string
       updated:
         $ref: '#/definitions/types.DateTime'
@@ -804,29 +804,14 @@ paths:
       summary: Update a AREDL pack
       tags:
       - aredl_moderation
-  /aredl/mod/submission/update:
+  /aredl/mod/submission/accept:
     post:
-      description: |-
-        Update metadata and status of submission. Used to review submissions.
-        Requires user permission: aredl.submission_review
+      description: 'Requires user permission: aredl.submission_review'
       parameters:
       - description: internal submission id
         in: query
         name: id
         required: true
-        type: string
-      - description: internal level id
-        in: query
-        name: level
-        type: string
-      - description: submission status
-        enum:
-        - accepted
-        - pending
-        - rejected
-        - rejected_retryable
-        in: query
-        name: status
         type: string
       - description: framerate
         in: query
@@ -852,12 +837,35 @@ paths:
         in: query
         name: raw_footage
         type: string
-      - description: new position to move submission in viewed order. position 0 is
-          verification
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Accept AREDL submission.
+      tags:
+      - aredl_moderation
+  /aredl/mod/submission/reject:
+    post:
+      description: 'Requires user permission: aredl.submission_review'
+      parameters:
+      - description: internal submission id
         in: query
-        name: placement_order
-        type: integer
-      - description: when add reason new status is rejected or rejected_retryable
+        name: id
+        required: true
+        type: string
+      - description: rejection reason
         in: query
         name: rejection_reason
         type: string
@@ -877,7 +885,7 @@ paths:
       security:
       - ApiKeyAuth:
         - authorization
-      summary: Update AREDL submission
+      summary: Reject AREDL submission.
       tags:
       - aredl_moderation
   /aredl/names:
@@ -942,6 +950,34 @@ paths:
       summary: User info
       tags:
       - aredl_public
+  /aredl/user/records:
+    get:
+      description: |-
+        Lists records ordered by the time they have been updated last.
+        Requires user permission: aredl.user_record_list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl_user.Submission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: List records
+      tags:
+      - aredl_user
   /aredl/user/submission:
     delete:
       description: |-

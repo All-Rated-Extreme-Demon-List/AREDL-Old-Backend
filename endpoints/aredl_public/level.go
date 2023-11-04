@@ -45,7 +45,7 @@ type Level struct {
 	LevelPassword string         `db:"level_password" json:"level_password,omitempty"`
 	CustomSong    string         `db:"custom_song" json:"custom_song,omitempty"`
 	Publisher     LevelUser      `db:"publisher" json:"publisher,omitempty" extend:"publisher,users,id"`
-	Verification  *LevelRecord   `json:"verification,omitempty" extend:"id,submissions,submitted_by"`
+	Verification  *LevelRecord   `json:"verification,omitempty" extend:"id,records,submitted_by"`
 	Creators      *[]LevelUser   `json:"creators,omitempty"`
 	Records       *[]LevelRecord `json:"records,omitempty"`
 	Packs         *[]LevelPack   `json:"packs,omitempty"`
@@ -96,9 +96,9 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				var level Level
 				tables := map[string]string{
-					"base":        aredl.LevelTableName,
-					"submissions": aredl.SubmissionTableName,
-					"users":       names.TableUsers,
+					"base":    aredl.LevelTableName,
+					"records": aredl.RecordsTableName,
+					"users":   names.TableUsers,
 				}
 				err := util.LoadFromDb(txDao.DB(), &level, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 					if hasLevelId {
@@ -111,9 +111,8 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}
-
 				if c.Get("verification").(bool) {
-					tables["base"] = tables["submissions"]
+					tables["base"] = tables["records"]
 					err = util.LoadFromDb(txDao.DB(), &level.Verification, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 						query.Where(dbx.HashExp{prefixResolver("level"): level.Id, prefixResolver("placement_order"): 1})
 					})
@@ -134,7 +133,7 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 				if c.Get("records").(bool) {
 					tables["base"] = tables["submissions"]
 					err = util.LoadFromDb(txDao.DB(), &level.Records, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-						query.Where(dbx.HashExp{prefixResolver("level"): level.Id, prefixResolver("status"): demonlist.StatusAccepted})
+						query.Where(dbx.HashExp{prefixResolver("level"): level.Id})
 						query.AndWhere(dbx.NewExp(prefixResolver("placement_order") + " <> 1"))
 						query.OrderBy(prefixResolver("placement_order"))
 					})

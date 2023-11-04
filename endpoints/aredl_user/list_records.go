@@ -14,7 +14,7 @@ import (
 	"net/http"
 )
 
-type Submission struct {
+type Record struct {
 	Id      string         `db:"id" json:"id,omitempty"`
 	Created types.DateTime `db:"created" json:"created,omitempty"`
 	Updated types.DateTime `db:"updated" json:"updated,omitempty"`
@@ -23,20 +23,18 @@ type Submission struct {
 		Name    string `db:"name" json:"name,omitempty"`
 		LevelId int    `db:"level_id" json:"level_id,omitempty"`
 	} `db:"level" json:"level,omitempty" extend:"level,levels,id"`
-	VideoUrl        string `db:"video_url" json:"video_url,omitempty"`
-	Fps             int    `db:"fps" json:"fps,omitempty"`
-	Mobile          bool   `db:"mobile" json:"mobile,omitempty"`
-	LdmId           int    `db:"ldm_id" json:"ldm_id,omitempty"`
-	RawFootage      string `db:"raw_footage" json:"raw_footage,omitempty"`
-	Rejected        bool   `db:"rejected" json:"rejected"`
-	RejectionReason string `db:"rejection_reason" json:"rejection_reason,omitempty"`
+	VideoUrl   string `db:"video_url" json:"video_url,omitempty"`
+	Fps        int    `db:"fps" json:"fps,omitempty"`
+	Mobile     bool   `db:"mobile" json:"mobile,omitempty"`
+	LdmId      int    `db:"ldm_id" json:"ldm_id,omitempty"`
+	RawFootage string `db:"raw_footage" json:"raw_footage,omitempty"`
 }
 
-// registerSubmissionList godoc
+// registerRecordList godoc
 //
-//	@Summary		List submissions
-//	@Description	Lists submissions ordered by the time they have been updated last.
-//	@Description	Requires user permission: aredl.user_submission_list
+//	@Summary		List records
+//	@Description	Lists records ordered by the time they have been updated last.
+//	@Description	Requires user permission: aredl.user_record_list
 //	@Tags			aredl_user
 //	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
@@ -44,15 +42,15 @@ type Submission struct {
 //	@Success		200	{object}	[]Submission
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/user/submissions [get]
-func registerSubmissionList(e *echo.Echo, app core.App) error {
+//	@Router			/aredl/user/records [get]
+func registerRecordList(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodGet,
-		Path:   pathPrefix + "/submissions",
+		Path:   pathPrefix + "/records",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
-			middlewares.RequirePermissionGroup(app, "aredl", "user_submission_list"),
+			middlewares.RequirePermissionGroup(app, "aredl", "user_record_list"),
 		},
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
@@ -63,7 +61,7 @@ func registerSubmissionList(e *echo.Echo, app core.App) error {
 				}
 				var submissions []Submission
 				tables := map[string]string{
-					"base":   aredl.SubmissionsTableName,
+					"base":   aredl.RecordsTableName,
 					"levels": aredl.LevelTableName,
 				}
 				err := util.LoadFromDb(app.Dao().DB(), &submissions, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {

@@ -4,7 +4,8 @@ func Aredl() ListData {
 	return ListData{
 		Name:                 "aredl",
 		LeaderboardTableName: "aredl_leaderboard",
-		SubmissionTableName:  "record_submissions",
+		SubmissionsTableName: "record_submissions",
+		RecordsTableName:     "records",
 		LevelTableName:       "aredl",
 		CreatorTableName:     "creators",
 		HistoryTableName:     "position_history",
@@ -28,7 +29,8 @@ type PackData struct {
 type ListData struct {
 	Name                 string
 	LeaderboardTableName string
-	SubmissionTableName  string
+	SubmissionsTableName string
+	RecordsTableName     string
 	LevelTableName       string
 	CreatorTableName     string
 	HistoryTableName     string

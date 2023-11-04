@@ -98,10 +98,10 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user packs")
 				}
-				tableNames["base"] = aredl.SubmissionTableName
+				tableNames["base"] = aredl.RecordsTableName
 				tableNames["levels"] = aredl.LevelTableName
 				err = util.LoadFromDb(txDao.DB(), &user.Records, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-					query.Where(dbx.HashExp{prefixResolver("submitted_by"): user.Id, prefixResolver("status"): demonlist.StatusAccepted})
+					query.Where(dbx.HashExp{prefixResolver("submitted_by"): user.Id})
 					query.OrderBy(prefixResolver("level.position"))
 				})
 				if err != nil {

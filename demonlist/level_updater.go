@@ -54,23 +54,17 @@ func PlaceLevel(dao *daos.Dao, app core.App, userId string, listData ListData, l
 			return err
 		}
 		verificationData["level"] = levelRecord.Id
-		verificationData["status"] = StatusAccepted
 		verificationData["reviewer"] = userId
 		verificationData["placement_order"] = 1
-		verificationRecord, err := UpsertSubmission(txDao, app, listData, verificationData, []SubmissionStatus{})
+		_, err = util.AddRecordByCollectionName(txDao, app, listData.RecordsTableName, verificationData)
 		if err != nil {
-			return err
-		}
-		levelRecord.Set("verification", verificationRecord.Id)
-		err = txDao.SaveRecord(levelRecord)
-		if err != nil {
-			return util.NewErrorResponse(err, "Failed to update level verification")
+			return util.NewErrorResponse(err, "Failed to add verification")
 		}
 		err = UpdatePointTable(txDao, listData)
 		if err != nil {
 			return err
 		}
-		err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, highestPosition, true)
+		err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, highestPosition)
 		if err != nil {
 			return err
 		}
@@ -208,7 +202,7 @@ func moveLevel(dao *daos.Dao, app core.App, listData ListData, levelId string, u
 				return err
 			}
 		}
-		err = UpdateLevelListPointsByPositionRange(txDao, listData, mathutil.Min(newPos, oldPos), mathutil.Max(newPos, oldPos), true)
+		err = UpdateLevelListPointsByPositionRange(txDao, listData, mathutil.Min(newPos, oldPos), mathutil.Max(newPos, oldPos))
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to update level listData points")
 		}
@@ -273,7 +267,7 @@ func updateCreators(dao *daos.Dao, listData ListData, recordId string, newCreato
 	return err
 }
 
-func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos int, maxPos int, recalculateBasePoints bool) error {
+func UpdateLevelListPointsByPositionRange(dao *daos.Dao, list ListData, minPos int, maxPos int) error {
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		query := txDao.DB().NewQuery(fmt.Sprintf(`
 		UPDATE %s
@@ -411,7 +405,7 @@ func RegisterUpdatePoints(app core.App) {
 			if err != nil {
 				return util.NewErrorResponse(nil, "Failed to query max pos")
 			}
-			err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos, true)
+			err = UpdateLevelListPointsByPositionRange(txDao, listData, 1, maxPos)
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to update list points")
 			}

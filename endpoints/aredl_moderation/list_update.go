@@ -50,7 +50,7 @@ func registerUpdateListEndpoint(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to update point table")
 				}
-				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, c.Get("min_position").(int), c.Get("max_position").(int), true)
+				err = demonlist.UpdateLevelListPointsByPositionRange(txDao, aredl, c.Get("min_position").(int), c.Get("max_position").(int))
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to update list points")
 				}

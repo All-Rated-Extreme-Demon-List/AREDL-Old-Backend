@@ -66,13 +66,13 @@ func UpdateAllCompletedPacks(dao *daos.Dao, list ListData) error {
 				WHERE pl.pack = %s.pack
 			) <> (
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user AND rs.status='accepted'
+				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user
 			)`,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName,
+			list.RecordsTableName,
 			list.Packs.CompletedPacksTableName)).Execute()
 		if err != nil {
 			return err
@@ -85,14 +85,14 @@ func UpdateAllCompletedPacks(dao *daos.Dao, list ListData) error {
 				SELECT COUNT(*) FROM %s pl WHERE pl.pack = p.id
 			)=(
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level AND rs.status = 'accepted'
+				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level
 			) ON CONFLICT DO NOTHING`,
 			list.Packs.CompletedPacksTableName,
 			names.TableUsers,
 			list.Packs.PackTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName)).Execute()
+			list.RecordsTableName)).Execute()
 		return err
 	})
 	return err
@@ -107,13 +107,13 @@ func updateCompletedPacksByUser(dao *daos.Dao, list ListData, userId string) err
 				WHERE pl.pack = %s.pack
 			) <> (
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user AND rs.status='accepted'
+				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user
 			) AND user = {:userId}`,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName,
+			list.RecordsTableName,
 			list.Packs.CompletedPacksTableName,
 		)).Bind(dbx.Params{"userId": userId}).Execute()
 		if err != nil {
@@ -127,14 +127,14 @@ func updateCompletedPacksByUser(dao *daos.Dao, list ListData, userId string) err
 				SELECT COUNT(*) FROM %s pl WHERE pl.pack = p.id
 			)=(
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level AND rs.status = 'accepted'
+				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level
 			) AND u.id = {:userId} ON CONFLICT DO NOTHING`,
 			list.Packs.CompletedPacksTableName,
 			names.TableUsers,
 			list.Packs.PackTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName)).Bind(dbx.Params{"userId": userId}).Execute()
+			list.RecordsTableName)).Bind(dbx.Params{"userId": userId}).Execute()
 		return err
 	})
 	return err
@@ -154,14 +154,14 @@ func updateCompletedPacksByPackId(dao *daos.Dao, list ListData, packId string) (
 				WHERE pl.pack = %s.pack
 			) <> (
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user AND rs.status='accepted'
+				WHERE pl.pack = %s.pack AND pl.level = rs.level AND rs.submitted_by = user
 			) AND pack = {:packId}
 			RETURNING user`,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.CompletedPacksTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName,
+			list.RecordsTableName,
 			list.Packs.CompletedPacksTableName)).Bind(dbx.Params{"packId": packId}).All(&removedUserData)
 		if err != nil {
 			return err
@@ -175,14 +175,14 @@ func updateCompletedPacksByPackId(dao *daos.Dao, list ListData, packId string) (
 				SELECT COUNT(*) FROM %s pl WHERE pl.pack = p.id
 			)=(
 				SELECT COUNT(*) FROM %s pl, %s rs 
-				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level AND rs.status = 'accepted'
+				WHERE pl.pack = p.id AND rs.submitted_by = u.id AND rs.level = pl.level
 			) AND p.id = {:packId} ON CONFLICT DO NOTHING`,
 			list.Packs.CompletedPacksTableName,
 			names.TableUsers,
 			list.Packs.PackTableName,
 			list.Packs.PackLevelTableName,
 			list.Packs.PackLevelTableName,
-			list.SubmissionTableName)).Bind(dbx.Params{"packId": packId}).Execute()
+			list.RecordsTableName)).Bind(dbx.Params{"packId": packId}).Execute()
 		return err
 	})
 	return removedUsers, err
