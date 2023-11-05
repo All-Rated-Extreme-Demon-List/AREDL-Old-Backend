@@ -6,6 +6,7 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/list"
 	"math/rand"
 	"net/http"
 )
@@ -44,14 +45,13 @@ func MapSlice[T, U any](slice []T, mapper func(T) U) []U {
 	return result
 }
 
-func First[T any](data []T, f func(T) bool) (T, bool) {
-	for _, v := range data {
-		if f(v) {
-			return v, true
+func AnyMatch[T comparable](left []T, right []T) bool {
+	for _, v := range left {
+		if list.ExistInSlice(v, right) {
+			return true
 		}
 	}
-	var empty T
-	return empty, false
+	return false
 }
 
 type ErrorResponse struct {

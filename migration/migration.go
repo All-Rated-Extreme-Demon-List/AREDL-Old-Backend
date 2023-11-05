@@ -67,21 +67,14 @@ type RoleList struct {
 	} `json:"members"`
 }
 
-func addPlaceholder(txDao *daos.Dao, username string, role string) (string, error) {
+func addPlaceholder(txDao *daos.Dao, username string) (string, error) {
 	userId := util.RandString(14)
 	usedName := util.RandString(10)
 	userToken := util.RandString(10)
-	aredlPlus := false
-	if role == "aredl_plus" {
-		aredlPlus = true
-		role = "member"
-	}
 	_, err := txDao.DB().Insert(names.TableUsers, dbx.Params{
 		"id":           userId,
 		"username":     usedName,
-		"role":         role,
 		"global_name":  username,
-		"aredl_plus":   aredlPlus,
 		"placeholder":  true,
 		"passwordHash": "",
 		"tokenKey":     userToken,
@@ -105,7 +98,7 @@ func resolveRole(role string) string {
 	case "dev":
 		return "developer"
 	case "patreon":
-		return "aredl_plus"
+		return "aredlPlus"
 	}
 	return "member"
 }
@@ -130,6 +123,7 @@ func Register(app *pocketbase.PocketBase) {
 					aredl.Packs.PackTableName,
 					aredl.Packs.CompletedPacksTableName,
 					aredl.Packs.PackLevelTableName,
+					names.TableRoles,
 					names.TableMergeRequests,
 					names.TableNameChangeRequests}
 				for _, table := range deleteDataTables {
@@ -149,21 +143,6 @@ func Register(app *pocketbase.PocketBase) {
 				}
 				knownUsers := make(map[string]string)
 				knownLevels := make(map[string]string)
-				println("Loading editors")
-				var editors []RoleList
-				err = readFileIntoJson(path+"/_editors.json", &editors)
-				if err != nil {
-					return err
-				}
-				for _, editorList := range editors {
-					for _, member := range editorList.Members {
-						memberId, err := addPlaceholder(txDao, member.Name, resolveRole(editorList.Role))
-						if err != nil {
-							return err
-						}
-						knownUsers[strings.ToLower(member.Name)] = memberId
-					}
-				}
 				println("Migrating levels & records")
 				var levelNames []string
 				err = readFileIntoJson(path+"/_list.json", &levelNames)
@@ -220,7 +199,7 @@ func Register(app *pocketbase.PocketBase) {
 
 					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Verifier, "member")
+						userId, err := addPlaceholder(txDao, level.Verifier)
 						if err != nil {
 							return err
 						}
@@ -229,7 +208,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Author, "member")
+						userId, err := addPlaceholder(txDao, level.Author)
 						if err != nil {
 							return err
 						}
@@ -253,7 +232,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
-							creatorId, err = addPlaceholder(txDao, creator, "member")
+							creatorId, err = addPlaceholder(txDao, creator)
 							if err != nil {
 								return err
 							}
@@ -282,7 +261,7 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							userId, err := addPlaceholder(txDao, username, "member")
+							userId, err := addPlaceholder(txDao, username)
 							if err != nil {
 								return nil, err
 							}
@@ -310,6 +289,30 @@ func Register(app *pocketbase.PocketBase) {
 
 					for submissionOrder, playerRecord := range level.Records {
 						_, err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
+						if err != nil {
+							return err
+						}
+					}
+				}
+				println("Loading editors")
+				var editors []RoleList
+				err = readFileIntoJson(path+"/_editors.json", &editors)
+				if err != nil {
+					return err
+				}
+				for _, editorList := range editors {
+					for _, member := range editorList.Members {
+						memberId, ok := knownUsers[strings.ToLower(member.Name)]
+						if !ok {
+							memberId, err = addPlaceholder(txDao, member.Name)
+							if err != nil {
+								return err
+							}
+						}
+						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
+							"user": memberId,
+							"role": resolveRole(editorList.Role),
+						}).Execute()
 						if err != nil {
 							return err
 						}

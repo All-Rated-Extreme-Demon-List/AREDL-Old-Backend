@@ -18,17 +18,16 @@ type User struct {
 	Id             string         `db:"id" json:"id,omitempty"`
 	Created        types.DateTime `db:"created" json:"joined,omitempty"`
 	GlobalName     string         `db:"global_name" json:"global_name,omitempty"`
-	Role           string         `db:"role" json:"role,omitempty"`
 	Description    string         `db:"description" json:"description,omitempty"`
 	Country        string         `db:"country" json:"country,omitempty"`
 	Badges         string         `db:"badges" json:"badges,omitempty"`
 	AredlVerified  bool           `db:"aredl_verified" json:"aredl_verified,omitempty"`
-	AredlPlus      bool           `db:"aredl_plus" json:"aredl_plus,omitempty"`
 	BannedFromList bool           `db:"banned_from_list" json:"banned_from_list,omitempty"`
 	Placeholder    bool           `db:"placeholder" json:"placeholder,omitempty"`
 	DiscordId      string         `db:"discord_id" json:"discord_id,omitempty"`
 	AvatarUrl      string         `db:"avatar_url" json:"avatar_url,omitempty"`
 	BannerColor    string         `db:"banner_color" json:"banner_color,omitempty"`
+	Roles          []string       `json:"roles"`
 	Rank           *struct {
 		Position int     `db:"rank" json:"position"`
 		Points   float64 `db:"points" json:"points"`
@@ -40,10 +39,11 @@ type User struct {
 		Points float64 `db:"points" json:"points"`
 	} `json:"packs,omitempty"`
 	Records []struct {
-		VideoUrl string `db:"video_url" json:"video_url,omitempty"`
-		Fps      int    `db:"fps" json:"fps,omitempty"`
-		Mobile   bool   `db:"mobile" json:"mobile,omitempty"`
-		Level    struct {
+		VideoUrl       string `db:"video_url" json:"video_url,omitempty"`
+		Fps            int    `db:"fps" json:"fps,omitempty"`
+		Mobile         bool   `db:"mobile" json:"mobile,omitempty"`
+		PlacementOrder int    `db:"placement_order" json:"placement_order"`
+		Level          struct {
 			Id       string  `db:"id" json:"id,omitempty"`
 			Position int     `db:"position" json:"position,omitempty"`
 			Name     string  `db:"name" json:"name,omitempty"`
@@ -115,6 +115,15 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				if util.IsNotNoResultError(err) {
 					return util.NewErrorResponse(err, "Failed to load user rank")
 				}
+				type RoleData struct {
+					Role string `db:"role"`
+				}
+				var roleData []RoleData
+				err = app.Dao().DB().Select("role").From(names.TableRoles).Where(dbx.HashExp{"user": userId}).All(&roleData)
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to load roles")
+				}
+				user.Roles = util.MapSlice(roleData, func(v RoleData) string { return v.Role })
 				return c.JSON(http.StatusOK, user)
 			})
 			return err

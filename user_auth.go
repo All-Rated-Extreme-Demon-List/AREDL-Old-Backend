@@ -12,7 +12,6 @@ func RegisterUserAuth(app core.App) {
 			IsNew bool `json:"isNew"`
 		})
 		if meta.IsNew {
-			e.Record.Set("role", "member")
 			e.Record.Set("global_name", meta.RawUser["global_name"])
 			e.Record.Set("discord_id", meta.RawUser["id"])
 		}

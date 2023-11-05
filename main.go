@@ -21,7 +21,7 @@ import (
 //	@description	Backend for the all rated extreme demon list
 //	@contact.name	Discord server
 //	@contact.url	https://discord.gg/VbqrUBtTfX
-//	@host			api.aredl.net
+//	@host			127.0.0.1:8090
 //	@BasePath		/api
 
 // @securityDefinitions.apikey	ApiKeyAuth

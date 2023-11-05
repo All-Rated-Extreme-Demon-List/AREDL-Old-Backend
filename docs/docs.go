@@ -855,7 +855,10 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "$ref": "#/definitions/aredl_public.NameUser"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/aredl_public.NameUser"
+                                }
                             }
                         }
                     },
@@ -1560,6 +1563,48 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get a list of Permissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/user.PermissionData"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1767,16 +1812,10 @@ const docTemplate = `{
         "aredl_public.NameUser": {
             "type": "object",
             "properties": {
-                "aredl_plus": {
-                    "type": "boolean"
-                },
                 "global_name": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 }
             }
@@ -1827,9 +1866,6 @@ const docTemplate = `{
         "aredl_public.User": {
             "type": "object",
             "properties": {
-                "aredl_plus": {
-                    "type": "boolean"
-                },
                 "aredl_verified": {
                     "type": "boolean"
                 },
@@ -1931,14 +1967,20 @@ const docTemplate = `{
                             "mobile": {
                                 "type": "boolean"
                             },
+                            "placement_order": {
+                                "type": "integer"
+                            },
                             "video_url": {
                                 "type": "string"
                             }
                         }
                     }
                 },
-                "role": {
-                    "type": "string"
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1975,12 +2017,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "raw_footage": {
-                    "type": "string"
-                },
-                "rejected": {
-                    "type": "boolean"
-                },
-                "rejection_reason": {
                     "type": "string"
                 },
                 "updated": {
@@ -2027,6 +2063,17 @@ const docTemplate = `{
         "types.DateTime": {
             "type": "object"
         },
+        "user.PermissionData": {
+            "type": "object",
+            "properties": {
+                "affected_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "util.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -2056,7 +2103,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1",
-	Host:             "api.aredl.net",
+	Host:             "127.0.0.1:8090",
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Aredl API",

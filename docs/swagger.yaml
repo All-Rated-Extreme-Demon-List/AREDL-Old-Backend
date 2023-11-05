@@ -135,13 +135,9 @@ definitions:
     type: object
   aredl_public.NameUser:
     properties:
-      aredl_plus:
-        type: boolean
       global_name:
         type: string
       id:
-        type: string
-      role:
         type: string
     type: object
   aredl_public.Pack:
@@ -174,8 +170,6 @@ definitions:
     type: object
   aredl_public.User:
     properties:
-      aredl_plus:
-        type: boolean
       aredl_verified:
         type: boolean
       avatar_url:
@@ -242,12 +236,16 @@ definitions:
               type: object
             mobile:
               type: boolean
+            placement_order:
+              type: integer
             video_url:
               type: string
           type: object
         type: array
-      role:
-        type: string
+      roles:
+        items:
+          type: string
+        type: array
     type: object
   aredl_user.Submission:
     properties:
@@ -271,10 +269,6 @@ definitions:
       mobile:
         type: boolean
       raw_footage:
-        type: string
-      rejected:
-        type: boolean
-      rejection_reason:
         type: string
       updated:
         $ref: '#/definitions/types.DateTime'
@@ -304,6 +298,13 @@ definitions:
     type: object
   types.DateTime:
     type: object
+  user.PermissionData:
+    properties:
+      affected_roles:
+        items:
+          type: string
+        type: array
+    type: object
   util.ErrorResponse:
     properties:
       code:
@@ -314,7 +315,7 @@ definitions:
       message:
         type: string
     type: object
-host: api.aredl.net
+host: 127.0.0.1:8090
 info:
   contact:
     name: Discord server
@@ -899,7 +900,9 @@ paths:
           description: OK
           schema:
             additionalProperties:
-              $ref: '#/definitions/aredl_public.NameUser'
+              items:
+                $ref: '#/definitions/aredl_public.NameUser'
+              type: array
             type: object
         "400":
           description: Bad Request
@@ -1388,6 +1391,33 @@ paths:
       - ApiKeyAuth:
         - authorization
       summary: Name Change Request
+      tags:
+      - user
+  /user/permissions:
+    get:
+      description: Returns all the available permissions to the authenticated user,
+        if there is no authenticaiton provided, the permissions will be empty
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/user.PermissionData'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Get a list of Permissions
       tags:
       - user
 securityDefinitions:

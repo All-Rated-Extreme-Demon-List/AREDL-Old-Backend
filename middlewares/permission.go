@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"AREDL/names"
+	"AREDL/util"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
@@ -23,21 +24,31 @@ func RequirePermissionGroup(app core.App, listName string, action string) echo.M
 			if admin != nil {
 				return next(c)
 			}
-
 			if record == nil {
 				return apis.NewForbiddenError("Authentication is required for this endpoint", nil)
 			}
+			type RoleData struct {
+				Role string `db:"role"`
+			}
+			var roleData []RoleData
+			err := app.Dao().DB().Select("role").From(names.TableRoles).Where(dbx.HashExp{"user": record.Id}).All(&roleData)
+			if err != nil {
+				return apis.NewForbiddenError("Failed to load role", nil)
+			}
+			roles := util.MapSlice(roleData, func(v RoleData) string { return v.Role })
+			roles = append(roles, "default")
 
-			role := record.GetString("role")
-
-			permissions, err := app.Dao().FindRecordsByExpr(names.TablePermissions, dbx.HashExp{"action": action})
+			if listName == "" {
+				listName = "global"
+			}
+			permissions, err := app.Dao().FindRecordsByExpr(names.TablePermissions, dbx.HashExp{"action": action, "list": listName})
 			if err != nil {
 				return apis.NewForbiddenError("Permissions could not be loaded", nil)
 			}
 			foundRole := false
 			allAffectedRoles := make([]string, 0)
 			for _, permission := range permissions {
-				if !list.ExistInSlice(role, permission.GetStringSlice("role")) {
+				if !util.AnyMatch(roles, permission.GetStringSlice("role")) {
 					continue
 				}
 				foundRole = true

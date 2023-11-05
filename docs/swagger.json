@@ -9,7 +9,7 @@
         },
         "version": "0.1"
     },
-    "host": "api.aredl.net",
+    "host": "127.0.0.1:8090",
     "basePath": "/api",
     "paths": {
         "/aredl/history": {
@@ -849,7 +849,10 @@
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "$ref": "#/definitions/aredl_public.NameUser"
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/aredl_public.NameUser"
+                                }
                             }
                         }
                     },
@@ -1554,6 +1557,48 @@
                     }
                 }
             }
+        },
+        "/user/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get a list of Permissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/user.PermissionData"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1761,16 +1806,10 @@
         "aredl_public.NameUser": {
             "type": "object",
             "properties": {
-                "aredl_plus": {
-                    "type": "boolean"
-                },
                 "global_name": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "string"
-                },
-                "role": {
                     "type": "string"
                 }
             }
@@ -1821,9 +1860,6 @@
         "aredl_public.User": {
             "type": "object",
             "properties": {
-                "aredl_plus": {
-                    "type": "boolean"
-                },
                 "aredl_verified": {
                     "type": "boolean"
                 },
@@ -1925,14 +1961,20 @@
                             "mobile": {
                                 "type": "boolean"
                             },
+                            "placement_order": {
+                                "type": "integer"
+                            },
                             "video_url": {
                                 "type": "string"
                             }
                         }
                     }
                 },
-                "role": {
-                    "type": "string"
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1969,12 +2011,6 @@
                     "type": "boolean"
                 },
                 "raw_footage": {
-                    "type": "string"
-                },
-                "rejected": {
-                    "type": "boolean"
-                },
-                "rejection_reason": {
                     "type": "string"
                 },
                 "updated": {
@@ -2020,6 +2056,17 @@
         },
         "types.DateTime": {
             "type": "object"
+        },
+        "user.PermissionData": {
+            "type": "object",
+            "properties": {
+                "affected_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
         },
         "util.ErrorResponse": {
             "type": "object",

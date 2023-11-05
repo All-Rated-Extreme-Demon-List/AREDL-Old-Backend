@@ -131,7 +131,7 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 					}
 				}
 				if c.Get("records").(bool) {
-					tables["base"] = tables["submissions"]
+					tables["base"] = tables["records"]
 					err = util.LoadFromDb(txDao.DB(), &level.Records, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 						query.Where(dbx.HashExp{prefixResolver("level"): level.Id})
 						query.AndWhere(dbx.NewExp(prefixResolver("placement_order") + " <> 1"))

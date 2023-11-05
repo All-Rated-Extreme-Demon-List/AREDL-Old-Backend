@@ -12,5 +12,6 @@ func RegisterEndpoints(app core.App) {
 	util.RegisterEndpoints(app,
 		registerMergeRequestEndpoint,
 		registerNameChangeRequestEndpoint,
+		registerPermissionsEndpoint,
 	)
 }

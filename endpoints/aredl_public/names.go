@@ -12,10 +12,13 @@ import (
 )
 
 type NameUser struct {
-	Id         string `db:"id" json:"id,omitempty"`
-	GlobalName string `db:"global_name" json:"global_name,omitempty"`
-	Role       string `db:"role" json:"role,omitempty"`
-	AredlPlus  bool   `db:"aredl_plus" json:"aredl_plus,omitempty"`
+	Id         string `db:"id" json:"id"`
+	GlobalName string `db:"global_name" json:"global_name"`
+}
+
+type UserRole struct {
+	User NameUser `json:"user" extend:"user,users,id" db:"user"`
+	Role string   `db:"role" json:"role,omitempty"`
 }
 
 // registerNamesEndpoint godoc
@@ -25,7 +28,7 @@ type NameUser struct {
 //	@Tags			aredl_public
 //	@Schemes		http https
 //	@Produce		json
-//	@Success		200	{object}	map[string]NameUser
+//	@Success		200	{object}	map[string][]NameUser
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Router			/aredl/names [get]
 func registerNamesEndpoint(e *echo.Echo, app core.App) error {
@@ -37,30 +40,22 @@ func registerNamesEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.LoadParam(middlewares.LoadData{}),
 		},
 		Handler: func(c echo.Context) error {
-			var users []NameUser
+			var users []UserRole
 			tableNames := map[string]string{
-				"base": names.TableUsers,
+				"base":  names.TableRoles,
+				"users": names.TableUsers,
 			}
-			err := util.LoadFromDb(app.Dao().DB(), &users, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-				query.Where(dbx.Or(dbx.NotIn(prefixResolver("role"), "member"), dbx.HashExp{"aredl_plus": true}))
-			})
+			err := util.LoadFromDb(app.Dao().DB(), &users, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {})
 			if err != nil {
 				return util.NewErrorResponse(err, "failed to query data")
 			}
 			result := make(map[string][]NameUser)
-			result["aredlPlus"] = make([]NameUser, 0)
 			for _, user := range users {
-				if user.AredlPlus {
-					result["aredlPlus"] = append(result["aredlPlus"], user)
-				}
-				if user.Role == "member" {
-					continue
-				}
 				list, exists := result[user.Role]
 				if !exists {
 					list = make([]NameUser, 0)
 				}
-				result[user.Role] = append(list, user)
+				result[user.Role] = append(list, user.User)
 			}
 			return c.JSON(200, result)
 		},
