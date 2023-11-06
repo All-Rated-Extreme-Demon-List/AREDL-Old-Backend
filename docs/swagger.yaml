@@ -182,6 +182,23 @@ definitions:
         type: string
       country:
         type: string
+      created_levels:
+        items:
+          properties:
+            id:
+              type: string
+            legacy:
+              type: boolean
+            level_id:
+              type: integer
+            name:
+              type: string
+            points:
+              type: number
+            position:
+              type: integer
+          type: object
+        type: array
       description:
         type: string
       discord_id:

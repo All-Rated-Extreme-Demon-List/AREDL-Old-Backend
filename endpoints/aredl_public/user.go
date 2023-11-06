@@ -52,6 +52,17 @@ type User struct {
 			LevelId  int     `db:"level_id" json:"level_id,omitempty"`
 		} `db:"level" json:"level,omitempty" extend:"level,levels,id"`
 	} `json:"records,omitempty"`
+	CreatedLevels []struct {
+		Id       string  `db:"id" json:"id,omitempty"`
+		Position int     `db:"position" json:"position,omitempty"`
+		Name     string  `db:"name" json:"name,omitempty"`
+		Points   float64 `db:"points" json:"points"`
+		Legacy   bool    `db:"legacy" json:"legacy"`
+		LevelId  int     `db:"level_id" json:"level_id,omitempty"`
+		Created  struct {
+			Creator string `db:"creator"`
+		} `json:"-" extend:"id,creators,level" db:"creators"`
+	} `json:"created_levels"`
 }
 
 // registerUserEndpoint godoc
@@ -106,6 +117,15 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user levels")
+				}
+				tableNames["base"] = aredl.LevelTableName
+				tableNames["creators"] = aredl.CreatorTableName
+				err = util.LoadFromDb(txDao.DB(), &user.CreatedLevels, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
+					query.Where(dbx.HashExp{prefixResolver("creators.creator"): userId})
+					query.OrderBy(prefixResolver("position"))
+				})
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to load created levels")
 				}
 				tableNames["base"] = aredl.LeaderboardTableName
 				err = util.LoadFromDb(txDao.DB(), &user.Rank, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
