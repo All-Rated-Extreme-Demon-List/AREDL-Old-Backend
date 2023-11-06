@@ -2129,7 +2129,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1",
-	Host:             "127.0.0.1:8090",
+	Host:             "api.aredl.com",
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Aredl API",
