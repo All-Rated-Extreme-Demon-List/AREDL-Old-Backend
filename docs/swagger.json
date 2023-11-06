@@ -9,7 +9,7 @@
         },
         "version": "0.1"
     },
-    "host": "api.aredl.com",
+    "host": "api.aredl.net",
     "basePath": "/api",
     "paths": {
         "/aredl/history": {

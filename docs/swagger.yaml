@@ -332,7 +332,7 @@ definitions:
       message:
         type: string
     type: object
-host: api.aredl.com
+host: api.aredl.net
 info:
   contact:
     name: Discord server
