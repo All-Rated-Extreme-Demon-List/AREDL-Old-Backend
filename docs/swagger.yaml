@@ -224,6 +224,23 @@ definitions:
         type: array
       placeholder:
         type: boolean
+      published_levels:
+        items:
+          properties:
+            id:
+              type: string
+            legacy:
+              type: boolean
+            level_id:
+              type: integer
+            name:
+              type: string
+            points:
+              type: number
+            position:
+              type: integer
+          type: object
+        type: array
       rank:
         properties:
           points:

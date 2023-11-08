@@ -63,6 +63,14 @@ type User struct {
 			Creator string `db:"creator"`
 		} `json:"-" extend:"id,creators,level" db:"creators"`
 	} `json:"created_levels"`
+	PublishedLevels []struct {
+		Id       string  `db:"id" json:"id,omitempty"`
+		Position int     `db:"position" json:"position,omitempty"`
+		Name     string  `db:"name" json:"name,omitempty"`
+		Points   float64 `db:"points" json:"points"`
+		Legacy   bool    `db:"legacy" json:"legacy"`
+		LevelId  int     `db:"level_id" json:"level_id,omitempty"`
+	} `json:"published_levels"`
 }
 
 // registerUserEndpoint godoc
@@ -126,6 +134,13 @@ func registerUserEndpoint(e *echo.Echo, app core.App) error {
 				})
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load created levels")
+				}
+				err = util.LoadFromDb(txDao.DB(), &user.PublishedLevels, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
+					query.Where(dbx.HashExp{"publisher": userId})
+					query.OrderBy(prefixResolver("position"))
+				})
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to load published levels")
 				}
 				tableNames["base"] = aredl.LeaderboardTableName
 				err = util.LoadFromDb(txDao.DB(), &user.Rank, tableNames, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {

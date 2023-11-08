@@ -1948,6 +1948,32 @@ const docTemplate = `{
                 "placeholder": {
                     "type": "boolean"
                 },
+                "published_levels": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "legacy": {
+                                "type": "boolean"
+                            },
+                            "level_id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "points": {
+                                "type": "number"
+                            },
+                            "position": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
                 "rank": {
                     "type": "object",
                     "properties": {
