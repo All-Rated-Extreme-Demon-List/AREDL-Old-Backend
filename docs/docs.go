@@ -1925,6 +1925,15 @@ const docTemplate = `{
                 "joined": {
                     "$ref": "#/definitions/types.DateTime"
                 },
+                "linked_twitch": {
+                    "type": "string"
+                },
+                "linked_twitter": {
+                    "type": "string"
+                },
+                "linked_youtube": {
+                    "type": "string"
+                },
                 "packs": {
                     "type": "array",
                     "items": {

@@ -27,6 +27,9 @@ type User struct {
 	DiscordId      string         `db:"discord_id" json:"discord_id,omitempty"`
 	AvatarUrl      string         `db:"avatar_url" json:"avatar_url,omitempty"`
 	BannerColor    string         `db:"banner_color" json:"banner_color,omitempty"`
+	LinkedYoutube  string         `db:"youtube_id" json:"linked_youtube,omitempty"`
+	LinkedTwitch   string         `db:"twitch_id" json:"linked_twitch,omitempty"`
+	LinkedTwitter  string         `db:"twitter_id" json:"linked_twitter,omitempty"`
 	Roles          []string       `json:"roles"`
 	Rank           *struct {
 		Position int     `db:"rank" json:"position"`
