@@ -295,6 +295,8 @@ definitions:
         type: integer
       id:
         type: string
+      is_update:
+        type: boolean
       ldm_id:
         type: integer
       level:
@@ -310,6 +312,8 @@ definitions:
         type: boolean
       raw_footage:
         type: string
+      rejected:
+        type: boolean
       updated:
         $ref: '#/definitions/types.DateTime'
       video_url:

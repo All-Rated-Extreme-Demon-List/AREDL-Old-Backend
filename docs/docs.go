@@ -2057,6 +2057,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_update": {
+                    "type": "boolean"
+                },
                 "ldm_id": {
                     "type": "integer"
                 },
@@ -2079,6 +2082,9 @@ const docTemplate = `{
                 },
                 "raw_footage": {
                     "type": "string"
+                },
+                "rejected": {
+                    "type": "boolean"
                 },
                 "updated": {
                     "$ref": "#/definitions/types.DateTime"
