@@ -287,6 +287,34 @@ definitions:
           type: string
         type: array
     type: object
+  aredl_user.Record:
+    properties:
+      created:
+        $ref: '#/definitions/types.DateTime'
+      fps:
+        type: integer
+      id:
+        type: string
+      ldm_id:
+        type: integer
+      level:
+        properties:
+          id:
+            type: string
+          level_id:
+            type: integer
+          name:
+            type: string
+        type: object
+      mobile:
+        type: boolean
+      raw_footage:
+        type: string
+      updated:
+        $ref: '#/definitions/types.DateTime'
+      video_url:
+        type: string
+    type: object
   aredl_user.Submission:
     properties:
       created:
@@ -1009,7 +1037,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/aredl_user.Submission'
+              $ref: '#/definitions/aredl_user.Record'
             type: array
         "400":
           description: Bad Request

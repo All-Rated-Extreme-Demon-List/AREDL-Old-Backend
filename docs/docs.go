@@ -958,7 +958,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/aredl_user.Submission"
+                                "$ref": "#/definitions/aredl_user.Record"
                             }
                         }
                     },
@@ -2042,6 +2042,49 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "aredl_user.Record": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "fps": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ldm_id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "level_id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "mobile": {
+                    "type": "boolean"
+                },
+                "raw_footage": {
+                    "type": "string"
+                },
+                "updated": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "video_url": {
+                    "type": "string"
                 }
             }
         },

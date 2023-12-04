@@ -39,7 +39,7 @@ type Record struct {
 //	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
-//	@Success		200	{object}	[]Submission
+//	@Success		200	{object}	[]Record
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
 //	@Router			/aredl/user/records [get]
@@ -59,19 +59,19 @@ func registerRecordList(e *echo.Echo, app core.App) error {
 				if userRecord == nil {
 					return util.NewErrorResponse(nil, "Could not load user")
 				}
-				var submissions []Submission
+				var records []Record
 				tables := map[string]string{
 					"base":   aredl.RecordsTableName,
 					"levels": aredl.LevelTableName,
 				}
-				err := util.LoadFromDb(app.Dao().DB(), &submissions, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
+				err := util.LoadFromDb(app.Dao().DB(), &records, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 					query.Where(dbx.HashExp{prefixResolver("submitted_by"): userRecord.Id})
 					query.OrderBy(prefixResolver("updated"))
 				})
 				if err != nil {
-					return util.NewErrorResponse(err, "could not load submissions")
+					return util.NewErrorResponse(err, "could not load records")
 				}
-				return c.JSON(200, submissions)
+				return c.JSON(200, records)
 			})
 			return err
 		},
