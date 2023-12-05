@@ -75,9 +75,13 @@ func RegisterUserAuth(app core.App) {
 			e.Record.Set("global_name", meta.RawUser["global_name"])
 			e.Record.Set("discord_id", meta.RawUser["id"])
 		}
+		err := e.Record.SetEmail("")
+		if err != nil {
+			return err
+		}
 		e.Record.Set("avatar_url", meta.AvatarUrl)
 		e.Record.Set("banner_color", meta.RawUser["banner_color"])
-		err := loadConnections(e.Record, meta.AccessToken)
+		err = loadConnections(e.Record, meta.AccessToken)
 		if err != nil {
 			return err
 		}
