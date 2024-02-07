@@ -89,6 +89,8 @@ func resolveRole(role string) string {
 	switch role {
 	case "owner":
 		return "listOwner"
+	case "coowner":
+		return "listCoOwner"
 	case "admin":
 		return "listAdmin"
 	case "trial":
@@ -318,6 +320,32 @@ func Register(app *pocketbase.PocketBase) {
 						}
 					}
 				}
+
+				println("Loading supporters")
+				var supporters []RoleList
+				err = readFileIntoJson(path+"/_supporters.json", &supporters)
+				if err != nil {
+					return err
+				}
+				for _, supporterList := range supporters {
+					for _, member := range supporterList.Members {
+						memberId, ok := knownUsers[strings.ToLower(member.Name)]
+						if !ok {
+							memberId, err = addPlaceholder(txDao, member.Name)
+							if err != nil {
+								return err
+							}
+						}
+						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
+							"user": memberId,
+							"role": resolveRole(supporterList.Role),
+						}).Execute()
+						if err != nil {
+							return err
+						}
+					}
+				}
+
 
 				println("Migrating packs")
 				var packs []Pack
