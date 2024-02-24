@@ -32,7 +32,7 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/user/submission [post]
+//	@Router			/aredl/user/submit [post]
 func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,

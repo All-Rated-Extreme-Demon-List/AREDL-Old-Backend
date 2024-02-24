@@ -7,7 +7,6 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
-	"modernc.org/mathutil"
 )
 
 func UpsertSubmission(dao *daos.Dao, app core.App, listData ListData, submissionData map[string]any) error {
@@ -49,30 +48,7 @@ func UpsertSubmission(dao *daos.Dao, app core.App, listData ListData, submission
 				return util.NewErrorResponse(err, "Failed to load collection")
 			}
 			submissionRecord = models.NewRecord(submissionCollection)
-			if len(records) == 0 {
-				// new submission
-				var maxSubmissionsPlacement int
-				err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.SubmissionsTableName).Where(dbx.HashExp{
-					"level": submissionData["level"],
-				}).Row(&maxSubmissionsPlacement)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to max query submission order")
-				}
-				var maxRecordsPlacement int
-				err = txDao.DB().Select("COALESCE(max(placement_order),0)").From(listData.RecordsTableName).Where(dbx.HashExp{
-					"level": submissionData["level"],
-				}).Row(&maxRecordsPlacement)
-				if err != nil {
-					return util.NewErrorResponse(err, "Failed to max query record order")
-				}
-				submissionData["is_update"] = false
-				submissionData["placement_order"] = mathutil.Max(maxRecordsPlacement, maxSubmissionsPlacement) + 1
-			} else {
-				// update record
-				record := records[0]
-				submissionData["is_update"] = true
-				submissionData["placement_order"] = record.GetInt("placement_order")
-			}
+			submissionData["is_update"] = len(records) != 0
 			submissionForm := forms.NewRecordUpsert(app, submissionRecord)
 			submissionForm.SetDao(txDao)
 			err = submissionForm.LoadData(submissionData)

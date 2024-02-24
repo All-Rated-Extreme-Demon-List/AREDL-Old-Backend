@@ -1083,6 +1083,35 @@ paths:
       summary: Delete submission
       tags:
       - aredl_user
+  /aredl/user/submissions:
+    get:
+      description: |-
+        Lists submissions ordered by the time they have been updated last.
+        Requires user permission: aredl.user_submission_list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl_user.Submission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: List submissions
+      tags:
+      - aredl_user
+  /aredl/user/submit:
     post:
       description: |-
         Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable
@@ -1137,34 +1166,6 @@ paths:
       - ApiKeyAuth:
         - authorization
       summary: Create or Update submission
-      tags:
-      - aredl_user
-  /aredl/user/submissions:
-    get:
-      description: |-
-        Lists submissions ordered by the time they have been updated last.
-        Requires user permission: aredl.user_submission_list
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/aredl_user.Submission'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: List submissions
       tags:
       - aredl_user
   /mod/user/ban:
