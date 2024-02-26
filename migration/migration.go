@@ -195,6 +195,7 @@ func Register(app *pocketbase.PocketBase) {
 					if err != nil {
 						return err
 					}
+					twoPlayer := strings.HasSuffix(levelData.Name, "2p")
 					if len(level.Creators) == 0 {
 						level.Creators = []string{level.Author}
 					}
@@ -225,6 +226,7 @@ func Register(app *pocketbase.PocketBase) {
 						"level_id":       level.Id,
 						"level_password": level.Password,
 						"legacy":         levelData.Legacy,
+						"two_player":     twoPlayer,
 					})
 					if err != nil {
 						return err
