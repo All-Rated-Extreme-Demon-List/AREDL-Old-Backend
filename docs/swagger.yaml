@@ -577,18 +577,11 @@ paths:
         in: query
         name: level_password
         type: string
-      - description: reference to custom song
+      - default: "100"
+        description: reference to custom song
         in: query
         name: custom_song
         type: string
-      - default: 100
-        description: qualifying percent of the level (just here for completeness,
-          prob legacy)
-        in: query
-        maximum: 100
-        minimum: 1
-        name: qualifying_percent
-        type: integer
       - default: false
         description: whether the level should be placed as legacy
         in: query
@@ -684,14 +677,6 @@ paths:
         in: query
         name: custom_song
         type: string
-      - default: 100
-        description: qualifying percent of the level (just here for completeness,
-          prob legacy)
-        in: query
-        maximum: 100
-        minimum: 1
-        name: qualifying_percent
-        type: integer
       - description: whether the level should be placed as legacy
         in: query
         name: legacy

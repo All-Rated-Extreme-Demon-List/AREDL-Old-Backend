@@ -26,7 +26,6 @@ import (
 //	@Param			publisher			query	string		false	"publisher user id"
 //	@Param			level_password		query	string		false	"gd level password"
 //	@Param			custom_song			query	string		false	"reference to custom song"
-//	@Param			qualifying_percent	query	int			false	"qualifying percent of the level (just here for completeness, prob legacy)"	minimum(1)	maximum(100)	default(100)
 //	@Param			legacy				query	bool		false	"whether the level should be placed as legacy"
 //	@Schemes		http https
 //	@Produce		json
@@ -45,15 +44,14 @@ func registerLevelUpdateEndpoint(e *echo.Echo, app core.App) error {
 				"id":          middlewares.LoadString(true),
 				"creator_ids": middlewares.LoadStringArray(false),
 				"levelData": middlewares.LoadMap("", middlewares.LoadData{
-					"level_id":           middlewares.LoadInt(false),
-					"name":               middlewares.LoadString(false),
-					"verification":       middlewares.LoadString(false),
-					"publisher":          middlewares.LoadString(false),
-					"level_password":     middlewares.LoadString(false),
-					"custom_song":        middlewares.LoadString(false),
-					"legacy":             middlewares.LoadBool(false),
-					"position":           middlewares.LoadInt(false, validation.Min(1)),
-					"qualifying_percent": middlewares.LoadInt(false, validation.Min(1), validation.Max(100)),
+					"level_id":       middlewares.LoadInt(false),
+					"name":           middlewares.LoadString(false),
+					"verification":   middlewares.LoadString(false),
+					"publisher":      middlewares.LoadString(false),
+					"level_password": middlewares.LoadString(false),
+					"custom_song":    middlewares.LoadString(false),
+					"legacy":         middlewares.LoadBool(false),
+					"position":       middlewares.LoadInt(false, validation.Min(1)),
 				}),
 			}),
 		},

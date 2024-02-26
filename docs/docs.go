@@ -285,17 +285,9 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "default": "100",
                         "description": "reference to custom song",
                         "name": "custom_song",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 100,
-                        "description": "qualifying percent of the level (just here for completeness, prob legacy)",
-                        "name": "qualifying_percent",
                         "in": "query"
                     },
                     {
@@ -433,15 +425,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "reference to custom song",
                         "name": "custom_song",
-                        "in": "query"
-                    },
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 100,
-                        "description": "qualifying percent of the level (just here for completeness, prob legacy)",
-                        "name": "qualifying_percent",
                         "in": "query"
                     },
                     {

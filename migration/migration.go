@@ -219,13 +219,12 @@ func Register(app *pocketbase.PocketBase) {
 					}
 
 					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
-						"position":           position + 1,
-						"name":               level.Name,
-						"publisher":          publisherId,
-						"level_id":           level.Id,
-						"level_password":     level.Password,
-						"qualifying_percent": level.PercentToQualify,
-						"legacy":             levelData.Legacy,
+						"position":       position + 1,
+						"name":           level.Name,
+						"publisher":      publisherId,
+						"level_id":       level.Id,
+						"level_password": level.Password,
+						"legacy":         levelData.Legacy,
 					})
 					if err != nil {
 						return err
@@ -345,7 +344,6 @@ func Register(app *pocketbase.PocketBase) {
 						}
 					}
 				}
-
 
 				println("Migrating packs")
 				var packs []Pack

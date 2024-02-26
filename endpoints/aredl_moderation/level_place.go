@@ -26,8 +26,7 @@ import (
 //	@Param			name						query	string		true	"displayed name of the level"
 //	@Param			publisher					query	string		true	"publisher user id"
 //	@Param			level_password				query	string		false	"gd level password"
-//	@Param			custom_song					query	string		false	"reference to custom song"
-//	@Param			qualifying_percent			query	int			false	"qualifying percent of the level (just here for completeness, prob legacy)"	minimum(1)	maximum(100)	default(100)
+//	@Param			custom_song					query	string		false	"reference to custom song"	default(100)
 //	@Param			legacy						query	bool		false	"whether the level should be placed as legacy"								default(false)
 //	@Param			verification_submitted_by	query	string		true	"user id of the verifier"
 //	@Param			verification_video_url		query	string		true	"video url of the verification"	format(url)
@@ -51,14 +50,13 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.LoadParam(middlewares.LoadData{
 				"creator_ids": middlewares.LoadStringArray(true),
 				"levelData": middlewares.LoadMap("", middlewares.LoadData{
-					"level_id":           middlewares.LoadInt(true, validation.Min(1)),
-					"position":           middlewares.LoadInt(true, validation.Min(1)),
-					"name":               middlewares.LoadString(true),
-					"publisher":          middlewares.LoadString(true),
-					"level_password":     middlewares.LoadString(false),
-					"custom_song":        middlewares.LoadString(false),
-					"qualifying_percent": middlewares.AddDefault(100, middlewares.LoadInt(false, validation.Min(1), validation.Max(100))),
-					"legacy":             middlewares.AddDefault(false, middlewares.LoadBool(false)),
+					"level_id":       middlewares.LoadInt(true, validation.Min(1)),
+					"position":       middlewares.LoadInt(true, validation.Min(1)),
+					"name":           middlewares.LoadString(true),
+					"publisher":      middlewares.LoadString(true),
+					"level_password": middlewares.LoadString(false),
+					"custom_song":    middlewares.LoadString(false),
+					"legacy":         middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				}),
 				"verificationData": middlewares.LoadMap("verification_", middlewares.LoadData{
 					"submitted_by": middlewares.LoadString(true),
