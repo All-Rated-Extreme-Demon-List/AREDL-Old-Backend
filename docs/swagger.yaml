@@ -84,6 +84,8 @@ definitions:
         items:
           $ref: '#/definitions/aredl_public.LevelRecord'
         type: array
+      two_player:
+        type: boolean
       verification:
         $ref: '#/definitions/aredl_public.LevelRecord'
     type: object
@@ -132,6 +134,8 @@ definitions:
         type: number
       position:
         type: integer
+      two_player:
+        type: boolean
     type: object
   aredl_public.NameUser:
     properties:
@@ -483,6 +487,12 @@ paths:
         minimum: 1
         name: level_id
         type: integer
+      - default: false
+        description: if level was requested using level_id this specifies whether
+          it should load the two player version
+        in: query
+        name: two_player
+        type: boolean
       - default: false
         description: include records
         in: query

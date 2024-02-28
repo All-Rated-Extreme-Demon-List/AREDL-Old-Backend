@@ -147,6 +147,13 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "default": false,
+                        "description": "if level was requested using level_id this specifies whether it should load the two player version",
+                        "name": "two_player",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
                         "description": "include records",
                         "name": "records",
                         "in": "query"
@@ -1718,6 +1725,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/aredl_public.LevelRecord"
                     }
                 },
+                "two_player": {
+                    "type": "boolean"
+                },
                 "verification": {
                     "$ref": "#/definitions/aredl_public.LevelRecord"
                 }
@@ -1791,6 +1801,9 @@ const docTemplate = `{
                 },
                 "position": {
                     "type": "integer"
+                },
+                "two_player": {
+                    "type": "boolean"
                 }
             }
         },

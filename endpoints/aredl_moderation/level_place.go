@@ -26,8 +26,8 @@ import (
 //	@Param			name						query	string		true	"displayed name of the level"
 //	@Param			publisher					query	string		true	"publisher user id"
 //	@Param			level_password				query	string		false	"gd level password"
-//	@Param			custom_song					query	string		false	"reference to custom song"	default(100)
-//	@Param			legacy						query	bool		false	"whether the level should be placed as legacy"								default(false)
+//	@Param			custom_song					query	string		false	"reference to custom song"						default(100)
+//	@Param			legacy						query	bool		false	"whether the level should be placed as legacy"	default(false)
 //	@Param			verification_submitted_by	query	string		true	"user id of the verifier"
 //	@Param			verification_video_url		query	string		true	"video url of the verification"	format(url)
 //	@Param			verification_fps			query	int			true	"framerate of the verification"	minimum(30)	maximum(360)

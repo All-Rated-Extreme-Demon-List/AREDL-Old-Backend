@@ -42,6 +42,7 @@ type Level struct {
 	Points        float64        `db:"points" json:"points,omitempty"`
 	Legacy        bool           `db:"legacy" json:"legacy,omitempty"`
 	LevelId       int            `db:"level_id" json:"level_id,omitempty"`
+	TwoPlayer     bool           `db:"two_player" json:"two_player"`
 	LevelPassword string         `db:"level_password" json:"level_password,omitempty"`
 	CustomSong    string         `db:"custom_song" json:"custom_song,omitempty"`
 	Publisher     LevelUser      `db:"publisher" json:"publisher,omitempty" extend:"publisher,users,id"`
@@ -58,11 +59,12 @@ type Level struct {
 //	@Description	Detailed information on a level. I naddition optional data such as records, creators, verification and packs can be requested.
 //	@Tags			aredl_public
 //	@Param			id				query	string	false	"internal level id"
-//	@Param			level_id		query	int		false	"gd level id"			minimum(1)
-//	@Param			records			query	bool	false	"include records"		default(false)
-//	@Param			creators		query	bool	false	"include creators"		default(false)
-//	@Param			verification	query	bool	false	"include verification"	default(false)
-//	@Param			packs			query	bool	false	"include packs"			default(false)
+//	@Param			level_id		query	int		false	"gd level id"																							minimum(1)
+//	@Param			two_player		query	bool	false	"if level was requested using level_id this specifies whether it should load the two player version"	default(false)
+//	@Param			records			query	bool	false	"include records"																						default(false)
+//	@Param			creators		query	bool	false	"include creators"																						default(false)
+//	@Param			verification	query	bool	false	"include verification"																					default(false)
+//	@Param			packs			query	bool	false	"include packs"																							default(false)
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200	{object}	Level
@@ -80,6 +82,7 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 				"records":      middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"creators":     middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"verification": middlewares.AddDefault(false, middlewares.LoadBool(false)),
+				"two_player":   middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"packs":        middlewares.AddDefault(false, middlewares.LoadBool(false)),
 			}),
 		},
@@ -102,7 +105,7 @@ func registerLevelEndpoint(e *echo.Echo, app core.App) error {
 				}
 				err := util.LoadFromDb(txDao.DB(), &level, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
 					if hasLevelId {
-						query.Where(dbx.HashExp{prefixResolver("level_id"): c.Get("level_id")})
+						query.Where(dbx.HashExp{prefixResolver("level_id"): c.Get("level_id"), prefixResolver("two_player"): c.Get("two_player")})
 					}
 					if hasId {
 						query.Where(dbx.HashExp{prefixResolver("id"): c.Get("id")})

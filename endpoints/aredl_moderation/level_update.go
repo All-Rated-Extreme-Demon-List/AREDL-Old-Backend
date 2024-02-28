@@ -18,15 +18,15 @@ import (
 //	@Description	Requires user permission: aredl.manage_levels
 //	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
-//	@Param			id					query	string		true	"internal level id"
-//	@Param			creator_ids			query	[]string	false	"list of all creators using their internal user ids"
-//	@Param			level_id			query	int			false	"gd level id"												minimum(1)
-//	@Param			position			query	int			false	"position to move to if different form current position"	minimum(1)
-//	@Param			name				query	string		false	"displayed name of the level"
-//	@Param			publisher			query	string		false	"publisher user id"
-//	@Param			level_password		query	string		false	"gd level password"
-//	@Param			custom_song			query	string		false	"reference to custom song"
-//	@Param			legacy				query	bool		false	"whether the level should be placed as legacy"
+//	@Param			id				query	string		true	"internal level id"
+//	@Param			creator_ids		query	[]string	false	"list of all creators using their internal user ids"
+//	@Param			level_id		query	int			false	"gd level id"												minimum(1)
+//	@Param			position		query	int			false	"position to move to if different form current position"	minimum(1)
+//	@Param			name			query	string		false	"displayed name of the level"
+//	@Param			publisher		query	string		false	"publisher user id"
+//	@Param			level_password	query	string		false	"gd level password"
+//	@Param			custom_song		query	string		false	"reference to custom song"
+//	@Param			legacy			query	bool		false	"whether the level should be placed as legacy"
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200
