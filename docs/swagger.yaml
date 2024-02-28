@@ -84,8 +84,6 @@ definitions:
         items:
           $ref: '#/definitions/aredl_public.LevelRecord'
         type: array
-      two_player:
-        type: boolean
       verification:
         $ref: '#/definitions/aredl_public.LevelRecord'
     type: object

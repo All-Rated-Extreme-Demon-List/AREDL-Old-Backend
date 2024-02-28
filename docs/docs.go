@@ -1725,9 +1725,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/aredl_public.LevelRecord"
                     }
                 },
-                "two_player": {
-                    "type": "boolean"
-                },
                 "verification": {
                     "$ref": "#/definitions/aredl_public.LevelRecord"
                 }
