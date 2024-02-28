@@ -42,7 +42,6 @@ type Level struct {
 	Points        float64        `db:"points" json:"points,omitempty"`
 	Legacy        bool           `db:"legacy" json:"legacy,omitempty"`
 	LevelId       int            `db:"level_id" json:"level_id,omitempty"`
-	TwoPlayer     bool           `db:"two_player" json:"two_player"`
 	LevelPassword string         `db:"level_password" json:"level_password,omitempty"`
 	CustomSong    string         `db:"custom_song" json:"custom_song,omitempty"`
 	Publisher     LevelUser      `db:"publisher" json:"publisher,omitempty" extend:"publisher,users,id"`
