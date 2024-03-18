@@ -38,7 +38,7 @@ func main() {
 		return nil
 	})
 
-	app.OnBeforeServe().Add(demonlist.RegisterLevelDataRequester)
+	//app.OnBeforeServe().Add(demonlist.RegisterLevelDataRequester)
 
 	moderation.RegisterEndpoints(app)
 	aredl_moderation.RegisterEndpoints(app)
