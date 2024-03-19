@@ -266,7 +266,7 @@ func requestLevelDataFromGDServer(levelId string) (string, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("status error: %w; response: %v", err, resp)
+		return "", fmt.Errorf("invalid status code: %v", resp)
 	}
 
 	// Read response body
