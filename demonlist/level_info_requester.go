@@ -265,6 +265,10 @@ func requestLevelDataFromGDServer(levelId string) (string, error) {
 		return "", fmt.Errorf("request data error: %w", err)
 	}
 
+	if resp.StatusCode != 200 {
+		return "", fmt.Errorf("status error: %w; response: %v", err, resp)
+	}
+
 	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
