@@ -36,7 +36,7 @@ func registerNameChangeRequestEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
-			middlewares.RequirePermissionGroup(app, "aredl", "user_request_name_change"),
+			middlewares.RequirePermissionGroup(app, "", "user_request_name_change"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"new_name": middlewares.LoadString(true, validation.Match(regexp.MustCompile("^([a-zA-Z0-9 ._]{4,20}$)"))),
 			}),

@@ -36,7 +36,7 @@ func registerGetApiKeyEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
-			middlewares.RequirePermissionGroup(app, "aredl", "user_request_api_key"),
+			middlewares.RequirePermissionGroup(app, "", "user_request_api_key"),
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {

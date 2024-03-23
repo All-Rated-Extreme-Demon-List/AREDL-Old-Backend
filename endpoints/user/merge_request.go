@@ -34,7 +34,7 @@ func registerMergeRequestEndpoint(e *echo.Echo, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
-			middlewares.RequirePermissionGroup(app, "aredl", "user_request_merge"),
+			middlewares.RequirePermissionGroup(app, "", "user_request_merge"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"placeholder_name": middlewares.LoadString(true),
 			}),
