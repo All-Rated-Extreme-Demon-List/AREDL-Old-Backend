@@ -1449,6 +1449,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/api-key": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Gets the authenticated users api key. If the user does not have one it generates a new one.\nRequires user permission: user_request_api_key",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get Api Key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.ApiKeyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/merge-request": {
             "post": {
                 "security": [
@@ -2138,6 +2177,17 @@ const docTemplate = `{
         },
         "types.DateTime": {
             "type": "object"
+        },
+        "user.ApiKeyResponse": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "newly_generated": {
+                    "type": "boolean"
+                }
+            }
         },
         "user.PermissionData": {
             "type": "object",

@@ -364,6 +364,13 @@ definitions:
     type: object
   types.DateTime:
     type: object
+  user.ApiKeyResponse:
+    properties:
+      api_key:
+        type: string
+      newly_generated:
+        type: boolean
+    type: object
   user.PermissionData:
     properties:
       affected_roles:
@@ -1378,6 +1385,32 @@ paths:
       summary: Unban user
       tags:
       - moderation
+  /user/api-key:
+    post:
+      description: |-
+        Gets the authenticated users api key. If the user does not have one it generates a new one.
+        Requires user permission: user_request_api_key
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.ApiKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Get Api Key
+      tags:
+      - user
   /user/merge-request:
     post:
       description: |-

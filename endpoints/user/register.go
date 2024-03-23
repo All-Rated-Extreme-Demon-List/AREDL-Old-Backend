@@ -13,5 +13,6 @@ func RegisterEndpoints(app core.App) {
 		registerMergeRequestEndpoint,
 		registerNameChangeRequestEndpoint,
 		registerPermissionsEndpoint,
+		registerGetApiKeyEndpoint,
 	)
 }
