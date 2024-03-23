@@ -21,13 +21,9 @@ func RequirePermissionGroup(app core.App, listName string, action string) echo.M
 			admin, _ := c.Get(apis.ContextAdminKey).(*models.Admin)
 			record, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
 
-			if admin != nil {
-				return next(c)
-			}
-
 			apiKey := c.Request().Header.Get("api-key")
 
-			if record == nil && apiKey == "" {
+			if record == nil && apiKey == "" && admin == nil {
 				return apis.NewForbiddenError("Authentication is required for this endpoint", nil)
 			}
 
