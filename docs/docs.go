@@ -725,14 +725,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "maximum": 360,
-                        "minimum": 30,
-                        "type": "integer",
-                        "description": "framerate",
-                        "name": "fps",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
                         "format": "url",
                         "description": "video url",
@@ -1076,15 +1068,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "internal level id",
                         "name": "level",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "maximum": 360,
-                        "minimum": 30,
-                        "type": "integer",
-                        "description": "framerate",
-                        "name": "fps",
                         "in": "query",
                         "required": true
                     },
@@ -1750,9 +1733,6 @@ const docTemplate = `{
         "aredl_public.LevelRecord": {
             "type": "object",
             "properties": {
-                "fps": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -1994,9 +1974,6 @@ const docTemplate = `{
                     "items": {
                         "type": "object",
                         "properties": {
-                            "fps": {
-                                "type": "integer"
-                            },
                             "level": {
                                 "type": "object",
                                 "properties": {
@@ -2046,9 +2023,6 @@ const docTemplate = `{
                 "created": {
                     "$ref": "#/definitions/types.DateTime"
                 },
-                "fps": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -2088,9 +2062,6 @@ const docTemplate = `{
             "properties": {
                 "created": {
                     "$ref": "#/definitions/types.DateTime"
-                },
-                "fps": {
-                    "type": "integer"
                 },
                 "id": {
                     "type": "string"

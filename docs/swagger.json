@@ -719,14 +719,6 @@
                         "required": true
                     },
                     {
-                        "maximum": 360,
-                        "minimum": 30,
-                        "type": "integer",
-                        "description": "framerate",
-                        "name": "fps",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
                         "format": "url",
                         "description": "video url",
@@ -1070,15 +1062,6 @@
                         "type": "string",
                         "description": "internal level id",
                         "name": "level",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "maximum": 360,
-                        "minimum": 30,
-                        "type": "integer",
-                        "description": "framerate",
-                        "name": "fps",
                         "in": "query",
                         "required": true
                     },
@@ -1744,9 +1727,6 @@
         "aredl_public.LevelRecord": {
             "type": "object",
             "properties": {
-                "fps": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -1988,9 +1968,6 @@
                     "items": {
                         "type": "object",
                         "properties": {
-                            "fps": {
-                                "type": "integer"
-                            },
                             "level": {
                                 "type": "object",
                                 "properties": {
@@ -2040,9 +2017,6 @@
                 "created": {
                     "$ref": "#/definitions/types.DateTime"
                 },
-                "fps": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -2082,9 +2056,6 @@
             "properties": {
                 "created": {
                     "$ref": "#/definitions/types.DateTime"
-                },
-                "fps": {
-                    "type": "integer"
                 },
                 "id": {
                     "type": "string"

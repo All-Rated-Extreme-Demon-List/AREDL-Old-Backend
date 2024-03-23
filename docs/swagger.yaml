@@ -100,8 +100,6 @@ definitions:
     type: object
   aredl_public.LevelRecord:
     properties:
-      fps:
-        type: integer
       id:
         type: string
       mobile:
@@ -259,8 +257,6 @@ definitions:
       records:
         items:
           properties:
-            fps:
-              type: integer
             level:
               properties:
                 id:
@@ -293,8 +289,6 @@ definitions:
     properties:
       created:
         $ref: '#/definitions/types.DateTime'
-      fps:
-        type: integer
       id:
         type: string
       ldm_id:
@@ -321,8 +315,6 @@ definitions:
     properties:
       created:
         $ref: '#/definitions/types.DateTime'
-      fps:
-        type: integer
       id:
         type: string
       is_update:
@@ -879,12 +871,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: framerate
-        in: query
-        maximum: 360
-        minimum: 30
-        name: fps
-        type: integer
       - description: video url
         format: url
         in: query
@@ -1115,13 +1101,6 @@ paths:
         name: level
         required: true
         type: string
-      - description: framerate
-        in: query
-        maximum: 360
-        minimum: 30
-        name: fps
-        required: true
-        type: integer
       - description: display video url
         format: url
         in: query
