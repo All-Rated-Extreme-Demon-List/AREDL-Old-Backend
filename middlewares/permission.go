@@ -25,13 +25,13 @@ func RequirePermissionGroup(app core.App, listName string, action string) echo.M
 				return next(c)
 			}
 
-			apiKey, hasApiKey := GetApiKey(c)
+			apiKey := c.Request().Header.Get("api-key")
 
-			if record == nil && !hasApiKey {
+			if record == nil && apiKey == "" {
 				return apis.NewForbiddenError("Authentication is required for this endpoint", nil)
 			}
 
-			if hasApiKey {
+			if apiKey != "" {
 				users, err := app.Dao().FindRecordsByExpr(names.TableUsers, dbx.HashExp{"api_key": apiKey})
 				if err != nil || len(users) != 1 {
 					return apis.NewForbiddenError("Api Key not found", nil)
@@ -87,7 +87,7 @@ func CanAffectRole(c echo.Context, role string) bool {
 
 func GetApiKey(c echo.Context) (string, bool) {
 	for key, values := range c.Request().Header {
-		if key == "api_key" && len(values) >= 1 {
+		if key == "api-key" && len(values) >= 1 {
 			return values[0], true
 		}
 	}
