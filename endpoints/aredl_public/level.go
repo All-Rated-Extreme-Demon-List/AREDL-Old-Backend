@@ -23,7 +23,6 @@ type LevelUser struct {
 type LevelRecord struct {
 	Id          string    `db:"id" json:"id,omitempty"`
 	VideoUrl    string    `db:"video_url" json:"video_url,omitempty"`
-	Fps         int       `db:"fps" json:"fps,omitempty"`
 	Mobile      bool      `db:"mobile" json:"mobile,omitempty"`
 	SubmittedBy LevelUser `db:"submitted_by" json:"submitted_by,omitempty" extend:"submitted_by,users,id"`
 }

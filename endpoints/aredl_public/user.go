@@ -43,7 +43,6 @@ type User struct {
 	} `json:"packs,omitempty"`
 	Records []struct {
 		VideoUrl       string `db:"video_url" json:"video_url,omitempty"`
-		Fps            int    `db:"fps" json:"fps,omitempty"`
 		Mobile         bool   `db:"mobile" json:"mobile,omitempty"`
 		PlacementOrder int    `db:"placement_order" json:"placement_order"`
 		Level          struct {

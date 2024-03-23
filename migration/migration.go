@@ -33,11 +33,10 @@ func readFileIntoJson(path string, v any) error {
 }
 
 type Record struct {
-	User      string `json:"user"`
-	Link      string `json:"link"`
-	Percent   int    `json:"percent"`
-	Framerate int    `json:"hz"`
-	Mobile    bool   `json:"mobile"`
+	User    string `json:"user"`
+	Link    string `json:"link"`
+	Percent int    `json:"percent"`
+	Mobile  bool   `json:"mobile"`
 }
 
 type Level struct {
@@ -261,7 +260,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 
 					// level submissions
-					addSubmissionRecord := func(username string, recordOrder int, url string, framerate int, percent int, mobile bool) (*models.Record, error) {
+					addSubmissionRecord := func(username string, recordOrder int, url string, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
 							userId, err := addPlaceholder(txDao, username)
@@ -275,7 +274,6 @@ func Register(app *pocketbase.PocketBase) {
 							"video_url":       strings.Replace(url, " ", "", -1),
 							"level":           levelRecord.Id,
 							"submitted_by":    playerId,
-							"fps":             framerate,
 							"placement_order": recordOrder + 1,
 							"mobile":          mobile,
 						})
@@ -285,13 +283,13 @@ func Register(app *pocketbase.PocketBase) {
 						return submissionRecord, nil
 					}
 
-					_, err = addSubmissionRecord(level.Verifier, 0, level.Verification, 60, 100, false)
+					_, err = addSubmissionRecord(level.Verifier, 0, level.Verification, 60, false)
 					if err != nil {
 						return err
 					}
 
 					for submissionOrder, playerRecord := range level.Records {
-						_, err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Framerate, playerRecord.Percent, playerRecord.Mobile)
+						_, err := addSubmissionRecord(playerRecord.User, submissionOrder+1, playerRecord.Link, playerRecord.Percent, playerRecord.Mobile)
 						if err != nil {
 							return err
 						}

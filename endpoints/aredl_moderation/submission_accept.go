@@ -23,7 +23,6 @@ import (
 //	@Security		ApiKeyAuth[authorization]
 //	@Tags			aredl_moderation
 //	@Param			id			query	string	true	"internal submission id"
-//	@Param			fps			query	int		false	"framerate"	minimum(30)	maximum(360)
 //	@Param			video_url	query	string	false	"video url"	format(url)
 //	@Param			mobile		query	bool	false	"whether submisssion was one on mobile"
 //	@Param			ldm_id		query	int		false	"gd id of used ldm"
@@ -45,7 +44,6 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.LoadParam(middlewares.LoadData{
 				"submissionData": middlewares.LoadMap("", middlewares.LoadData{
 					"id":          middlewares.LoadString(true),
-					"fps":         middlewares.LoadInt(false, validation.Min(30), validation.Max(360)),
 					"video_url":   middlewares.LoadString(false, is.URL),
 					"mobile":      middlewares.LoadBool(false),
 					"ldm_id":      middlewares.LoadInt(false, validation.Min(1)),
@@ -71,7 +69,7 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app core.App) error {
 				}
 				var recordData map[string]any
 				recordData["reviewer"] = userRecord.Id
-				keys := []string{"level", "fps", "video_url", "mobile", "ldm_id", "raw_footage", "created"}
+				keys := []string{"level", "video_url", "mobile", "ldm_id", "raw_footage", "created"}
 				for _, key := range keys {
 					if value, ok := submissionData[key]; ok {
 						recordData[key] = value

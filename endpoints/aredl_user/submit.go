@@ -4,7 +4,6 @@ import (
 	"AREDL/demonlist"
 	"AREDL/middlewares"
 	"AREDL/util"
-	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase/apis"
@@ -21,7 +20,6 @@ import (
 //	@Description	Requires user permission: aredl.user_submit
 //	@Tags			aredl_user
 //	@Param			level		query	string	true	"internal level id"
-//	@Param			fps			query	int		true	"framerate"			minimum(30)	maximum(360)
 //	@Param			video_url	query	string	true	"display video url"	format(url)
 //	@Param			mobile		query	bool	true	"whether submission was done on mobile"
 //	@Param			ldm_id		query	int		false	"ldm gd level id if used"
@@ -44,7 +42,6 @@ func registerSubmissionEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.LoadParam(middlewares.LoadData{
 				"submissionData": middlewares.LoadMap("", middlewares.LoadData{
 					"level":       middlewares.LoadString(true),
-					"fps":         middlewares.LoadInt(true, validation.Min(30), validation.Max(360)),
 					"video_url":   middlewares.LoadString(true, is.URL),
 					"mobile":      middlewares.LoadBool(true),
 					"ldm_id":      middlewares.LoadInt(false),

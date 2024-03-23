@@ -24,7 +24,6 @@ type Record struct {
 		LevelId int    `db:"level_id" json:"level_id,omitempty"`
 	} `db:"level" json:"level,omitempty" extend:"level,levels,id"`
 	VideoUrl   string `db:"video_url" json:"video_url,omitempty"`
-	Fps        int    `db:"fps" json:"fps,omitempty"`
 	Mobile     bool   `db:"mobile" json:"mobile,omitempty"`
 	LdmId      int    `db:"ldm_id" json:"ldm_id,omitempty"`
 	RawFootage string `db:"raw_footage" json:"raw_footage,omitempty"`
