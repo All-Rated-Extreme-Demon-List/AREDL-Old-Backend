@@ -36,6 +36,7 @@ func registerPermissionsEndpoint(e *echo.Echo, app core.App) error {
 		Path:   pathPrefix + "/permissions",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
+			middlewares.LoadApiKey(app),
 			middlewares.CheckBanned(),
 		},
 		Handler: func(c echo.Context) error {
