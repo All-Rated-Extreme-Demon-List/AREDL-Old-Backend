@@ -67,9 +67,9 @@ func registerSubmissionAcceptEndpoint(e *echo.Echo, app core.App) error {
 				if submissionRecord.GetBool("rejected") {
 					return util.NewErrorResponse(nil, "Submission has already been rejected")
 				}
-				var recordData map[string]any
+				recordData := map[string]any{}
 				recordData["reviewer"] = userRecord.Id
-				keys := []string{"level", "video_url", "mobile", "ldm_id", "raw_footage", "created"}
+				keys := []string{"level", "video_url", "mobile", "ldm_id", "raw_footage", "created", "submitted_by"}
 				for _, key := range keys {
 					if value, ok := submissionData[key]; ok {
 						recordData[key] = value
