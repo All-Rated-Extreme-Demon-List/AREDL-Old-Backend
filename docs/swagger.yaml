@@ -584,11 +584,6 @@ paths:
         in: query
         name: level_password
         type: string
-      - default: "100"
-        description: reference to custom song
-        in: query
-        name: custom_song
-        type: string
       - default: false
         description: whether the level should be placed as legacy
         in: query

@@ -123,6 +123,10 @@ func UpdateLevel(dao *daos.Dao, app core.App, recordId string, userId string, li
 				return err
 			}
 		}
+		err = levelForm.Submit()
+		if err != nil {
+			return util.NewErrorResponse(err, "Failed to submit level data")
+		}
 		return nil
 	})
 	return err

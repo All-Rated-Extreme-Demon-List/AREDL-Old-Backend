@@ -291,13 +291,6 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "default": "100",
-                        "description": "reference to custom song",
-                        "name": "custom_song",
-                        "in": "query"
-                    },
-                    {
                         "type": "boolean",
                         "default": false,
                         "description": "whether the level should be placed as legacy",
