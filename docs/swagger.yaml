@@ -341,6 +341,11 @@ definitions:
       video_url:
         type: string
     type: object
+  moderation.CreatePlaceholderResponse:
+    properties:
+      id:
+        type: string
+    type: object
   moderation.NameChangeRequest:
     properties:
       id:
@@ -1186,6 +1191,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/moderation.CreatePlaceholderResponse'
         "400":
           description: Bad Request
           schema:

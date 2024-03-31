@@ -1171,7 +1171,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/moderation.CreatePlaceholderResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2131,6 +2134,14 @@ const docTemplate = `{
                     "$ref": "#/definitions/types.DateTime"
                 },
                 "video_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "moderation.CreatePlaceholderResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }

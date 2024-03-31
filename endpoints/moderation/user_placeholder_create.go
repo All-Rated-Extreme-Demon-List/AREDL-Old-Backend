@@ -11,6 +11,10 @@ import (
 	"net/http"
 )
 
+type CreatePlaceholderResponse struct {
+	Id string `json:"id"`
+}
+
 // registerCreatePlaceholderUser godoc
 //
 //	@Summary		Create a placeholder user
@@ -20,7 +24,7 @@ import (
 //	@Param			username	query	string	true	"display name"
 //	@Schemes		http https
 //	@Produce		json
-//	@Success		200
+//	@Success		200 {object}	CreatePlaceholderResponse
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
 //	@Router			/mod/user/create-placeholder [post]
@@ -38,6 +42,7 @@ func registerCreatePlaceholderUser(e *echo.Echo, app core.App) error {
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+				response := CreatePlaceholderResponse{}
 				userRecord, _ := txDao.FindFirstRecordByData(names.TableUsers, "global_name", c.Get("username").(string))
 				if userRecord != nil && userRecord.GetBool("placeholder") {
 					return util.NewErrorResponse(nil, "Placeholder user with that name already exists")
@@ -46,11 +51,12 @@ func registerCreatePlaceholderUser(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load user collection")
 				}
-				_, err = util.CreatePlaceholderUser(app, txDao, userCollection, c.Get("username").(string))
+				createdUser, err := util.CreatePlaceholderUser(app, txDao, userCollection, c.Get("username").(string))
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to create placeholder user")
 				}
-				return nil
+				response.Id = createdUser.Id
+				return c.JSON(200, response)
 			})
 			return err
 		},
