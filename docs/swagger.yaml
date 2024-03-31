@@ -605,13 +605,6 @@ paths:
         name: verification_video_url
         required: true
         type: string
-      - description: framerate of the verification
-        in: query
-        maximum: 360
-        minimum: 30
-        name: verification_fps
-        required: true
-        type: integer
       - description: whether verification was done on mobile
         in: query
         name: verification_mobile

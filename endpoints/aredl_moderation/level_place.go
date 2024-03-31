@@ -29,7 +29,6 @@ import (
 //	@Param			legacy						query	bool		false	"whether the level should be placed as legacy"	default(false)
 //	@Param			verification_submitted_by	query	string		true	"user id of the verifier"
 //	@Param			verification_video_url		query	string		true	"video url of the verification"	format(url)
-//	@Param			verification_fps			query	int			true	"framerate of the verification"	minimum(30)	maximum(360)
 //	@Param			verification_mobile			query	bool		true	"whether verification was done on mobile"
 //	@Param			verification_raw_footage	query	string		false	"verification raw footage"
 //	@Schemes		http https
@@ -59,7 +58,6 @@ func registerLevelPlaceEndpoint(e *echo.Echo, app core.App) error {
 				"verificationData": middlewares.LoadMap("verification_", middlewares.LoadData{
 					"submitted_by": middlewares.LoadString(true),
 					"video_url":    middlewares.LoadString(true, is.URL),
-					"fps":          middlewares.LoadInt(true, validation.Min(30), validation.Max(360)),
 					"mobile":       middlewares.LoadBool(true),
 					"raw_footage":  middlewares.LoadString(false),
 				}),

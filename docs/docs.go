@@ -313,15 +313,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "maximum": 360,
-                        "minimum": 30,
-                        "type": "integer",
-                        "description": "framerate of the verification",
-                        "name": "verification_fps",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "type": "boolean",
                         "description": "whether verification was done on mobile",
                         "name": "verification_mobile",
