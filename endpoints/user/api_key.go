@@ -28,10 +28,10 @@ type ApiKeyResponse struct {
 //	@Success		200 {object}	ApiKeyResponse
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/user/api-key [post]
+//	@Router			/user/api-key [get]
 func registerGetApiKeyEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodGet,
 		Path:   pathPrefix + "/api-key",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

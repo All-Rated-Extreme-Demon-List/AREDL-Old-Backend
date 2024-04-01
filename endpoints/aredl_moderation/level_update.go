@@ -32,11 +32,11 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/mod/level/update [post]
+//	@Router			/aredl/mod/level [patch]
 func registerLevelUpdateEndpoint(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
-		Path:   pathPrefix + "/level/update",
+		Method: http.MethodPatch,
+		Path:   pathPrefix + "/level",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.RequirePermissionGroup(app, "aredl", "manage_levels"),
