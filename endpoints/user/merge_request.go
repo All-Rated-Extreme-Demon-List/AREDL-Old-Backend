@@ -4,6 +4,7 @@ import (
 	"AREDL/middlewares"
 	"AREDL/names"
 	"AREDL/util"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
@@ -11,6 +12,7 @@ import (
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"net/http"
+	"regexp"
 )
 
 // registerMergeRequestEndpoint godoc
@@ -36,7 +38,7 @@ func registerMergeRequestEndpoint(e *echo.Echo, app core.App) error {
 			middlewares.CheckBanned(),
 			middlewares.RequirePermissionGroup(app, "", "user_request_merge"),
 			middlewares.LoadParam(middlewares.LoadData{
-				"placeholder_name": middlewares.LoadString(true),
+				"placeholder_name": middlewares.LoadString(true, validation.Match(regexp.MustCompile("^([a-zA-Z0-9 ._]{0,30}$)"))),
 			}),
 		},
 		Handler: func(c echo.Context) error {

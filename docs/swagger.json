@@ -1234,6 +1234,127 @@
                 }
             }
         },
+        "/mod/user/merge": {
+            "post": {
+                "description": "Directly merges two users\nRequires user permission: user_merge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moderation"
+                ],
+                "summary": "Merge two users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "primary user that the data gets merged into",
+                        "name": "primaryId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "secondary user that gets deleted",
+                        "name": "secondaryId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mod/user/merge-request/accept": {
+            "post": {
+                "description": "Accepts and merge request and merges the respective users\nRequires user permission: user_merge_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moderation"
+                ],
+                "summary": "Accept merge request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "request id",
+                        "name": "requestId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mod/user/merge-request/reject": {
+            "post": {
+                "description": "Rejects merge request\nRequires user permission: user_merge_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "moderation"
+                ],
+                "summary": "Reject merge request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "request id",
+                        "name": "requestId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/mod/user/name-change/accept": {
             "post": {
                 "description": "Accepts a name change request from a user\nRequires user permission: name_change_review",

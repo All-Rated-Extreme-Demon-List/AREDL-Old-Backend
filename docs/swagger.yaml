@@ -1242,6 +1242,92 @@ paths:
       summary: List users
       tags:
       - moderation
+  /mod/user/merge:
+    post:
+      description: |-
+        Directly merges two users
+        Requires user permission: user_merge
+      parameters:
+      - description: primary user that the data gets merged into
+        in: query
+        name: primaryId
+        required: true
+        type: string
+      - description: secondary user that gets deleted
+        in: query
+        name: secondaryId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Merge two users
+      tags:
+      - moderation
+  /mod/user/merge-request/accept:
+    post:
+      description: |-
+        Accepts and merge request and merges the respective users
+        Requires user permission: user_merge_review
+      parameters:
+      - description: request id
+        in: query
+        name: requestId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Accept merge request
+      tags:
+      - moderation
+  /mod/user/merge-request/reject:
+    post:
+      description: |-
+        Rejects merge request
+        Requires user permission: user_merge_review
+      parameters:
+      - description: request id
+        in: query
+        name: requestId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Reject merge request
+      tags:
+      - moderation
   /mod/user/name-change/accept:
     post:
       description: |-

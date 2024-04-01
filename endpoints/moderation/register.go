@@ -18,5 +18,8 @@ func RegisterEndpoints(app core.App) {
 		registerBanAccountEndpoint,
 		registerUnbanAccountEndpoint,
 		registerChangeRoleEndpoint,
+		registerUserMergeEndpoint,
+		registerMergeRequestAcceptEndpoint,
+		registerMergeRequestRejectEndpoint,
 	)
 }
