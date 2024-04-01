@@ -735,54 +735,7 @@ paths:
       summary: Update AREDL points and leaderboard
       tags:
       - aredl_moderation
-  /aredl/mod/pack/create:
-    post:
-      description: |-
-        Creates a new pack and updates all user points that now have the new pack.
-        Requires user permission: aredl.manage_packs
-      parameters:
-      - description: display name
-        in: query
-        name: name
-        required: true
-        type: string
-      - description: display color
-        in: query
-        name: color
-        required: true
-        type: string
-      - description: position of pack
-        in: query
-        name: placement_order
-        type: integer
-      - collectionFormat: csv
-        description: list of internal level ids. Pack has to have at least two levels
-        in: query
-        items:
-          type: string
-        name: levels
-        required: true
-        type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Create a new AREDL pack
-      tags:
-      - aredl_moderation
-  /aredl/mod/pack/delete:
+  /aredl/mod/pack:
     delete:
       description: |-
         Deletes a pack and updates all user points that now have the new pack.
@@ -812,8 +765,7 @@ paths:
       summary: Delete an AREDL pack
       tags:
       - aredl_moderation
-  /aredl/mod/pack/update:
-    post:
+    patch:
       description: |-
         Updates a pack and updates all user points that now have or lost the new pack.
         Requires user permission: aredl.manage_packs
@@ -860,6 +812,52 @@ paths:
       - ApiKeyAuth:
         - authorization
       summary: Update a AREDL pack
+      tags:
+      - aredl_moderation
+    post:
+      description: |-
+        Creates a new pack and updates all user points that now have the new pack.
+        Requires user permission: aredl.manage_packs
+      parameters:
+      - description: display name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: display color
+        in: query
+        name: color
+        required: true
+        type: string
+      - description: position of pack
+        in: query
+        name: placement_order
+        type: integer
+      - collectionFormat: csv
+        description: list of internal level ids. Pack has to have at least two levels
+        in: query
+        items:
+          type: string
+        name: levels
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Create a new AREDL pack
       tags:
       - aredl_moderation
   /aredl/mod/submission/accept:

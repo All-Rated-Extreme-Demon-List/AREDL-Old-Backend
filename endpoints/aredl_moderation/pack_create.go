@@ -25,11 +25,11 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/mod/pack/create [post]
+//	@Router			/aredl/mod/pack [post]
 func registerPackCreate(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   pathPrefix + "/pack/create",
+		Path:   pathPrefix + "/pack",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),

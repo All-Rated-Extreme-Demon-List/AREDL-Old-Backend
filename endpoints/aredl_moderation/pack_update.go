@@ -26,11 +26,11 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/mod/pack/update [post]
+//	@Router			/aredl/mod/pack [patch]
 func registerPackUpdate(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
-		Path:   pathPrefix + "/pack/update",
+		Method: http.MethodPatch,
+		Path:   pathPrefix + "/pack",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),

@@ -22,11 +22,11 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/mod/pack/delete [delete]
+//	@Router			/aredl/mod/pack [delete]
 func registerPackDelete(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodDelete,
-		Path:   pathPrefix + "/pack/delete",
+		Path:   pathPrefix + "/pack",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),

@@ -496,7 +496,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/mod/pack/create": {
+        "/aredl/mod/pack": {
             "post": {
                 "security": [
                     {
@@ -563,9 +563,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/pack/delete": {
+            },
             "delete": {
                 "security": [
                     {
@@ -608,10 +606,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/pack/update": {
-            "post": {
+            },
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": [

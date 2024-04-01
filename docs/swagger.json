@@ -490,7 +490,7 @@
                 }
             }
         },
-        "/aredl/mod/pack/create": {
+        "/aredl/mod/pack": {
             "post": {
                 "security": [
                     {
@@ -557,9 +557,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/pack/delete": {
+            },
             "delete": {
                 "security": [
                     {
@@ -602,10 +600,8 @@
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/pack/update": {
-            "post": {
+            },
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": [
