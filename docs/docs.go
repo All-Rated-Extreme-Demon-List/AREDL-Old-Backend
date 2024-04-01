@@ -225,7 +225,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/mod/level/place": {
+        "/aredl/mod/level": {
             "post": {
                 "security": [
                     {
@@ -343,10 +343,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/level/update": {
-            "post": {
+            },
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": [
@@ -940,6 +938,83 @@ const docTemplate = `{
             }
         },
         "/aredl/user/submission": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable\nRequires user permission: aredl.user_submit\nIf the user has the permission aredl.priority they will automatically be assigned to the priority queue",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl_user"
+                ],
+                "summary": "Create or Update submission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal level id",
+                        "name": "level",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "url",
+                        "description": "display video url",
+                        "name": "video_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "whether submission was done on mobile",
+                        "name": "mobile",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ldm gd level id if used",
+                        "name": "ldm_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "url",
+                        "description": "raw footage",
+                        "name": "raw_footage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "additional notes the user wants to add to a submission. Max 100 characters",
+                        "name": "additional_notes",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
@@ -1010,85 +1085,6 @@ const docTemplate = `{
                                 "$ref": "#/definitions/aredl_user.Submission"
                             }
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/aredl/user/submit": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable\nRequires user permission: aredl.user_submit\nIf the user has the permission aredl.priority they will automatically be assigned to the priority queue",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_user"
-                ],
-                "summary": "Create or Update submission",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal level id",
-                        "name": "level",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "url",
-                        "description": "display video url",
-                        "name": "video_url",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "whether submission was done on mobile",
-                        "name": "mobile",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "ldm gd level id if used",
-                        "name": "ldm_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "format": "url",
-                        "description": "raw footage",
-                        "name": "raw_footage",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "additional notes the user wants to add to a submission. Max 100 characters",
-                        "name": "additional_notes",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1443,7 +1439,7 @@ const docTemplate = `{
             }
         },
         "/user/api-key": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": [

@@ -549,7 +549,73 @@ paths:
       summary: Full simple list
       tags:
       - aredl_public
-  /aredl/mod/level/place:
+  /aredl/mod/level:
+    patch:
+      description: |-
+        Updates level data. It automatically updates history and leaderboards.
+        Requires user permission: aredl.manage_levels
+      parameters:
+      - description: internal level id
+        in: query
+        name: id
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: list of all creators using their internal user ids
+        in: query
+        items:
+          type: string
+        name: creator_ids
+        type: array
+      - description: gd level id
+        in: query
+        minimum: 1
+        name: level_id
+        type: integer
+      - description: position to move to if different form current position
+        in: query
+        minimum: 1
+        name: position
+        type: integer
+      - description: displayed name of the level
+        in: query
+        name: name
+        type: string
+      - description: publisher user id
+        in: query
+        name: publisher
+        type: string
+      - description: gd level password
+        in: query
+        name: level_password
+        type: string
+      - description: reference to custom song
+        in: query
+        name: custom_song
+        type: string
+      - description: whether the level should be placed as legacy
+        in: query
+        name: legacy
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Update AREDL level
+      tags:
+      - aredl_moderation
     post:
       description: |-
         Places a new level into aredl. It automatically updates history and leaderboards
@@ -631,73 +697,6 @@ paths:
       - ApiKeyAuth:
         - authorization
       summary: Place AREDL level
-      tags:
-      - aredl_moderation
-  /aredl/mod/level/update:
-    post:
-      description: |-
-        Updates level data. It automatically updates history and leaderboards.
-        Requires user permission: aredl.manage_levels
-      parameters:
-      - description: internal level id
-        in: query
-        name: id
-        required: true
-        type: string
-      - collectionFormat: csv
-        description: list of all creators using their internal user ids
-        in: query
-        items:
-          type: string
-        name: creator_ids
-        type: array
-      - description: gd level id
-        in: query
-        minimum: 1
-        name: level_id
-        type: integer
-      - description: position to move to if different form current position
-        in: query
-        minimum: 1
-        name: position
-        type: integer
-      - description: displayed name of the level
-        in: query
-        name: name
-        type: string
-      - description: publisher user id
-        in: query
-        name: publisher
-        type: string
-      - description: gd level password
-        in: query
-        name: level_password
-        type: string
-      - description: reference to custom song
-        in: query
-        name: custom_song
-        type: string
-      - description: whether the level should be placed as legacy
-        in: query
-        name: legacy
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Update AREDL level
       tags:
       - aredl_moderation
   /aredl/mod/list/update:
@@ -1060,35 +1059,6 @@ paths:
       summary: Delete submission
       tags:
       - aredl_user
-  /aredl/user/submissions:
-    get:
-      description: |-
-        Lists submissions ordered by the time they have been updated last.
-        Requires user permission: aredl.user_submission_list
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/aredl_user.Submission'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: List submissions
-      tags:
-      - aredl_user
-  /aredl/user/submit:
     post:
       description: |-
         Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable
@@ -1142,6 +1112,34 @@ paths:
       - ApiKeyAuth:
         - authorization
       summary: Create or Update submission
+      tags:
+      - aredl_user
+  /aredl/user/submissions:
+    get:
+      description: |-
+        Lists submissions ordered by the time they have been updated last.
+        Requires user permission: aredl.user_submission_list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl_user.Submission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: List submissions
       tags:
       - aredl_user
   /mod/user/ban:
@@ -1388,7 +1386,7 @@ paths:
       tags:
       - moderation
   /user/api-key:
-    post:
+    get:
       description: |-
         Gets the authenticated users api key. If the user does not have one it generates a new one.
         Requires user permission: user_request_api_key
