@@ -2,6 +2,7 @@ package demonlist
 
 import (
 	"AREDL/names"
+	"AREDL/util"
 	"errors"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/daos"
@@ -9,6 +10,9 @@ import (
 )
 
 func MergeUsers(dao *daos.Dao, primaryId, secondaryId string) error {
+	if primaryId == secondaryId {
+		return util.NewErrorResponse(nil, "Cannot merge user with itself")
+	}
 	err := dao.RunInTransaction(func(txDao *daos.Dao) error {
 		aredl := Aredl()
 		primaryUser, err := txDao.FindRecordById(names.TableUsers, primaryId)
