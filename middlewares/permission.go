@@ -10,7 +10,6 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/list"
 )
 
 const KeyAffectedRoles = "affected_groups"
@@ -134,10 +133,18 @@ func mergePermissions(permissionRecords []*models.Record) map[string]PermissionD
 	return result
 }
 
-func CanAffectRole(c echo.Context, role string) bool {
+func CanAffectUser(c echo.Context, dao *daos.Dao, userId string) (bool, error) {
+	roles, err := GetUserRoles(dao, userId)
+	if err != nil {
+		return false, err
+	}
+	return CanAffectRole(c, roles), nil
+}
+
+func CanAffectRole(c echo.Context, roles []string) bool {
 	if c.Get(KeyAffectedRoles) != nil {
 		affectedRoles := c.Get(KeyAffectedRoles).([]string)
-		return list.ExistInSlice(role, affectedRoles)
+		return util.IsSubset(affectedRoles, roles)
 	}
 	return false
 }

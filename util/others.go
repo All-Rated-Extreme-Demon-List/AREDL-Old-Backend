@@ -54,6 +54,15 @@ func AnyMatch[T comparable](left []T, right []T) bool {
 	return false
 }
 
+func IsSubset[T comparable](superset, subset []T) bool {
+	for _, subElement := range subset {
+		if !list.ExistInSlice(subElement, superset) {
+			return false
+		}
+	}
+	return true
+}
+
 type ErrorResponse struct {
 	apis.ApiError
 }

@@ -6,6 +6,7 @@ import (
 	"AREDL/names"
 	"AREDL/util"
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
@@ -49,14 +50,18 @@ func registerBanAccountEndpoint(e *echo.Echo, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Could not find user by discord id")
 				}
-				if !middlewares.CanAffectRole(c, userRecord.GetString("role")) {
+				hasPermission, err := middlewares.CanAffectUser(c, txDao, userRecord.Id)
+				if !hasPermission {
 					return util.NewErrorResponse(err, "Cannot perform action on given user")
 				}
 				userRecord.Set("banned_from_list", true)
-				userRecord.Set("role", "member")
 				err = txDao.SaveRecord(userRecord)
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to ban user")
+				}
+				_, err = txDao.DB().Delete(names.TableRoles, dbx.HashExp{"user": userRecord.Id}).Execute()
+				if err != nil {
+					return util.NewErrorResponse(err, "Failed to delete user roles")
 				}
 				aredl := demonlist.Aredl()
 				err = demonlist.UpdateLeaderboardByUserIds(txDao, aredl, []interface{}{userRecord.Id})

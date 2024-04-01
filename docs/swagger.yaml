@@ -1337,11 +1337,14 @@ paths:
         name: id
         required: true
         type: string
-      - description: new role
+      - collectionFormat: csv
+        description: new roles
         in: query
-        name: role
+        items:
+          type: string
+        name: roles
         required: true
-        type: string
+        type: array
       produces:
       - application/json
       responses:

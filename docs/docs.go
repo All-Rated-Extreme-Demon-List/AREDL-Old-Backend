@@ -1378,9 +1378,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "new role",
-                        "name": "role",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "new roles",
+                        "name": "roles",
                         "in": "query",
                         "required": true
                     }
