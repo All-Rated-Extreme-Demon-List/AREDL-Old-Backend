@@ -25,7 +25,7 @@ import (
 //	@Router			/aredl/mod/pack/delete [delete]
 func registerPackDelete(e *echo.Echo, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodDelete,
 		Path:   pathPrefix + "/pack/delete",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
