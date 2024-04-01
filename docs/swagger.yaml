@@ -341,6 +341,13 @@ definitions:
       video_url:
         type: string
     type: object
+  middlewares.PermissionData:
+    properties:
+      affected_roles:
+        items:
+          type: string
+        type: array
+    type: object
   moderation.CreatePlaceholderResponse:
     properties:
       id:
@@ -375,13 +382,6 @@ definitions:
         type: string
       newly_generated:
         type: boolean
-    type: object
-  user.PermissionData:
-    properties:
-      affected_roles:
-        items:
-          type: string
-        type: array
     type: object
   util.ErrorResponse:
     properties:
@@ -1095,6 +1095,7 @@ paths:
       description: |-
         Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable
         Requires user permission: aredl.user_submit
+        If the user has the permission aredl.priority they will automatically be assigned to the priority queue
       parameters:
       - description: internal level id
         in: query
@@ -1120,6 +1121,11 @@ paths:
         format: url
         in: query
         name: raw_footage
+        type: string
+      - description: additional notes the user wants to add to a submission. Max 100
+          characters
+        in: query
+        name: additional_notes
         type: string
       produces:
       - application/json
@@ -1477,7 +1483,7 @@ paths:
           description: OK
           schema:
             additionalProperties:
-              $ref: '#/definitions/user.PermissionData'
+              $ref: '#/definitions/middlewares.PermissionData'
             type: object
         "400":
           description: Bad Request

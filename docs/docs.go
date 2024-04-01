@@ -1039,7 +1039,7 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable\nRequires user permission: aredl.user_submit",
+                "description": "Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable\nRequires user permission: aredl.user_submit\nIf the user has the permission aredl.priority they will automatically be assigned to the priority queue",
                 "produces": [
                     "application/json"
                 ],
@@ -1081,6 +1081,12 @@ const docTemplate = `{
                         "format": "url",
                         "description": "raw footage",
                         "name": "raw_footage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "additional notes the user wants to add to a submission. Max 100 characters",
+                        "name": "additional_notes",
                         "in": "query"
                     }
                 ],
@@ -1588,7 +1594,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "$ref": "#/definitions/user.PermissionData"
+                                "$ref": "#/definitions/middlewares.PermissionData"
                             }
                         }
                     },
@@ -2129,6 +2135,17 @@ const docTemplate = `{
                 }
             }
         },
+        "middlewares.PermissionData": {
+            "type": "object",
+            "properties": {
+                "affected_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "moderation.CreatePlaceholderResponse": {
             "type": "object",
             "properties": {
@@ -2181,17 +2198,6 @@ const docTemplate = `{
                 },
                 "newly_generated": {
                     "type": "boolean"
-                }
-            }
-        },
-        "user.PermissionData": {
-            "type": "object",
-            "properties": {
-                "affected_roles": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
