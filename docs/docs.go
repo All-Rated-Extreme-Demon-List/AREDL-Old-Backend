@@ -292,13 +292,6 @@ const docTemplate = `{
                     {
                         "type": "boolean",
                         "default": false,
-                        "description": "whether the provided id is a gd id or not",
-                        "name": "is_gd_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
                         "description": "if level was requested using level_id this specifies whether it should load the two player version",
                         "name": "two_player",
                         "in": "query"
@@ -456,9 +449,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "internal level id",
+                        "description": "internal level id or gd level id",
                         "name": "id",
-                        "in": "path"
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "minimum": 1,
@@ -595,7 +589,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -1446,7 +1440,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []

@@ -56,7 +56,6 @@ type Level struct {
 //	@Description	Detailed information on a level. I naddition optional data such as records, creators, verification and packs can be requested.
 //	@Tags			aredl
 //	@Param			id				path	string	true	"internal level id or gd level id"
-//	@Param			is_gd_id		query	bool	false	"whether the provided id is a gd id or not"																default(false)
 //	@Param			two_player		query	bool	false	"if level was requested using level_id this specifies whether it should load the two player version"	default(false)
 //	@Param			records			query	bool	false	"include records"																						default(false)
 //	@Param			creators		query	bool	false	"include creators"																						default(false)
@@ -75,7 +74,6 @@ func registerLevelEndpoint(e *echo.Group, app core.App) error {
 			apis.ActivityLogger(app),
 			middlewares.LoadParam(middlewares.LoadData{
 				"id":           middlewares.LoadString(false),
-				"is_gd_id":     middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"records":      middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"creators":     middlewares.AddDefault(false, middlewares.LoadBool(false)),
 				"verification": middlewares.AddDefault(false, middlewares.LoadBool(false)),
@@ -92,11 +90,12 @@ func registerLevelEndpoint(e *echo.Group, app core.App) error {
 					"records": aredl.RecordsTableName,
 					"users":   names.TableUsers,
 				}
+				id := c.Get("id").(string)
 				err := util.LoadFromDb(txDao.DB(), &level, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-					if c.Get("is_gd_id").(bool) {
-						query.Where(dbx.HashExp{prefixResolver("level_id"): c.Get("id"), prefixResolver("two_player"): c.Get("two_player")})
+					if util.IsGDId(id) {
+						query.Where(dbx.HashExp{prefixResolver("level_id"): id, prefixResolver("two_player"): c.Get("two_player")})
 					} else {
-						query.Where(dbx.HashExp{prefixResolver("id"): c.Get("id")})
+						query.Where(dbx.HashExp{prefixResolver("id"): id})
 					}
 				})
 				if err != nil {

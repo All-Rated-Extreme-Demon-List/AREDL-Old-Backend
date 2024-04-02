@@ -21,7 +21,7 @@ import (
 //	@contact.name	Aredl
 //	@contact.url	https://aredl.net/
 //	@host			api.aredl.net
-//  @schemes		https
+//	@schemes		https
 //	@BasePath		/api
 
 // @securityDefinitions.apikey	ApiKeyAuth

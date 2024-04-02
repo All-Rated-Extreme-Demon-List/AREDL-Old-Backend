@@ -34,10 +34,10 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/aredl/me/submissions [post]
+//	@Router			/aredl/me/submissions [put]
 func registerSubmissionEndpoint(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodPut,
 		Path:   "/me/submissions",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

@@ -36,7 +36,7 @@ type HistoryEntry struct {
 //	@Summary		History of a level
 //	@Description	Lists the placement, move & legacy history of a level by either using its internal or gd id. Possible actions: placed, placedAbove, movedUp, movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy
 //	@Tags			aredl
-//	@Param			id			path	string	false	"internal level id"
+//	@Param			id			path	string	true	"internal level id or gd level id"
 //	@Param			level_id	query	int		false	"gd level id"	minimum(1)
 //	@Schemes		http https
 //	@Produce		json
@@ -56,14 +56,7 @@ func registerLevelHistoryEndpoint(e *echo.Group, app core.App) error {
 		},
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
-			hasLevelId := c.Get("level_id") != nil
-			hasId := c.Get("id") != nil
-			if !hasLevelId && !hasId {
-				return util.NewErrorResponse(nil, "level_id or id has to be set")
-			}
-			if hasLevelId && hasId {
-				return util.NewErrorResponse(nil, "Can't query for level_id and id at the same time")
-			}
+			id := c.Get("id").(string)
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				var result []HistoryEntry
 				tables := map[string]string{
@@ -72,11 +65,10 @@ func registerLevelHistoryEndpoint(e *echo.Group, app core.App) error {
 					"users":  names.TableUsers,
 				}
 				err := util.LoadFromDb(txDao.DB(), &result, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-					if hasLevelId {
-						query.Where(dbx.HashExp{prefixResolver("level.level_id"): c.Get("level_id")})
-					}
-					if hasId {
-						query.Where(dbx.HashExp{prefixResolver("level.id"): c.Get("id")})
+					if util.IsGDId(id) {
+						query.Where(dbx.HashExp{prefixResolver("level.level_id"): id})
+					} else {
+						query.Where(dbx.HashExp{prefixResolver("level.id"): id})
 					}
 					query.OrderBy(prefixResolver("created"))
 				})

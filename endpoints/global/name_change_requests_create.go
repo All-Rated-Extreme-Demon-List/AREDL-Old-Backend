@@ -29,10 +29,10 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/name-change-requests [post]
+//	@Router			/name-change-requests [put]
 func registerNameChangeRequestEndpoint(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodPut,
 		Path:   "/name-change-requests",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

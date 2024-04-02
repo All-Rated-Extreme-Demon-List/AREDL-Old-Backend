@@ -63,6 +63,10 @@ func IsSubset[T comparable](superset, subset []T) bool {
 	return true
 }
 
+func IsGDId(id string) bool {
+	return len(id) < 15
+}
+
 type ErrorResponse struct {
 	apis.ApiError
 }

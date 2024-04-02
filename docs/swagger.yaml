@@ -636,11 +636,6 @@ paths:
         required: true
         type: string
       - default: false
-        description: whether the provided id is a gd id or not
-        in: query
-        name: is_gd_id
-        type: boolean
-      - default: false
         description: if level was requested using level_id this specifies whether
           it should load the two player version
         in: query
@@ -751,9 +746,10 @@ paths:
         using its internal or gd id. Possible actions: placed, placedAbove, movedUp,
         movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy'
       parameters:
-      - description: internal level id
+      - description: internal level id or gd level id
         in: path
         name: id
+        required: true
         type: string
       - description: gd level id
         in: query
@@ -849,7 +845,7 @@ paths:
       summary: List submissions
       tags:
       - aredl
-    post:
+    put:
       description: |-
         Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable
         Requires user permission: aredl.user_submit
@@ -1425,7 +1421,7 @@ paths:
       summary: List name change requests
       tags:
       - global
-    post:
+    put:
       description: |-
         Creates a name change request for the user. Needs to be reviewed by a moderator.
         Requires user permission: user_request_name_change
