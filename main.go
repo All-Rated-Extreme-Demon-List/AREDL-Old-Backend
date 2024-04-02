@@ -20,7 +20,7 @@ import (
 //	@contact.url	https://discord.gg/VbqrUBtTfX
 //	@contact.name	Aredl
 //	@contact.url	https://aredl.net/
-//	@host			127.0.0.1:8090
+//	@host			api.aredl.net
 //	@BasePath		/api
 
 // @securityDefinitions.apikey	ApiKeyAuth
