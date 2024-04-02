@@ -10,7 +10,6 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/types"
 	"net/http"
 )
@@ -31,10 +30,14 @@ type Submission struct {
 	IdUpdate        bool   `db:"is_update" json:"is_update"`
 	RawFootage      string `db:"raw_footage" json:"raw_footage,omitempty"`
 	AdditionalNotes string `db:"additional_notes" json:"additional_notes"`
-	Reviewer        struct {
+	Reviewer        *struct {
 		Id         string `db:"id" json:"id"`
 		GlobalName string `db:"global_name" json:"global_name"`
-	} `db:"reviewer" json:"reviewer" extend:"reviewer,users,id"`
+	} `db:"reviewer" json:"reviewer,omitempty" extend:"reviewer,users,id"`
+	SubmittedBy struct {
+		Id         string `db:"id" json:"id"`
+		GlobalName string `db:"global_name" json:"global_name"`
+	} `db:"submitted_by" json:"submitted_by" extend:"submitted_by,users,id"`
 	Priority bool `db:"priority" json:"priority"`
 }
 
@@ -63,10 +66,6 @@ func registerSubmissionList(e *echo.Group, app core.App) error {
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				userRecord, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
-				if userRecord == nil {
-					return util.NewErrorResponse(nil, "Could not load user")
-				}
 				var submissions []Submission
 				tables := map[string]string{
 					"base":   aredl.SubmissionsTableName,
@@ -74,7 +73,7 @@ func registerSubmissionList(e *echo.Group, app core.App) error {
 					"users":  names.TableUsers,
 				}
 				err := util.LoadFromDb(app.Dao().DB(), &submissions, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-					query.Where(dbx.HashExp{prefixResolver("submitted_by"): userRecord.Id})
+					query.Where(dbx.HashExp{"rejected": false})
 					query.OrderBy(prefixResolver("updated"))
 				})
 				if err != nil {

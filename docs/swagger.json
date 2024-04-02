@@ -1,7 +1,4 @@
 {
-    "schemes": [
-        "https"
-    ],
     "swagger": "2.0",
     "info": {
         "description": "Backend for the all rated extreme demon list",
@@ -12,7 +9,7 @@
         },
         "version": "1.0"
     },
-    "host": "api.aredl.net",
+    "host": "127.0.0.1:8090",
     "basePath": "/api",
     "paths": {
         "/aredl/leaderboard": {
@@ -2255,6 +2252,17 @@
                     "type": "boolean"
                 },
                 "reviewer": {
+                    "type": "object",
+                    "properties": {
+                        "global_name": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "submitted_by": {
                     "type": "object",
                     "properties": {
                         "global_name": {

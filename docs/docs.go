@@ -2268,6 +2268,17 @@ const docTemplate = `{
                         }
                     }
                 },
+                "submitted_by": {
+                    "type": "object",
+                    "properties": {
+                        "global_name": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "updated": {
                     "$ref": "#/definitions/types.DateTime"
                 },
@@ -2550,9 +2561,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "api.aredl.net",
+	Host:             "127.0.0.1:8090",
 	BasePath:         "/api",
-	Schemes:          []string{"https"},
+	Schemes:          []string{},
 	Title:            "Aredl API",
 	Description:      "Backend for the all rated extreme demon list",
 	InfoInstanceName: "swagger",

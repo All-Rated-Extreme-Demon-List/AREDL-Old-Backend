@@ -39,7 +39,7 @@ func LoadFromDb(db dbx.Builder, toLoad interface{}, tableNames map[string]string
 	}
 	alias := nextTableAlias(tableFromPrefix, "")
 	query.From(fmt.Sprintf("%v %v", baseTableName, alias))
-	err := loadFields(query, toLoadType, "", tableFromPrefix, tableNames)
+	err := loadFields(query, toLoadType, false, "", tableFromPrefix, tableNames)
 	if err != nil {
 		return err
 	}
@@ -52,25 +52,27 @@ func LoadFromDb(db dbx.Builder, toLoad interface{}, tableNames map[string]string
 		return fmt.Sprintf("%v.%v", tableFromPrefix[fieldString[:splitIndex+1]], fieldString[splitIndex+1:])
 	})
 
-	//println(query.Build().SQL())
-
 	if isArray {
 		return query.All(toLoad)
 	}
 	return query.One(toLoad)
 }
 
-func loadFields(query *dbx.SelectQuery, toLoad reflect.Type, currentPrefix string, tableFromPrefix map[string]string, tableNames map[string]string) error {
+func loadFields(query *dbx.SelectQuery, toLoad reflect.Type, optional bool, currentPrefix string, tableFromPrefix map[string]string, tableNames map[string]string) error {
 	currentTableName := tableFromPrefix[currentPrefix]
 	if toLoad.Kind() == reflect.Ptr {
 		toLoad = toLoad.Elem()
 	}
 	var err error
 	for index := 0; index < toLoad.NumField(); index++ {
+		currentOptional := optional
 		field := toLoad.Field(index)
 		dbName, ok := field.Tag.Lookup("db")
 		if !ok {
 			continue
+		}
+		if field.Type.Kind() == reflect.Ptr {
+			currentOptional = true
 		}
 		extendData, extend := field.Tag.Lookup("extend")
 		if extend {
@@ -88,17 +90,24 @@ func loadFields(query *dbx.SelectQuery, toLoad reflect.Type, currentPrefix strin
 			newPrefix := currentPrefix + dbName + "."
 
 			alias := nextTableAlias(tableFromPrefix, newPrefix)
-			// todo left join only when there is a pointer
-			query.LeftJoin(fmt.Sprintf("%v %v", tableName, alias), dbx.NewExp(fmt.Sprintf("%v.%v = %v.%v", currentTableName, srcName, alias, destName)))
-			err = loadFields(query, field.Type, newPrefix, tableFromPrefix, tableNames)
+			if currentOptional {
+				query.LeftJoin(fmt.Sprintf("%v %v", tableName, alias), dbx.NewExp(fmt.Sprintf("%v.%v = %v.%v", currentTableName, srcName, alias, destName)))
+			} else {
+				query.InnerJoin(fmt.Sprintf("%v %v", tableName, alias), dbx.NewExp(fmt.Sprintf("%v.%v = %v.%v", currentTableName, srcName, alias, destName)))
+			}
+			err = loadFields(query, field.Type, currentOptional, newPrefix, tableFromPrefix, tableNames)
 			if err != nil {
 				return err
 			}
 		} else {
+			fieldName := fmt.Sprintf("%v.%v", currentTableName, dbName)
+			if currentOptional {
+				fieldName = fmt.Sprintf("COALESCE(%v, '')", fieldName)
+			}
 			if currentPrefix != "" {
-				query.AndSelect(fmt.Sprintf("%v.%v AS %v%v", currentTableName, dbName, currentPrefix, dbName))
+				query.AndSelect(fmt.Sprintf("%v AS %v%v", fieldName, currentPrefix, dbName))
 			} else {
-				query.AndSelect(fmt.Sprintf("%v.%v", currentTableName, dbName))
+				query.AndSelect(fieldName)
 			}
 		}
 	}

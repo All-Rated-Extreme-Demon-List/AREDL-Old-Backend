@@ -264,6 +264,13 @@ definitions:
           id:
             type: string
         type: object
+      submitted_by:
+        properties:
+          global_name:
+            type: string
+          id:
+            type: string
+        type: object
       updated:
         $ref: '#/definitions/types.DateTime'
       video_url:
@@ -438,7 +445,7 @@ definitions:
       message:
         type: string
     type: object
-host: api.aredl.net
+host: 127.0.0.1:8090
 info:
   contact:
     name: Aredl
@@ -1709,8 +1716,6 @@ paths:
       summary: Create a placeholder user
       tags:
       - global
-schemes:
-- https
 securityDefinitions:
   ApiKeyAuth:
     description: Perform actions as a user. It is also used to access endpoints that
