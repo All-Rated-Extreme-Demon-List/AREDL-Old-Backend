@@ -16,6 +16,7 @@ import (
 //	@Summary		Accept name change request
 //	@Description	Accepts a name change request from a user
 //	@Description	Requires user permission: name_change_review
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			id	path	string	true	"request id"
 //	@Schemes		http https

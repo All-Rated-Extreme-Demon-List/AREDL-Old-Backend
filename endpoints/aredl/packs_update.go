@@ -14,7 +14,7 @@ import (
 //	@Summary		Update a AREDL pack
 //	@Description	Updates a pack and updates all user points that now have or lost the new pack.
 //	@Description	Requires user permission: aredl.manage_packs
-//	@Security		ApiKeyAuth[authorization]
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			id				path	string		true	"internal pack id"
 //	@Param			name			query	string		false	"display name"

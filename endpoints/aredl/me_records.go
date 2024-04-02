@@ -34,8 +34,8 @@ type Record struct {
 //	@Summary		List records
 //	@Description	Lists records ordered by the time they have been updated last.
 //	@Description	Requires user permission: aredl.user_record_list
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
-//	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200	{object}	[]Record

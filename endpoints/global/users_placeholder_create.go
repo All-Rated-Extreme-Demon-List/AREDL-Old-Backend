@@ -19,6 +19,7 @@ type CreatePlaceholderResponse struct {
 //
 //	@Summary		Create a placeholder user
 //	@Description	Creates a placeholder user for users that are not registered on the list yet
+//	@Security		ApiKeyAuth
 //	@Description	Requires user permission: create_placeholder
 //	@Tags			global
 //	@Param			username	query	string	true	"display name"

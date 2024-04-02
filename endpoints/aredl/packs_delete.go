@@ -14,7 +14,7 @@ import (
 //	@Summary		Delete an AREDL pack
 //	@Description	Deletes a pack and updates all user points that now have the new pack.
 //	@Description	Requires user permission: aredl.manage_packs
-//	@Security		ApiKeyAuth[authorization]
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			id	path	string	true	"internal pack id"
 //	@Schemes		http https

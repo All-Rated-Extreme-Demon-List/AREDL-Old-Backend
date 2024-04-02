@@ -38,8 +38,8 @@ type MeSubmission struct {
 //	@Summary		List submissions
 //	@Description	Lists submissions ordered by the time they have been updated last.
 //	@Description	Requires user permission: aredl.user_submission_list
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
-//	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200	{object}	[]MeSubmission

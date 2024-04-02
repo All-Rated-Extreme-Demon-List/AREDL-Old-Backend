@@ -20,6 +20,7 @@ import (
 //	@Summary		Name Change Request
 //	@Description	Creates a name change request for the user. Needs to be reviewed by a moderator.
 //	@Description	Requires user permission: user_request_name_change
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			new_name	query	string	true	"name to change to"
 //	@Security		ApiKeyAuth[authorization]

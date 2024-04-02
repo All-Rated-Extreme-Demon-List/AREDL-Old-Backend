@@ -20,7 +20,7 @@ import (
 //
 //	@Summary		Accept AREDL submission.
 //	@Description	Requires user permission: aredl.submission_review
-//	@Security		ApiKeyAuth[authorization]
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			id			path	string	true	"internal submission id"
 //	@Param			video_url	query	string	false	"video url"	format(url)

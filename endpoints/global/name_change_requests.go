@@ -25,6 +25,7 @@ type NameChangeRequest struct {
 //	@Summary		List name change requests
 //	@Description	Lists all open name change requests
 //	@Description	Requires user permission: name_change_review
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Schemes		http https
 //	@Produce		json

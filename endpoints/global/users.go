@@ -22,6 +22,7 @@ type UserEntry struct {
 //	@Summary		List users
 //	@Description	Paged list of all users filtered by name. Userd to get user ids and select a user for other actions
 //	@Description	Requires user permission: user_list
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			page		query	int		false	"select page"					default(1)	minimum(1)
 //	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)	maximum(200)

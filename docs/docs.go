@@ -79,9 +79,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Updates all points. Should be used if other automatic updates didn't work.\nRequires user permission: aredl.update_listpoints",
@@ -158,9 +156,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Places a new level into aredl. It automatically updates history and leaderboards\nRequires user permission: aredl.manage_levels",
@@ -354,9 +350,7 @@ const docTemplate = `{
             "patch": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Updates level data. It automatically updates history and leaderboards.\nRequires user permission: aredl.manage_levels",
@@ -526,9 +520,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Lists records ordered by the time they have been updated last.\nRequires user permission: aredl.user_record_list",
@@ -568,9 +560,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Lists submissions ordered by the time they have been updated last.\nRequires user permission: aredl.user_submission_list",
@@ -608,9 +598,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable\nRequires user permission: aredl.user_submit\nIf the user has the permission aredl.priority they will automatically be assigned to the priority queue",
@@ -687,9 +675,7 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes a submission as long as it still is open for review.\nRequires user permission: aredl.user_submission_delete",
@@ -791,9 +777,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Creates a new pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
@@ -860,9 +844,7 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Deletes a pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
@@ -903,9 +885,7 @@ const docTemplate = `{
             "patch": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Updates a pack and updates all user points that now have or lost the new pack.\nRequires user permission: aredl.manage_packs",
@@ -1059,9 +1039,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Requires user permission: aredl.submission_review",
@@ -1130,9 +1108,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Requires user permission: aredl.submission_review",
@@ -1181,9 +1157,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Gets the authenticated users api key. If the user does not have one it generates a new one.\nRequires user permission: user_request_api_key",
@@ -1218,6 +1192,11 @@ const docTemplate = `{
         },
         "/merge-requests": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Lists all open merge requests\nRequires user permission: name_change_review",
                 "produces": [
                     "application/json"
@@ -1253,9 +1232,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.\nRequires user permission: user_request_merge",
@@ -1296,6 +1273,11 @@ const docTemplate = `{
         },
         "/merge-requests/{id}/accept": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Accepts and merge request and merges the respective users\nRequires user permission: user_merge_review",
                 "produces": [
                     "application/json"
@@ -1334,6 +1316,11 @@ const docTemplate = `{
         },
         "/merge-requests/{id}/reject": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Rejects merge request\nRequires user permission: user_merge_review",
                 "produces": [
                     "application/json"
@@ -1372,6 +1359,11 @@ const docTemplate = `{
         },
         "/mod/users/{id}/merge": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Directly merges two users\nRequires user permission: user_merge",
                 "produces": [
                     "application/json"
@@ -1417,6 +1409,11 @@ const docTemplate = `{
         },
         "/name-change-requests": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Lists all open name change requests\nRequires user permission: name_change_review",
                 "produces": [
                     "application/json"
@@ -1451,6 +1448,9 @@ const docTemplate = `{
             },
             "post": {
                 "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
                     {
                         "ApiKeyAuth": [
                             "authorization"
@@ -1495,6 +1495,11 @@ const docTemplate = `{
         },
         "/name-change-requests/{id}/accept": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Accepts a name change request from a user\nRequires user permission: name_change_review",
                 "produces": [
                     "application/json"
@@ -1533,6 +1538,11 @@ const docTemplate = `{
         },
         "/name-change-requests/{id}/reject": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Rejects a name change request from a user\nRequires user permission: name_change_review",
                 "produces": [
                     "application/json"
@@ -1573,9 +1583,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
+                        "ApiKeyAuth": []
                     }
                 ],
                 "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
@@ -1613,6 +1621,11 @@ const docTemplate = `{
         },
         "/users": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Paged list of all users filtered by name. Userd to get user ids and select a user for other actions\nRequires user permission: user_list",
                 "produces": [
                     "application/json"
@@ -1673,6 +1686,11 @@ const docTemplate = `{
         },
         "/users/create-placeholder": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Creates a placeholder user for users that are not registered on the list yet\nRequires user permission: create_placeholder",
                 "produces": [
                     "application/json"
@@ -1714,6 +1732,11 @@ const docTemplate = `{
         },
         "/users/{id}/ban": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Bans a user and removes them from the leaderboard\nRequires user permission: user_ban\nAdditionally the user needs to be able to affect the user with their permission",
                 "produces": [
                     "application/json"
@@ -1752,6 +1775,11 @@ const docTemplate = `{
         },
         "/users/{id}/role": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Promote or demote a user\nRequires user permission: user_change_role\nAdditionally the user needs to be able to affect the user with their permission and give the user the new role",
                 "produces": [
                     "application/json"
@@ -1801,6 +1829,11 @@ const docTemplate = `{
         },
         "/users/{id}/unban": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unbans a user\nRequires user permission: user_ban\nAdditionally the user needs to be able to affect the user with their permission",
                 "produces": [
                     "application/json"

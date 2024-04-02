@@ -15,6 +15,7 @@ import (
 //	@Summary		Merge two users
 //	@Description	Directly merges two users
 //	@Description	Requires user permission: user_merge
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			id				path	string	true	"primary user that the data gets merged into"
 //	@Param			secondary_id	query	string	true	"secondary user that gets deleted"

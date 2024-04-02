@@ -17,9 +17,9 @@ import (
 //	@Summary		Delete submission
 //	@Description	Deletes a submission as long as it still is open for review.
 //	@Description	Requires user permission: aredl.user_submission_delete
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			id	path	string	true	"submission id"
-//	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200

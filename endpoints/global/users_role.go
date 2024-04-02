@@ -19,6 +19,7 @@ import (
 //	@Description	Promote or demote a user
 //	@Description	Requires user permission: user_change_role
 //	@Description	Additionally the user needs to be able to affect the user with their permission and give the user the new role
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			id		path	string		true	"internal user id"
 //	@Param			roles	query	[]string	true	"new roles"

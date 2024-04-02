@@ -17,6 +17,7 @@ import (
 //	@Summary		Accept merge request
 //	@Description	Accepts and merge request and merges the respective users
 //	@Description	Requires user permission: user_merge_review
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			id	path	string	true	"request id"
 //	@Schemes		http https

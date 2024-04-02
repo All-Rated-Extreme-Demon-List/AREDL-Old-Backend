@@ -15,9 +15,9 @@ import (
 //
 //	@Summary		Get a list of Permissions
 //	@Description	Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Schemes		http https
-//	@Security		ApiKeyAuth[authorization]
 //	@Produce		json
 //	@Success		200 {object}	map[string]middlewares.PermissionData
 //	@Failure		400	{object}	util.ErrorResponse

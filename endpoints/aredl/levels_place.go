@@ -18,7 +18,7 @@ import (
 //	@Summary		Place AREDL level
 //	@Description	Places a new level into aredl. It automatically updates history and leaderboards
 //	@Description	Requires user permission: aredl.manage_levels
-//	@Security		ApiKeyAuth[authorization]
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			creator_ids					query	[]string	true	"list of all creators using their internal user ids"
 //	@Param			level_id					query	int			true	"gd level id"						minimum(1)

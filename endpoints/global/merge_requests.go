@@ -28,6 +28,7 @@ type MergeRequest struct {
 //	@Summary		List name merge requests
 //	@Description	Lists all open merge requests
 //	@Description	Requires user permission: name_change_review
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Schemes		http https
 //	@Produce		json

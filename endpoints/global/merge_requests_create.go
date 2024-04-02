@@ -20,9 +20,9 @@ import (
 //	@Summary		Merge Request
 //	@Description	Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.
 //	@Description	Requires user permission: user_request_merge
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			placeholder_name	query	string	true	"name of the placeholder user to be merged with"
-//	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200

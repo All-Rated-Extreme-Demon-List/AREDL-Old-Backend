@@ -16,7 +16,7 @@ import (
 //
 //	@Summary		Reject AREDL submission.
 //	@Description	Requires user permission: aredl.submission_review
-//	@Security		ApiKeyAuth[authorization]
+//	@Security		ApiKeyAuth
 //	@Tags			aredl
 //	@Param			id					path	string	true	"internal submission id"
 //	@Param			rejection_reason	query	string	false	"rejection reason"

@@ -20,6 +20,7 @@ import (
 //	@Description	Bans a user and removes them from the leaderboard
 //	@Description	Requires user permission: user_ban
 //	@Description	Additionally the user needs to be able to affect the user with their permission
+//	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			id	path	string	true	"internal user id"
 //	@Schemes		http https
