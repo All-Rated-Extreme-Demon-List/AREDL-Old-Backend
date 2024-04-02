@@ -1351,56 +1351,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/users/{id}/merge": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Directly merges two users\nRequires user permission: user_merge",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "global"
-                ],
-                "summary": "Merge two users",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "primary user that the data gets merged into",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "secondary user that gets deleted",
-                        "name": "secondary_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/name-change-requests": {
             "get": {
                 "security": [
@@ -1678,7 +1628,57 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/create-placeholder": {
+        "/users/merge": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Directly merges two users\nRequires user permission: user_merge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Merge two users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "primary user that the data gets merged into",
+                        "name": "primary_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "secondary user that gets deleted",
+                        "name": "secondary_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/placeholder": {
             "post": {
                 "security": [
                     {
@@ -1768,7 +1768,7 @@ const docTemplate = `{
             }
         },
         "/users/{id}/role": {
-            "post": {
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": []

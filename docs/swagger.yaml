@@ -1360,40 +1360,6 @@ paths:
       summary: Reject merge request
       tags:
       - global
-  /mod/users/{id}/merge:
-    post:
-      description: |-
-        Directly merges two users
-        Requires user permission: user_merge
-      parameters:
-      - description: primary user that the data gets merged into
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: secondary user that gets deleted
-        in: query
-        name: secondary_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Merge two users
-      tags:
-      - global
   /name-change-requests:
     get:
       description: |-
@@ -1611,7 +1577,7 @@ paths:
       tags:
       - global
   /users/{id}/role:
-    post:
+    patch:
       description: |-
         Promote or demote a user
         Requires user permission: user_change_role
@@ -1678,7 +1644,41 @@ paths:
       summary: Unban user
       tags:
       - global
-  /users/create-placeholder:
+  /users/merge:
+    post:
+      description: |-
+        Directly merges two users
+        Requires user permission: user_merge
+      parameters:
+      - description: primary user that the data gets merged into
+        in: path
+        name: primary_id
+        required: true
+        type: string
+      - description: secondary user that gets deleted
+        in: query
+        name: secondary_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Merge two users
+      tags:
+      - global
+  /users/placeholder:
     post:
       description: |-
         Creates a placeholder user for users that are not registered on the list yet
