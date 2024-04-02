@@ -27,7 +27,7 @@ type Submission struct {
 	Mobile          bool   `db:"mobile" json:"mobile,omitempty"`
 	LdmId           int    `db:"ldm_id" json:"ldm_id,omitempty"`
 	Rejected        bool   `db:"rejected" json:"rejected"`
-	IdUpdate        bool   `db:"is_update" json:"is_update"`
+	IsUpdate        bool   `db:"is_update" json:"is_update"`
 	RawFootage      string `db:"raw_footage" json:"raw_footage,omitempty"`
 	AdditionalNotes string `db:"additional_notes" json:"additional_notes"`
 	Reviewer        *struct {
