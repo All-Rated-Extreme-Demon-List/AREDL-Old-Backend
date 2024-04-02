@@ -17,7 +17,7 @@ import (
 //	@Description	Requires user permission: user_merge
 //	@Security		ApiKeyAuth
 //	@Tags			global
-//	@Param			primary_id				path	string	true	"primary user that the data gets merged into"
+//	@Param			primary_id		path	string	true	"primary user that the data gets merged into"
 //	@Param			secondary_id	query	string	true	"secondary user that gets deleted"
 //	@Schemes		http https
 //	@Produce		json

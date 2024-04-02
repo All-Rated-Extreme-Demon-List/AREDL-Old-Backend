@@ -1130,6 +1130,12 @@ paths:
       description: |-
         Lists submissions ordered by the time they have been updated last.
         Requires user permission: aredl.submission_review
+      parameters:
+      - default: false
+        description: include rejected submissions
+        in: query
+        name: include_rejected
+        type: boolean
       produces:
       - application/json
       responses:

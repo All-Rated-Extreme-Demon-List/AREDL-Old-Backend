@@ -47,6 +47,7 @@ type Submission struct {
 //	@Description	Lists submissions ordered by the time they have been updated last.
 //	@Description	Requires user permission: aredl.submission_review
 //	@Tags			aredl
+//	@Param			include_rejected	query	bool	false	"include rejected submissions" default(false)
 //	@Security		ApiKeyAuth[authorization]
 //	@Schemes		http https
 //	@Produce		json
@@ -62,6 +63,9 @@ func registerSubmissionList(e *echo.Group, app core.App) error {
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
 			middlewares.RequirePermissionGroup(app, "aredl", "submission_review"),
+			middlewares.LoadParam(middlewares.LoadData{
+				"include_rejected": middlewares.LoadBool(true),
+			}),
 		},
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
@@ -73,7 +77,9 @@ func registerSubmissionList(e *echo.Group, app core.App) error {
 					"users":  names.TableUsers,
 				}
 				err := util.LoadFromDb(app.Dao().DB(), &submissions, tables, func(query *dbx.SelectQuery, prefixResolver util.PrefixResolver) {
-					query.Where(dbx.HashExp{"rejected": false})
+					if !c.Get("include_rejected").(bool) {
+						query.Where(dbx.HashExp{"rejected": false})
+					}
 					query.OrderBy(prefixResolver("updated"))
 				})
 				if err != nil {

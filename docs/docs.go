@@ -1004,6 +1004,15 @@ const docTemplate = `{
                     "aredl"
                 ],
                 "summary": "List submissions",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "include rejected submissions",
+                        "name": "include_rejected",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
