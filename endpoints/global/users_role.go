@@ -28,10 +28,10 @@ import (
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/users/{id}/role [post]
+//	@Router			/users/{id}/role [patch]
 func registerChangeRoleEndpoint(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
-		Method: http.MethodPost,
+		Method: http.MethodPatch,
 		Path:   "/users/:id/role",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),

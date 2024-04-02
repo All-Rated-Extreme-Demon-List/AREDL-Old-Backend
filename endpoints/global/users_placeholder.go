@@ -28,11 +28,11 @@ type CreatePlaceholderResponse struct {
 //	@Success		200 {object}	CreatePlaceholderResponse
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/users/create-placeholder [post]
+//	@Router			/users/placeholder [post]
 func registerCreatePlaceholderUser(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   "/users/create-placeholder",
+		Path:   "/users/placeholder",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),

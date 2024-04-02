@@ -17,24 +17,24 @@ import (
 //	@Description	Requires user permission: user_merge
 //	@Security		ApiKeyAuth
 //	@Tags			global
-//	@Param			id				path	string	true	"primary user that the data gets merged into"
+//	@Param			primary_id				path	string	true	"primary user that the data gets merged into"
 //	@Param			secondary_id	query	string	true	"secondary user that gets deleted"
 //	@Schemes		http https
 //	@Produce		json
 //	@Success		200
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/mod/users/{id}/merge [post]
+//	@Router			/users/merge [post]
 func registerUserMergeEndpoint(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodPost,
-		Path:   "/users/:id/merge",
+		Path:   "/users/merge",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
 			middlewares.RequirePermissionGroup(app, "", "user_merge"),
 			middlewares.LoadParam(middlewares.LoadData{
-				"id":           middlewares.LoadString(true),
+				"primary_id":   middlewares.LoadString(true),
 				"secondary_id": middlewares.LoadString(true),
 			}),
 		},
