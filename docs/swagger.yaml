@@ -1,6 +1,6 @@
 basePath: /api
 definitions:
-  aredl_public.HistoryEntry:
+  aredl.HistoryEntry:
     properties:
       action:
         enum:
@@ -27,7 +27,7 @@ definitions:
       timestamp:
         $ref: '#/definitions/types.DateTime'
     type: object
-  aredl_public.Leaderboard:
+  aredl.Leaderboard:
     properties:
       list:
         items:
@@ -52,11 +52,11 @@ definitions:
       pages:
         type: integer
     type: object
-  aredl_public.Level:
+  aredl.Level:
     properties:
       creators:
         items:
-          $ref: '#/definitions/aredl_public.LevelUser'
+          $ref: '#/definitions/aredl.LevelUser'
         type: array
       custom_song:
         type: string
@@ -72,22 +72,22 @@ definitions:
         type: string
       packs:
         items:
-          $ref: '#/definitions/aredl_public.LevelPack'
+          $ref: '#/definitions/aredl.LevelPack'
         type: array
       points:
         type: number
       position:
         type: integer
       publisher:
-        $ref: '#/definitions/aredl_public.LevelUser'
+        $ref: '#/definitions/aredl.LevelUser'
       records:
         items:
-          $ref: '#/definitions/aredl_public.LevelRecord'
+          $ref: '#/definitions/aredl.LevelRecord'
         type: array
       verification:
-        $ref: '#/definitions/aredl_public.LevelRecord'
+        $ref: '#/definitions/aredl.LevelRecord'
     type: object
-  aredl_public.LevelPack:
+  aredl.LevelPack:
     properties:
       color:
         type: string
@@ -98,25 +98,25 @@ definitions:
       points:
         type: number
     type: object
-  aredl_public.LevelRecord:
+  aredl.LevelRecord:
     properties:
       id:
         type: string
       mobile:
         type: boolean
       submitted_by:
-        $ref: '#/definitions/aredl_public.LevelUser'
+        $ref: '#/definitions/aredl.LevelUser'
       video_url:
         type: string
     type: object
-  aredl_public.LevelUser:
+  aredl.LevelUser:
     properties:
       global_name:
         type: string
       id:
         type: string
     type: object
-  aredl_public.ListEntry:
+  aredl.ListEntry:
     properties:
       id:
         type: string
@@ -133,14 +133,48 @@ definitions:
       two_player:
         type: boolean
     type: object
-  aredl_public.NameUser:
+  aredl.MeSubmission:
+    properties:
+      additional_notes:
+        type: string
+      created:
+        $ref: '#/definitions/types.DateTime'
+      id:
+        type: string
+      is_update:
+        type: boolean
+      ldm_id:
+        type: integer
+      level:
+        properties:
+          id:
+            type: string
+          level_id:
+            type: integer
+          name:
+            type: string
+        type: object
+      mobile:
+        type: boolean
+      priority:
+        type: boolean
+      raw_footage:
+        type: string
+      rejected:
+        type: boolean
+      updated:
+        $ref: '#/definitions/types.DateTime'
+      video_url:
+        type: string
+    type: object
+  aredl.NameUser:
     properties:
       global_name:
         type: string
       id:
         type: string
     type: object
-  aredl_public.Pack:
+  aredl.Pack:
     properties:
       color:
         type: string
@@ -168,7 +202,74 @@ definitions:
       points:
         type: number
     type: object
-  aredl_public.User:
+  aredl.Record:
+    properties:
+      created:
+        $ref: '#/definitions/types.DateTime'
+      id:
+        type: string
+      ldm_id:
+        type: integer
+      level:
+        properties:
+          id:
+            type: string
+          level_id:
+            type: integer
+          name:
+            type: string
+        type: object
+      mobile:
+        type: boolean
+      raw_footage:
+        type: string
+      updated:
+        $ref: '#/definitions/types.DateTime'
+      video_url:
+        type: string
+    type: object
+  aredl.Submission:
+    properties:
+      additional_notes:
+        type: string
+      created:
+        $ref: '#/definitions/types.DateTime'
+      id:
+        type: string
+      is_update:
+        type: boolean
+      ldm_id:
+        type: integer
+      level:
+        properties:
+          id:
+            type: string
+          level_id:
+            type: integer
+          name:
+            type: string
+        type: object
+      mobile:
+        type: boolean
+      priority:
+        type: boolean
+      raw_footage:
+        type: string
+      rejected:
+        type: boolean
+      reviewer:
+        properties:
+          global_name:
+            type: string
+          id:
+            type: string
+        type: object
+      updated:
+        $ref: '#/definitions/types.DateTime'
+      video_url:
+        type: string
+    type: object
+  aredl.User:
     properties:
       aredl_verified:
         type: boolean
@@ -285,75 +386,19 @@ definitions:
           type: string
         type: array
     type: object
-  aredl_user.Record:
+  global.ApiKeyResponse:
     properties:
-      created:
-        $ref: '#/definitions/types.DateTime'
-      id:
+      api_key:
         type: string
-      ldm_id:
-        type: integer
-      level:
-        properties:
-          id:
-            type: string
-          level_id:
-            type: integer
-          name:
-            type: string
-        type: object
-      mobile:
+      newly_generated:
         type: boolean
-      raw_footage:
-        type: string
-      updated:
-        $ref: '#/definitions/types.DateTime'
-      video_url:
-        type: string
     type: object
-  aredl_user.Submission:
-    properties:
-      created:
-        $ref: '#/definitions/types.DateTime'
-      id:
-        type: string
-      is_update:
-        type: boolean
-      ldm_id:
-        type: integer
-      level:
-        properties:
-          id:
-            type: string
-          level_id:
-            type: integer
-          name:
-            type: string
-        type: object
-      mobile:
-        type: boolean
-      raw_footage:
-        type: string
-      rejected:
-        type: boolean
-      updated:
-        $ref: '#/definitions/types.DateTime'
-      video_url:
-        type: string
-    type: object
-  middlewares.PermissionData:
-    properties:
-      affected_roles:
-        items:
-          type: string
-        type: array
-    type: object
-  moderation.CreatePlaceholderResponse:
+  global.CreatePlaceholderResponse:
     properties:
       id:
         type: string
     type: object
-  moderation.NameChangeRequest:
+  global.NameChangeRequest:
     properties:
       id:
         type: string
@@ -367,21 +412,21 @@ definitions:
             type: string
         type: object
     type: object
-  moderation.UserEntry:
+  global.UserEntry:
     properties:
       id:
         type: string
       name:
         type: string
     type: object
-  types.DateTime:
-    type: object
-  user.ApiKeyResponse:
+  middlewares.PermissionData:
     properties:
-      api_key:
-        type: string
-      newly_generated:
-        type: boolean
+      affected_roles:
+        items:
+          type: string
+        type: array
+    type: object
+  types.DateTime:
     type: object
   util.ErrorResponse:
     properties:
@@ -396,43 +441,12 @@ definitions:
 host: api.aredl.net
 info:
   contact:
-    name: Discord server
-    url: https://discord.gg/VbqrUBtTfX
+    name: Aredl
+    url: https://aredl.net/
   description: Backend for the all rated extreme demon list
   title: Aredl API
-  version: "0.1"
+  version: "1.0"
 paths:
-  /aredl/history:
-    get:
-      description: 'Lists the placement, move & legacy history of a level by either
-        using its internal or gd id. Possible actions: placed, placedAbove, movedUp,
-        movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy'
-      parameters:
-      - description: internal level id
-        in: query
-        name: id
-        type: string
-      - description: gd level id
-        in: query
-        minimum: 1
-        name: level_id
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/aredl_public.HistoryEntry'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: History of a level
-      tags:
-      - aredl_public
   /aredl/leaderboard:
     get:
       description: Gives leaderboard as a paged list ordered by rank. Players with
@@ -466,137 +480,30 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/aredl_public.Leaderboard'
+            $ref: '#/definitions/aredl.Leaderboard'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Aredl leaderboard
       tags:
-      - aredl_public
-  /aredl/level:
-    get:
-      description: Detailed information on a level. I naddition optional data such
-        as records, creators, verification and packs can be requested.
-      operationId: aredl.level
-      parameters:
-      - description: internal level id
-        in: query
-        name: id
-        type: string
-      - description: gd level id
-        in: query
-        minimum: 1
-        name: level_id
-        type: integer
-      - default: false
-        description: if level was requested using level_id this specifies whether
-          it should load the two player version
-        in: query
-        name: two_player
-        type: boolean
-      - default: false
-        description: include records
-        in: query
-        name: records
-        type: boolean
-      - default: false
-        description: include creators
-        in: query
-        name: creators
-        type: boolean
-      - default: false
-        description: include verification
-        in: query
-        name: verification
-        type: boolean
-      - default: false
-        description: include packs
-        in: query
-        name: packs
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/aredl_public.Level'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Level details
-      tags:
-      - aredl_public
-  /aredl/list:
-    get:
-      description: Gives a list of every placed level ordered by position. To get
-        more details on a level use /aredl/level
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/aredl_public.ListEntry'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Full simple list
-      tags:
-      - aredl_public
-  /aredl/mod/level:
-    patch:
+      - aredl
+  /aredl/leaderboard/refresh:
+    post:
       description: |-
-        Updates level data. It automatically updates history and leaderboards.
-        Requires user permission: aredl.manage_levels
+        Updates all points. Should be used if other automatic updates didn't work.
+        Requires user permission: aredl.update_listpoints
       parameters:
-      - description: internal level id
+      - description: min list position from what to update
         in: query
-        name: id
+        name: min_position
         required: true
-        type: string
-      - collectionFormat: csv
-        description: list of all creators using their internal user ids
-        in: query
-        items:
-          type: string
-        name: creator_ids
-        type: array
-      - description: gd level id
-        in: query
-        minimum: 1
-        name: level_id
         type: integer
-      - description: position to move to if different form current position
+      - description: max list position from what to update
         in: query
-        minimum: 1
-        name: position
+        name: max_position
+        required: true
         type: integer
-      - description: displayed name of the level
-        in: query
-        name: name
-        type: string
-      - description: publisher user id
-        in: query
-        name: publisher
-        type: string
-      - description: gd level password
-        in: query
-        name: level_password
-        type: string
-      - description: reference to custom song
-        in: query
-        name: custom_song
-        type: string
-      - description: whether the level should be placed as legacy
-        in: query
-        name: legacy
-        type: boolean
       produces:
       - application/json
       responses:
@@ -613,9 +520,29 @@ paths:
       security:
       - ApiKeyAuth:
         - authorization
-      summary: Update AREDL level
+      summary: Update AREDL points and leaderboard
       tags:
-      - aredl_moderation
+      - aredl
+  /aredl/levels:
+    get:
+      description: Gives a list of every placed level ordered by position. To get
+        more details on a level use /aredl/levels/:id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl.ListEntry'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Full simple list
+      tags:
+      - aredl
     post:
       description: |-
         Places a new level into aredl. It automatically updates history and leaderboards
@@ -698,194 +625,110 @@ paths:
         - authorization
       summary: Place AREDL level
       tags:
-      - aredl_moderation
-  /aredl/mod/list/update:
-    post:
-      description: |-
-        Updates all points. Should be used if other automatic updates didn't work.
-        Requires user permission: aredl.update_listpoints
+      - aredl
+  /aredl/levels/{id}:
+    get:
+      description: Detailed information on a level. I naddition optional data such
+        as records, creators, verification and packs can be requested.
+      operationId: aredl.level
       parameters:
-      - description: min list position from what to update
-        in: query
-        name: min_position
-        required: true
-        type: integer
-      - description: max list position from what to update
-        in: query
-        name: max_position
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Update AREDL points and leaderboard
-      tags:
-      - aredl_moderation
-  /aredl/mod/pack:
-    delete:
-      description: |-
-        Deletes a pack and updates all user points that now have the new pack.
-        Requires user permission: aredl.manage_packs
-      parameters:
-      - description: internal pack id
-        in: query
+      - description: internal level id or gd level id
+        in: path
         name: id
         required: true
         type: string
+      - default: false
+        description: whether the provided id is a gd id or not
+        in: query
+        name: is_gd_id
+        type: boolean
+      - default: false
+        description: if level was requested using level_id this specifies whether
+          it should load the two player version
+        in: query
+        name: two_player
+        type: boolean
+      - default: false
+        description: include records
+        in: query
+        name: records
+        type: boolean
+      - default: false
+        description: include creators
+        in: query
+        name: creators
+        type: boolean
+      - default: false
+        description: include verification
+        in: query
+        name: verification
+        type: boolean
+      - default: false
+        description: include packs
+        in: query
+        name: packs
+        type: boolean
       produces:
       - application/json
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/aredl.Level'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Delete an AREDL pack
+      summary: Level details
       tags:
-      - aredl_moderation
+      - aredl
     patch:
       description: |-
-        Updates a pack and updates all user points that now have or lost the new pack.
-        Requires user permission: aredl.manage_packs
+        Updates level data. It automatically updates history and leaderboards.
+        Requires user permission: aredl.manage_levels
       parameters:
-      - description: internal pack id
-        in: query
+      - description: internal level id
+        in: path
         name: id
         required: true
         type: string
-      - description: display name
-        in: query
-        name: name
-        type: string
-      - description: display color
-        in: query
-        name: color
-        type: string
-      - description: position of pack
-        in: query
-        name: placement_order
-        type: integer
       - collectionFormat: csv
-        description: new list of internal level ids. Pack has to have at least two
-          levels
+        description: list of all creators using their internal user ids
         in: query
         items:
           type: string
-        name: levels
+        name: creator_ids
         type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Update a AREDL pack
-      tags:
-      - aredl_moderation
-    post:
-      description: |-
-        Creates a new pack and updates all user points that now have the new pack.
-        Requires user permission: aredl.manage_packs
-      parameters:
-      - description: display name
+      - description: gd level id
+        in: query
+        minimum: 1
+        name: level_id
+        type: integer
+      - description: position to move to if different form current position
+        in: query
+        minimum: 1
+        name: position
+        type: integer
+      - description: displayed name of the level
         in: query
         name: name
-        required: true
         type: string
-      - description: display color
+      - description: publisher user id
         in: query
-        name: color
-        required: true
+        name: publisher
         type: string
-      - description: position of pack
+      - description: gd level password
         in: query
-        name: placement_order
-        type: integer
-      - collectionFormat: csv
-        description: list of internal level ids. Pack has to have at least two levels
-        in: query
-        items:
-          type: string
-        name: levels
-        required: true
-        type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Create a new AREDL pack
-      tags:
-      - aredl_moderation
-  /aredl/mod/submission/accept:
-    post:
-      description: 'Requires user permission: aredl.submission_review'
-      parameters:
-      - description: internal submission id
-        in: query
-        name: id
-        required: true
+        name: level_password
         type: string
-      - description: video url
-        format: url
+      - description: reference to custom song
         in: query
-        name: video_url
+        name: custom_song
         type: string
-      - description: whether submisssion was one on mobile
+      - description: whether the level should be placed as legacy
         in: query
-        name: mobile
+        name: legacy
         type: boolean
-      - description: gd id of used ldm
-        in: query
-        name: ldm_id
-        type: integer
-      - description: raw footage
-        format: url
-        in: query
-        name: raw_footage
-        type: string
       produces:
       - application/json
       responses:
@@ -902,66 +745,24 @@ paths:
       security:
       - ApiKeyAuth:
         - authorization
-      summary: Accept AREDL submission.
+      summary: Update AREDL level
       tags:
-      - aredl_moderation
-  /aredl/mod/submission/reject:
-    post:
-      description: 'Requires user permission: aredl.submission_review'
+      - aredl
+  /aredl/levels/{id}/history:
+    get:
+      description: 'Lists the placement, move & legacy history of a level by either
+        using its internal or gd id. Possible actions: placed, placedAbove, movedUp,
+        movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy'
       parameters:
-      - description: internal submission id
-        in: query
+      - description: internal level id
+        in: path
         name: id
-        required: true
         type: string
-      - description: rejection reason
+      - description: gd level id
         in: query
-        name: rejection_reason
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Reject AREDL submission.
-      tags:
-      - aredl_moderation
-  /aredl/names:
-    get:
-      description: Gives a map of important users grouped by their role. This also
-        includes aredl plus members
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              items:
-                $ref: '#/definitions/aredl_public.NameUser'
-              type: array
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Important users
-      tags:
-      - aredl_public
-  /aredl/packs:
-    get:
-      description: Gives a list of all packs
+        minimum: 1
+        name: level_id
+        type: integer
       produces:
       - application/json
       responses:
@@ -969,39 +770,35 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/aredl_public.Pack'
+              $ref: '#/definitions/aredl.HistoryEntry'
             type: array
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: Aredl packs
+      summary: History of a level
       tags:
-      - aredl_public
-  /aredl/user:
+      - aredl
+  /aredl/list:
     get:
-      description: Gives detailed information about a user
-      parameters:
-      - description: user id
-        in: query
-        name: id
-        required: true
-        type: string
+      description: Use /aredl/levels instead
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/aredl_public.User'
+            items:
+              $ref: '#/definitions/aredl.ListEntry'
+            type: array
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: User info
+      summary: (DEPRECATED) Full simple list
       tags:
-      - aredl_public
-  /aredl/user/records:
+      - aredl
+  /aredl/me/records:
     get:
       description: |-
         Lists records ordered by the time they have been updated last.
@@ -1013,7 +810,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/aredl_user.Record'
+              $ref: '#/definitions/aredl.Record'
             type: array
         "400":
           description: Bad Request
@@ -1028,23 +825,21 @@ paths:
         - authorization
       summary: List records
       tags:
-      - aredl_user
-  /aredl/user/submission:
-    delete:
+      - aredl
+  /aredl/me/submissions:
+    get:
       description: |-
-        Deletes a submission as long as it still is open for review.
-        Requires user permission: aredl.user_submission_delete
-      parameters:
-      - description: submission id
-        in: query
-        name: id
-        required: true
-        type: string
+        Lists submissions ordered by the time they have been updated last.
+        Requires user permission: aredl.user_submission_list
       produces:
       - application/json
       responses:
         "200":
           description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl.MeSubmission'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -1056,9 +851,9 @@ paths:
       security:
       - ApiKeyAuth:
         - authorization
-      summary: Delete submission
+      summary: List submissions
       tags:
-      - aredl_user
+      - aredl
     post:
       description: |-
         Creates a submission. If a submission for a level already exists, it will be updated instead. Submissions can only be updated when its status is pending or rejected_retryable
@@ -1113,44 +908,15 @@ paths:
         - authorization
       summary: Create or Update submission
       tags:
-      - aredl_user
-  /aredl/user/submissions:
-    get:
+      - aredl
+  /aredl/me/submissions/{id}:
+    delete:
       description: |-
-        Lists submissions ordered by the time they have been updated last.
-        Requires user permission: aredl.user_submission_list
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/aredl_user.Submission'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: List submissions
-      tags:
-      - aredl_user
-  /mod/user/ban:
-    post:
-      description: |-
-        Bans a user and removes them from the leaderboard
-        Requires user permission: user_ban
-        Additionally the user needs to be able to affect the user with their permission
+        Deletes a submission as long as it still is open for review.
+        Requires user permission: aredl.user_submission_delete
       parameters:
-      - description: internal user id
-        in: query
+      - description: submission id
+        in: path
         name: id
         required: true
         type: string
@@ -1167,27 +933,85 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: Ban user
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Delete submission
       tags:
-      - moderation
-  /mod/user/create-placeholder:
-    post:
-      description: |-
-        Creates a placeholder user for users that are not registered on the list yet
-        Requires user permission: create_placeholder
-      parameters:
-      - description: display name
-        in: query
-        name: username
-        required: true
-        type: string
+      - aredl
+  /aredl/names:
+    get:
+      description: Gives a map of important users grouped by their role. This also
+        includes aredl plus members
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/moderation.CreatePlaceholderResponse'
+            additionalProperties:
+              items:
+                $ref: '#/definitions/aredl.NameUser'
+              type: array
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Important users
+      tags:
+      - aredl
+  /aredl/packs:
+    get:
+      description: Gives a list of all packs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl.Pack'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Aredl packs
+      tags:
+      - aredl
+    post:
+      description: |-
+        Creates a new pack and updates all user points that now have the new pack.
+        Requires user permission: aredl.manage_packs
+      parameters:
+      - description: display name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: display color
+        in: query
+        name: color
+        required: true
+        type: string
+      - description: position of pack
+        in: query
+        name: placement_order
+        type: integer
+      - collectionFormat: csv
+        description: list of internal level ids. Pack has to have at least two levels
+        in: query
+        items:
+          type: string
+        name: levels
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
         "400":
           description: Bad Request
           schema:
@@ -1196,10 +1020,526 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: Create a placeholder user
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Create a new AREDL pack
       tags:
-      - moderation
-  /mod/user/list:
+      - aredl
+  /aredl/packs/{id}:
+    delete:
+      description: |-
+        Deletes a pack and updates all user points that now have the new pack.
+        Requires user permission: aredl.manage_packs
+      parameters:
+      - description: internal pack id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Delete an AREDL pack
+      tags:
+      - aredl
+    patch:
+      description: |-
+        Updates a pack and updates all user points that now have or lost the new pack.
+        Requires user permission: aredl.manage_packs
+      parameters:
+      - description: internal pack id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: display name
+        in: query
+        name: name
+        type: string
+      - description: display color
+        in: query
+        name: color
+        type: string
+      - description: position of pack
+        in: query
+        name: placement_order
+        type: integer
+      - collectionFormat: csv
+        description: new list of internal level ids. Pack has to have at least two
+          levels
+        in: query
+        items:
+          type: string
+        name: levels
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Update a AREDL pack
+      tags:
+      - aredl
+  /aredl/profiles/{id}:
+    get:
+      description: Gives detailed information about a user
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: if the provided id is a discord id
+        in: query
+        name: is_discord_id
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/aredl.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: User info
+      tags:
+      - aredl
+  /aredl/submissions:
+    get:
+      description: |-
+        Lists submissions ordered by the time they have been updated last.
+        Requires user permission: aredl.submission_review
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/aredl.Submission'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: List submissions
+      tags:
+      - aredl
+  /aredl/submissions/{id}/accept:
+    post:
+      description: 'Requires user permission: aredl.submission_review'
+      parameters:
+      - description: internal submission id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: video url
+        format: url
+        in: query
+        name: video_url
+        type: string
+      - description: whether submisssion was one on mobile
+        in: query
+        name: mobile
+        type: boolean
+      - description: gd id of used ldm
+        in: query
+        name: ldm_id
+        type: integer
+      - description: raw footage
+        format: url
+        in: query
+        name: raw_footage
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Accept AREDL submission.
+      tags:
+      - aredl
+  /aredl/submissions/{id}/reject:
+    post:
+      description: 'Requires user permission: aredl.submission_review'
+      parameters:
+      - description: internal submission id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: rejection reason
+        in: query
+        name: rejection_reason
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Reject AREDL submission.
+      tags:
+      - aredl
+  /me/api-key:
+    get:
+      description: |-
+        Gets the authenticated users api key. If the user does not have one it generates a new one.
+        Requires user permission: user_request_api_key
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/global.ApiKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Get Api Key
+      tags:
+      - global
+  /merge-requests:
+    get:
+      description: |-
+        Lists all open merge requests
+        Requires user permission: name_change_review
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/global.NameChangeRequest'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List name merge requests
+      tags:
+      - global
+    post:
+      description: |-
+        Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.
+        Requires user permission: user_request_merge
+      parameters:
+      - description: name of the placeholder user to be merged with
+        in: query
+        name: placeholder_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Merge Request
+      tags:
+      - global
+  /merge-requests/{id}/accept:
+    post:
+      description: |-
+        Accepts and merge request and merges the respective users
+        Requires user permission: user_merge_review
+      parameters:
+      - description: request id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Accept merge request
+      tags:
+      - global
+  /merge-requests/{id}/reject:
+    post:
+      description: |-
+        Rejects merge request
+        Requires user permission: user_merge_review
+      parameters:
+      - description: request id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Reject merge request
+      tags:
+      - global
+  /mod/users/{id}/merge:
+    post:
+      description: |-
+        Directly merges two users
+        Requires user permission: user_merge
+      parameters:
+      - description: primary user that the data gets merged into
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: secondary user that gets deleted
+        in: query
+        name: secondary_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Merge two users
+      tags:
+      - global
+  /name-change-requests:
+    get:
+      description: |-
+        Lists all open name change requests
+        Requires user permission: name_change_review
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/global.NameChangeRequest'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List name change requests
+      tags:
+      - global
+    post:
+      description: |-
+        Creates a name change request for the user. Needs to be reviewed by a moderator.
+        Requires user permission: user_request_name_change
+      parameters:
+      - description: name to change to
+        in: query
+        name: new_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Name Change Request
+      tags:
+      - global
+  /name-change-requests/{id}/accept:
+    post:
+      description: |-
+        Accepts a name change request from a user
+        Requires user permission: name_change_review
+      parameters:
+      - description: request id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Accept name change request
+      tags:
+      - global
+  /name-change-requests/{id}/reject:
+    post:
+      description: |-
+        Rejects a name change request from a user
+        Requires user permission: name_change_review
+      parameters:
+      - description: request id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Reject name change request
+      tags:
+      - global
+  /permissions:
+    get:
+      description: Returns all the available permissions to the authenticated user,
+        if there is no authenticaiton provided, the permissions will be empty
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/middlewares.PermissionData'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth:
+        - authorization
+      summary: Get a list of Permissions
+      tags:
+      - global
+  /users:
     get:
       description: |-
         Paged list of all users filtered by name. Userd to get user ids and select a user for other actions
@@ -1229,7 +1569,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/moderation.UserEntry'
+              $ref: '#/definitions/global.UserEntry'
             type: array
         "400":
           description: Bad Request
@@ -1241,101 +1581,16 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: List users
       tags:
-      - moderation
-  /mod/user/merge:
+      - global
+  /users/{id}/ban:
     post:
       description: |-
-        Directly merges two users
-        Requires user permission: user_merge
+        Bans a user and removes them from the leaderboard
+        Requires user permission: user_ban
+        Additionally the user needs to be able to affect the user with their permission
       parameters:
-      - description: primary user that the data gets merged into
-        in: query
-        name: primaryId
-        required: true
-        type: string
-      - description: secondary user that gets deleted
-        in: query
-        name: secondaryId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Merge two users
-      tags:
-      - moderation
-  /mod/user/merge-request/accept:
-    post:
-      description: |-
-        Accepts and merge request and merges the respective users
-        Requires user permission: user_merge_review
-      parameters:
-      - description: request id
-        in: query
-        name: requestId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Accept merge request
-      tags:
-      - moderation
-  /mod/user/merge-request/reject:
-    post:
-      description: |-
-        Rejects merge request
-        Requires user permission: user_merge_review
-      parameters:
-      - description: request id
-        in: query
-        name: requestId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Reject merge request
-      tags:
-      - moderation
-  /mod/user/name-change/accept:
-    post:
-      description: |-
-        Accepts a name change request from a user
-        Requires user permission: name_change_review
-      parameters:
-      - description: request id
-        in: query
+      - description: internal user id
+        in: path
         name: id
         required: true
         type: string
@@ -1352,62 +1607,10 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      summary: Accept name change request
+      summary: Ban user
       tags:
-      - moderation
-  /mod/user/name-change/list:
-    get:
-      description: |-
-        Lists all open name change requests
-        Requires user permission: name_change_review
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/moderation.NameChangeRequest'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: List name change requests
-      tags:
-      - moderation
-  /mod/user/name-change/reject:
-    post:
-      description: |-
-        Rejects a name change request from a user
-        Requires user permission: name_change_review
-      parameters:
-      - description: request id
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Reject name change request
-      tags:
-      - moderation
-  /mod/user/role:
+      - global
+  /users/{id}/role:
     post:
       description: |-
         Promote or demote a user
@@ -1415,7 +1618,7 @@ paths:
         Additionally the user needs to be able to affect the user with their permission and give the user the new role
       parameters:
       - description: internal user id
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -1442,8 +1645,8 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Change user role
       tags:
-      - moderation
-  /mod/user/unban:
+      - global
+  /users/{id}/unban:
     post:
       description: |-
         Unbans a user
@@ -1451,7 +1654,7 @@ paths:
         Additionally the user needs to be able to affect the user with their permission
       parameters:
       - description: internal user id
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -1470,42 +1673,16 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Unban user
       tags:
-      - moderation
-  /user/api-key:
-    get:
-      description: |-
-        Gets the authenticated users api key. If the user does not have one it generates a new one.
-        Requires user permission: user_request_api_key
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/user.ApiKeyResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Get Api Key
-      tags:
-      - user
-  /user/merge-request:
+      - global
+  /users/create-placeholder:
     post:
       description: |-
-        Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.
-        Requires user permission: user_request_merge
+        Creates a placeholder user for users that are not registered on the list yet
+        Requires user permission: create_placeholder
       parameters:
-      - description: name of the placeholder user to be merged with
+      - description: display name
         in: query
-        name: placeholder_name
+        name: username
         required: true
         type: string
       produces:
@@ -1513,6 +1690,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/global.CreatePlaceholderResponse'
         "400":
           description: Bad Request
           schema:
@@ -1521,74 +1700,16 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Merge Request
+      summary: Create a placeholder user
       tags:
-      - user
-  /user/name-change-request:
-    post:
-      description: |-
-        Creates a name change request for the user. Needs to be reviewed by a moderator.
-        Requires user permission: user_request_name_change
-      parameters:
-      - description: name to change to
-        in: query
-        name: new_name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Name Change Request
-      tags:
-      - user
-  /user/permissions:
-    get:
-      description: Returns all the available permissions to the authenticated user,
-        if there is no authenticaiton provided, the permissions will be empty
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              $ref: '#/definitions/middlewares.PermissionData'
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth:
-        - authorization
-      summary: Get a list of Permissions
-      tags:
-      - user
+      - global
+schemes:
+- https
 securityDefinitions:
   ApiKeyAuth:
     description: Perform actions as a user. It is also used to access endpoints that
       require user permissions.
     in: header
-    name: authorization
+    name: api-key
     type: apiKey
 swagger: "2.0"

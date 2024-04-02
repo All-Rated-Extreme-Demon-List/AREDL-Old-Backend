@@ -2,11 +2,8 @@ package main
 
 import (
 	"AREDL/demonlist"
-	"AREDL/endpoints/aredl_moderation"
-	"AREDL/endpoints/aredl_public"
-	"AREDL/endpoints/aredl_user"
-	"AREDL/endpoints/moderation"
-	"AREDL/endpoints/user"
+	"AREDL/endpoints/aredl"
+	"AREDL/endpoints/global"
 	"AREDL/migration"
 	"github.com/Simolater/echo-swagger"
 	"github.com/pocketbase/pocketbase"
@@ -17,16 +14,19 @@ import (
 )
 
 //	@title			Aredl API
-//	@version		0.1
+//	@version		1.0
 //	@description	Backend for the all rated extreme demon list
 //	@contact.name	Discord server
 //	@contact.url	https://discord.gg/VbqrUBtTfX
+//	@contact.name	Aredl
+//	@contact.url	https://aredl.net/
 //	@host			api.aredl.net
+//  @schemes		https
 //	@BasePath		/api
 
 // @securityDefinitions.apikey	ApiKeyAuth
 // @in							header
-// @name						authorization
+// @name						api-key
 // @description				Perform actions as a user. It is also used to access endpoints that require user permissions.
 func main() {
 	app := pocketbase.New()
@@ -40,11 +40,8 @@ func main() {
 
 	//app.OnBeforeServe().Add(demonlist.RegisterLevelDataRequester)
 
-	moderation.RegisterEndpoints(app)
-	aredl_moderation.RegisterEndpoints(app)
-	user.RegisterEndpoints(app)
-	aredl_user.RegisterEndpoints(app)
-	aredl_public.RegisterEndpoints(app)
+	global.RegisterEndpoints(app)
+	aredl.RegisterEndpoints(app)
 
 	RegisterUserAuth(app)
 

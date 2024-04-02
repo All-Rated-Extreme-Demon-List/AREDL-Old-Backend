@@ -19,6 +19,9 @@ func LoadParam(toLoad LoadData) echo.MiddlewareFunc {
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to load form data")
 			}
+			for _, param := range c.PathParams() {
+				params[param.Name] = []string{param.Value}
+			}
 			for key, loadFunc := range toLoad {
 				value, err := loadFunc(key, params)
 				if err != nil {

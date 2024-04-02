@@ -10,58 +10,14 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Discord server",
-            "url": "https://discord.gg/VbqrUBtTfX"
+            "name": "Aredl",
+            "url": "https://aredl.net/"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/aredl/history": {
-            "get": {
-                "description": "Lists the placement, move \u0026 legacy history of a level by either using its internal or gd id. Possible actions: placed, placedAbove, movedUp, movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_public"
-                ],
-                "summary": "History of a level",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal level id",
-                        "name": "id",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "description": "gd level id",
-                        "name": "level_id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/aredl_public.HistoryEntry"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/aredl/leaderboard": {
             "get": {
                 "description": "Gives leaderboard as a paged list ordered by rank. Players with zero list points are omitted",
@@ -69,7 +25,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_public"
+                    "aredl"
                 ],
                 "summary": "Aredl leaderboard",
                 "parameters": [
@@ -107,7 +63,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/aredl_public.Leaderboard"
+                            "$ref": "#/definitions/aredl.Leaderboard"
                         }
                     },
                     "400": {
@@ -119,76 +75,51 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/level": {
-            "get": {
-                "description": "Detailed information on a level. I naddition optional data such as records, creators, verification and packs can be requested.",
+        "/aredl/leaderboard/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Updates all points. Should be used if other automatic updates didn't work.\nRequires user permission: aredl.update_listpoints",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_public"
+                    "aredl"
                 ],
-                "summary": "Level details",
-                "operationId": "aredl.level",
+                "summary": "Update AREDL points and leaderboard",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "internal level id",
-                        "name": "id",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
                         "type": "integer",
-                        "description": "gd level id",
-                        "name": "level_id",
-                        "in": "query"
+                        "description": "min list position from what to update",
+                        "name": "min_position",
+                        "in": "query",
+                        "required": true
                     },
                     {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "if level was requested using level_id this specifies whether it should load the two player version",
-                        "name": "two_player",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "include records",
-                        "name": "records",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "include creators",
-                        "name": "creators",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "include verification",
-                        "name": "verification",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "include packs",
-                        "name": "packs",
-                        "in": "query"
+                        "type": "integer",
+                        "description": "max list position from what to update",
+                        "name": "max_position",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/aredl_public.Level"
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
                         }
@@ -196,14 +127,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/list": {
+        "/aredl/levels": {
             "get": {
-                "description": "Gives a list of every placed level ordered by position. To get more details on a level use /aredl/level",
+                "description": "Gives a list of every placed level ordered by position. To get more details on a level use /aredl/levels/:id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_public"
+                    "aredl"
                 ],
                 "summary": "Full simple list",
                 "responses": {
@@ -212,7 +143,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/aredl_public.ListEntry"
+                                "$ref": "#/definitions/aredl.ListEntry"
                             }
                         }
                     },
@@ -223,9 +154,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/aredl/mod/level": {
+            },
             "post": {
                 "security": [
                     {
@@ -239,7 +168,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_moderation"
+                    "aredl"
                 ],
                 "summary": "Place AREDL level",
                 "parameters": [
@@ -343,6 +272,84 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/aredl/levels/{id}": {
+            "get": {
+                "description": "Detailed information on a level. I naddition optional data such as records, creators, verification and packs can be requested.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Level details",
+                "operationId": "aredl.level",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal level id or gd level id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "whether the provided id is a gd id or not",
+                        "name": "is_gd_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "if level was requested using level_id this specifies whether it should load the two player version",
+                        "name": "two_player",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "include records",
+                        "name": "records",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "include creators",
+                        "name": "creators",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "include verification",
+                        "name": "verification",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "include packs",
+                        "name": "packs",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/aredl.Level"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
             },
             "patch": {
                 "security": [
@@ -357,7 +364,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_moderation"
+                    "aredl"
                 ],
                 "summary": "Update AREDL level",
                 "parameters": [
@@ -365,7 +372,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "internal level id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -442,412 +449,38 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/mod/list/update": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Updates all points. Should be used if other automatic updates didn't work.\nRequires user permission: aredl.update_listpoints",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Update AREDL points and leaderboard",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "min list position from what to update",
-                        "name": "min_position",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "max list position from what to update",
-                        "name": "max_position",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/aredl/mod/pack": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Creates a new pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Create a new AREDL pack",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "display name",
-                        "name": "name",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "display color",
-                        "name": "color",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "position of pack",
-                        "name": "placement_order",
-                        "in": "query"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "list of internal level ids. Pack has to have at least two levels",
-                        "name": "levels",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Deletes a pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Delete an AREDL pack",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal pack id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Updates a pack and updates all user points that now have or lost the new pack.\nRequires user permission: aredl.manage_packs",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Update a AREDL pack",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal pack id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "display name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "display color",
-                        "name": "color",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "position of pack",
-                        "name": "placement_order",
-                        "in": "query"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "new list of internal level ids. Pack has to have at least two levels",
-                        "name": "levels",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/aredl/mod/submission/accept": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Requires user permission: aredl.submission_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Accept AREDL submission.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal submission id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "format": "url",
-                        "description": "video url",
-                        "name": "video_url",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "whether submisssion was one on mobile",
-                        "name": "mobile",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "gd id of used ldm",
-                        "name": "ldm_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "format": "url",
-                        "description": "raw footage",
-                        "name": "raw_footage",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/aredl/mod/submission/reject": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Requires user permission: aredl.submission_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "aredl_moderation"
-                ],
-                "summary": "Reject AREDL submission.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "internal submission id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "rejection reason",
-                        "name": "rejection_reason",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/aredl/names": {
+        "/aredl/levels/{id}/history": {
             "get": {
-                "description": "Gives a map of important users grouped by their role. This also includes aredl plus members",
+                "description": "Lists the placement, move \u0026 legacy history of a level by either using its internal or gd id. Possible actions: placed, placedAbove, movedUp, movedDown, movedPastUp, movedPastDown, movedToLegacy, movedFromLegacy",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_public"
+                    "aredl"
                 ],
-                "summary": "Important users",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/aredl_public.NameUser"
-                                }
-                            }
-                        }
+                "summary": "History of a level",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal level id",
+                        "name": "id",
+                        "in": "path"
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "gd level id",
+                        "name": "level_id",
+                        "in": "query"
                     }
-                }
-            }
-        },
-        "/aredl/packs": {
-            "get": {
-                "description": "Gives a list of all packs",
-                "produces": [
-                    "application/json"
                 ],
-                "tags": [
-                    "aredl_public"
-                ],
-                "summary": "Aredl packs",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/aredl_public.Pack"
+                                "$ref": "#/definitions/aredl.HistoryEntry"
                             }
                         }
                     },
@@ -860,30 +493,24 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/user": {
+        "/aredl/list": {
             "get": {
-                "description": "Gives detailed information about a user",
+                "description": "Use /aredl/levels instead",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_public"
+                    "aredl"
                 ],
-                "summary": "User info",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "user id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "(DEPRECATED) Full simple list",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/aredl_public.User"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/aredl.ListEntry"
+                            }
                         }
                     },
                     "400": {
@@ -895,7 +522,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/user/records": {
+        "/aredl/me/records": {
             "get": {
                 "security": [
                     {
@@ -909,7 +536,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_user"
+                    "aredl"
                 ],
                 "summary": "List records",
                 "responses": {
@@ -918,7 +545,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/aredl_user.Record"
+                                "$ref": "#/definitions/aredl.Record"
                             }
                         }
                     },
@@ -937,7 +564,47 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/user/submission": {
+        "/aredl/me/submissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Lists submissions ordered by the time they have been updated last.\nRequires user permission: aredl.user_submission_list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "List submissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/aredl.MeSubmission"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -951,7 +618,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_user"
+                    "aredl"
                 ],
                 "summary": "Create or Update submission",
                 "parameters": [
@@ -1014,7 +681,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/aredl/me/submissions/{id}": {
             "delete": {
                 "security": [
                     {
@@ -1028,7 +697,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_user"
+                    "aredl"
                 ],
                 "summary": "Delete submission",
                 "parameters": [
@@ -1036,6 +705,134 @@ const docTemplate = `{
                         "type": "string",
                         "description": "submission id",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/names": {
+            "get": {
+                "description": "Gives a map of important users grouped by their role. This also includes aredl plus members",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Important users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/aredl.NameUser"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/packs": {
+            "get": {
+                "description": "Gives a list of all packs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Aredl packs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/aredl.Pack"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Creates a new pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Create a new AREDL pack",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "display name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "display color",
+                        "name": "color",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "position of pack",
+                        "name": "placement_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "list of internal level ids. Pack has to have at least two levels",
+                        "name": "levels",
                         "in": "query",
                         "required": true
                     }
@@ -1059,7 +856,164 @@ const docTemplate = `{
                 }
             }
         },
-        "/aredl/user/submissions": {
+        "/aredl/packs/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Deletes a pack and updates all user points that now have the new pack.\nRequires user permission: aredl.manage_packs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Delete an AREDL pack",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal pack id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Updates a pack and updates all user points that now have or lost the new pack.\nRequires user permission: aredl.manage_packs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Update a AREDL pack",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal pack id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "display name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "display color",
+                        "name": "color",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "position of pack",
+                        "name": "placement_order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "new list of internal level ids. Pack has to have at least two levels",
+                        "name": "levels",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/profiles/{id}": {
+            "get": {
+                "description": "Gives detailed information about a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "User info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "if the provided id is a discord id",
+                        "name": "is_discord_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/aredl.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/submissions": {
             "get": {
                 "security": [
                     {
@@ -1068,12 +1022,12 @@ const docTemplate = `{
                         ]
                     }
                 ],
-                "description": "Lists submissions ordered by the time they have been updated last.\nRequires user permission: aredl.user_submission_list",
+                "description": "Lists submissions ordered by the time they have been updated last.\nRequires user permission: aredl.submission_review",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "aredl_user"
+                    "aredl"
                 ],
                 "summary": "List submissions",
                 "responses": {
@@ -1082,7 +1036,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/aredl_user.Submission"
+                                "$ref": "#/definitions/aredl.Submission"
                             }
                         }
                     },
@@ -1101,21 +1055,222 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/ban": {
+        "/aredl/submissions/{id}/accept": {
             "post": {
-                "description": "Bans a user and removes them from the leaderboard\nRequires user permission: user_ban\nAdditionally the user needs to be able to affect the user with their permission",
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Requires user permission: aredl.submission_review",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "aredl"
                 ],
-                "summary": "Ban user",
+                "summary": "Accept AREDL submission.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "internal user id",
+                        "description": "internal submission id",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "url",
+                        "description": "video url",
+                        "name": "video_url",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "whether submisssion was one on mobile",
+                        "name": "mobile",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "gd id of used ldm",
+                        "name": "ldm_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "url",
+                        "description": "raw footage",
+                        "name": "raw_footage",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/aredl/submissions/{id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Requires user permission: aredl.submission_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "aredl"
+                ],
+                "summary": "Reject AREDL submission.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "internal submission id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "rejection reason",
+                        "name": "rejection_reason",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/api-key": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Gets the authenticated users api key. If the user does not have one it generates a new one.\nRequires user permission: user_request_api_key",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Get Api Key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/global.ApiKeyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/merge-requests": {
+            "get": {
+                "description": "Lists all open merge requests\nRequires user permission: name_change_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "List name merge requests",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/global.NameChangeRequest"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.\nRequires user permission: user_request_merge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Merge Request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name of the placeholder user to be merged with",
+                        "name": "placeholder_name",
                         "in": "query",
                         "required": true
                     }
@@ -1139,30 +1294,306 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/create-placeholder": {
+        "/merge-requests/{id}/accept": {
             "post": {
-                "description": "Creates a placeholder user for users that are not registered on the list yet\nRequires user permission: create_placeholder",
+                "description": "Accepts and merge request and merges the respective users\nRequires user permission: user_merge_review",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
-                "summary": "Create a placeholder user",
+                "summary": "Accept merge request",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "display name",
-                        "name": "username",
+                        "description": "request id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/merge-requests/{id}/reject": {
+            "post": {
+                "description": "Rejects merge request\nRequires user permission: user_merge_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Reject merge request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "request id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/mod/users/{id}/merge": {
+            "post": {
+                "description": "Directly merges two users\nRequires user permission: user_merge",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Merge two users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "primary user that the data gets merged into",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "secondary user that gets deleted",
+                        "name": "secondary_id",
                         "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/name-change-requests": {
+            "get": {
+                "description": "Lists all open name change requests\nRequires user permission: name_change_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "List name change requests",
+                "responses": {
+                    "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/moderation.CreatePlaceholderResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/global.NameChangeRequest"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Creates a name change request for the user. Needs to be reviewed by a moderator.\nRequires user permission: user_request_name_change",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Name Change Request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name to change to",
+                        "name": "new_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/name-change-requests/{id}/accept": {
+            "post": {
+                "description": "Accepts a name change request from a user\nRequires user permission: name_change_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Accept name change request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "request id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/name-change-requests/{id}/reject": {
+            "post": {
+                "description": "Rejects a name change request from a user\nRequires user permission: name_change_review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Reject name change request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "request id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": [
+                            "authorization"
+                        ]
+                    }
+                ],
+                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Get a list of Permissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/middlewares.PermissionData"
+                            }
                         }
                     },
                     "400": {
@@ -1180,14 +1611,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/list": {
+        "/users": {
             "get": {
                 "description": "Paged list of all users filtered by name. Userd to get user ids and select a user for other actions\nRequires user permission: user_list",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
                 "summary": "List users",
                 "parameters": [
@@ -1221,7 +1652,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/moderation.UserEntry"
+                                "$ref": "#/definitions/global.UserEntry"
                             }
                         }
                     },
@@ -1240,183 +1671,30 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/merge": {
+        "/users/create-placeholder": {
             "post": {
-                "description": "Directly merges two users\nRequires user permission: user_merge",
+                "description": "Creates a placeholder user for users that are not registered on the list yet\nRequires user permission: create_placeholder",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
-                "summary": "Merge two users",
+                "summary": "Create a placeholder user",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "primary user that the data gets merged into",
-                        "name": "primaryId",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "secondary user that gets deleted",
-                        "name": "secondaryId",
+                        "description": "display name",
+                        "name": "username",
                         "in": "query",
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/mod/user/merge-request/accept": {
-            "post": {
-                "description": "Accepts and merge request and merges the respective users\nRequires user permission: user_merge_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "moderation"
-                ],
-                "summary": "Accept merge request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "request id",
-                        "name": "requestId",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/mod/user/merge-request/reject": {
-            "post": {
-                "description": "Rejects merge request\nRequires user permission: user_merge_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "moderation"
-                ],
-                "summary": "Reject merge request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "request id",
-                        "name": "requestId",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/mod/user/name-change/accept": {
-            "post": {
-                "description": "Accepts a name change request from a user\nRequires user permission: name_change_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "moderation"
-                ],
-                "summary": "Accept name change request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "request id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/mod/user/name-change/list": {
-            "get": {
-                "description": "Lists all open name change requests\nRequires user permission: name_change_review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "moderation"
-                ],
-                "summary": "List name change requests",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/moderation.NameChangeRequest"
-                            }
+                            "$ref": "#/definitions/global.CreatePlaceholderResponse"
                         }
                     },
                     "400": {
@@ -1434,22 +1712,22 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/name-change/reject": {
+        "/users/{id}/ban": {
             "post": {
-                "description": "Rejects a name change request from a user\nRequires user permission: name_change_review",
+                "description": "Bans a user and removes them from the leaderboard\nRequires user permission: user_ban\nAdditionally the user needs to be able to affect the user with their permission",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
-                "summary": "Reject name change request",
+                "summary": "Ban user",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "request id",
+                        "description": "internal user id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -1472,14 +1750,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/role": {
+        "/users/{id}/role": {
             "post": {
                 "description": "Promote or demote a user\nRequires user permission: user_change_role\nAdditionally the user needs to be able to affect the user with their permission and give the user the new role",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
                 "summary": "Change user role",
                 "parameters": [
@@ -1487,7 +1765,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "internal user id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -1521,14 +1799,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/mod/user/unban": {
+        "/users/{id}/unban": {
             "post": {
                 "description": "Unbans a user\nRequires user permission: user_ban\nAdditionally the user needs to be able to affect the user with their permission",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "moderation"
+                    "global"
                 ],
                 "summary": "Unban user",
                 "parameters": [
@@ -1536,184 +1814,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "internal user id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/api-key": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Gets the authenticated users api key. If the user does not have one it generates a new one.\nRequires user permission: user_request_api_key",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Get Api Key",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/user.ApiKeyResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/merge-request": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Creates a merge request for the user with a placeholder user. Needs to be reviewed by a moderator.\nRequires user permission: user_request_merge",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Merge Request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name of the placeholder user to be merged with",
-                        "name": "placeholder_name",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/name-change-request": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Creates a name change request for the user. Needs to be reviewed by a moderator.\nRequires user permission: user_request_name_change",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Name Change Request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "name to change to",
-                        "name": "new_name",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/permissions": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": [
-                            "authorization"
-                        ]
-                    }
-                ],
-                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Get a list of Permissions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "$ref": "#/definitions/middlewares.PermissionData"
-                            }
-                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1732,7 +1839,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "aredl_public.HistoryEntry": {
+        "aredl.HistoryEntry": {
             "type": "object",
             "properties": {
                 "action": {
@@ -1770,7 +1877,7 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.Leaderboard": {
+        "aredl.Leaderboard": {
             "type": "object",
             "properties": {
                 "list": {
@@ -1809,13 +1916,13 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.Level": {
+        "aredl.Level": {
             "type": "object",
             "properties": {
                 "creators": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/aredl_public.LevelUser"
+                        "$ref": "#/definitions/aredl.LevelUser"
                     }
                 },
                 "custom_song": {
@@ -1839,7 +1946,7 @@ const docTemplate = `{
                 "packs": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/aredl_public.LevelPack"
+                        "$ref": "#/definitions/aredl.LevelPack"
                     }
                 },
                 "points": {
@@ -1849,20 +1956,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "publisher": {
-                    "$ref": "#/definitions/aredl_public.LevelUser"
+                    "$ref": "#/definitions/aredl.LevelUser"
                 },
                 "records": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/aredl_public.LevelRecord"
+                        "$ref": "#/definitions/aredl.LevelRecord"
                     }
                 },
                 "verification": {
-                    "$ref": "#/definitions/aredl_public.LevelRecord"
+                    "$ref": "#/definitions/aredl.LevelRecord"
                 }
             }
         },
-        "aredl_public.LevelPack": {
+        "aredl.LevelPack": {
             "type": "object",
             "properties": {
                 "color": {
@@ -1879,7 +1986,7 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.LevelRecord": {
+        "aredl.LevelRecord": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1889,14 +1996,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "submitted_by": {
-                    "$ref": "#/definitions/aredl_public.LevelUser"
+                    "$ref": "#/definitions/aredl.LevelUser"
                 },
                 "video_url": {
                     "type": "string"
                 }
             }
         },
-        "aredl_public.LevelUser": {
+        "aredl.LevelUser": {
             "type": "object",
             "properties": {
                 "global_name": {
@@ -1907,7 +2014,7 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.ListEntry": {
+        "aredl.ListEntry": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1933,7 +2040,59 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.NameUser": {
+        "aredl.MeSubmission": {
+            "type": "object",
+            "properties": {
+                "additional_notes": {
+                    "type": "string"
+                },
+                "created": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_update": {
+                    "type": "boolean"
+                },
+                "ldm_id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "level_id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "mobile": {
+                    "type": "boolean"
+                },
+                "priority": {
+                    "type": "boolean"
+                },
+                "raw_footage": {
+                    "type": "string"
+                },
+                "rejected": {
+                    "type": "boolean"
+                },
+                "updated": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "video_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "aredl.NameUser": {
             "type": "object",
             "properties": {
                 "global_name": {
@@ -1944,7 +2103,7 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.Pack": {
+        "aredl.Pack": {
             "type": "object",
             "properties": {
                 "color": {
@@ -1987,7 +2146,110 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_public.User": {
+        "aredl.Record": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ldm_id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "level_id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "mobile": {
+                    "type": "boolean"
+                },
+                "raw_footage": {
+                    "type": "string"
+                },
+                "updated": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "video_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "aredl.Submission": {
+            "type": "object",
+            "properties": {
+                "additional_notes": {
+                    "type": "string"
+                },
+                "created": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_update": {
+                    "type": "boolean"
+                },
+                "ldm_id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "level_id": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "mobile": {
+                    "type": "boolean"
+                },
+                "priority": {
+                    "type": "boolean"
+                },
+                "raw_footage": {
+                    "type": "string"
+                },
+                "rejected": {
+                    "type": "boolean"
+                },
+                "reviewer": {
+                    "type": "object",
+                    "properties": {
+                        "global_name": {
+                            "type": "string"
+                        },
+                        "id": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "updated": {
+                    "$ref": "#/definitions/types.DateTime"
+                },
+                "video_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "aredl.User": {
             "type": "object",
             "properties": {
                 "aredl_verified": {
@@ -2166,104 +2428,18 @@ const docTemplate = `{
                 }
             }
         },
-        "aredl_user.Record": {
+        "global.ApiKeyResponse": {
             "type": "object",
             "properties": {
-                "created": {
-                    "$ref": "#/definitions/types.DateTime"
-                },
-                "id": {
+                "api_key": {
                     "type": "string"
                 },
-                "ldm_id": {
-                    "type": "integer"
-                },
-                "level": {
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "type": "string"
-                        },
-                        "level_id": {
-                            "type": "integer"
-                        },
-                        "name": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "mobile": {
+                "newly_generated": {
                     "type": "boolean"
-                },
-                "raw_footage": {
-                    "type": "string"
-                },
-                "updated": {
-                    "$ref": "#/definitions/types.DateTime"
-                },
-                "video_url": {
-                    "type": "string"
                 }
             }
         },
-        "aredl_user.Submission": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "$ref": "#/definitions/types.DateTime"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_update": {
-                    "type": "boolean"
-                },
-                "ldm_id": {
-                    "type": "integer"
-                },
-                "level": {
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "type": "string"
-                        },
-                        "level_id": {
-                            "type": "integer"
-                        },
-                        "name": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "mobile": {
-                    "type": "boolean"
-                },
-                "raw_footage": {
-                    "type": "string"
-                },
-                "rejected": {
-                    "type": "boolean"
-                },
-                "updated": {
-                    "$ref": "#/definitions/types.DateTime"
-                },
-                "video_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "middlewares.PermissionData": {
-            "type": "object",
-            "properties": {
-                "affected_roles": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "moderation.CreatePlaceholderResponse": {
+        "global.CreatePlaceholderResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2271,7 +2447,7 @@ const docTemplate = `{
                 }
             }
         },
-        "moderation.NameChangeRequest": {
+        "global.NameChangeRequest": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2293,7 +2469,7 @@ const docTemplate = `{
                 }
             }
         },
-        "moderation.UserEntry": {
+        "global.UserEntry": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2304,19 +2480,19 @@ const docTemplate = `{
                 }
             }
         },
-        "types.DateTime": {
-            "type": "object"
-        },
-        "user.ApiKeyResponse": {
+        "middlewares.PermissionData": {
             "type": "object",
             "properties": {
-                "api_key": {
-                    "type": "string"
-                },
-                "newly_generated": {
-                    "type": "boolean"
+                "affected_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
+        },
+        "types.DateTime": {
+            "type": "object"
         },
         "util.ErrorResponse": {
             "type": "object",
@@ -2338,7 +2514,7 @@ const docTemplate = `{
         "ApiKeyAuth": {
             "description": "Perform actions as a user. It is also used to access endpoints that require user permissions.",
             "type": "apiKey",
-            "name": "authorization",
+            "name": "api-key",
             "in": "header"
         }
     }
@@ -2346,10 +2522,10 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1",
+	Version:          "1.0",
 	Host:             "api.aredl.net",
 	BasePath:         "/api",
-	Schemes:          []string{},
+	Schemes:          []string{"https"},
 	Title:            "Aredl API",
 	Description:      "Backend for the all rated extreme demon list",
 	InfoInstanceName: "swagger",
