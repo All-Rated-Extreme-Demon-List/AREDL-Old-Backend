@@ -5,13 +5,14 @@ import (
 	"AREDL/middlewares"
 	"AREDL/names"
 	"AREDL/util"
+	"net/http"
+
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/tools/types"
-	"net/http"
 )
 
 type Submission struct {
@@ -64,7 +65,7 @@ func registerSubmissionList(e *echo.Group, app core.App) error {
 			middlewares.CheckBanned(),
 			middlewares.RequirePermissionGroup(app, "aredl", "submission_review"),
 			middlewares.LoadParam(middlewares.LoadData{
-				"include_rejected": middlewares.LoadBool(true),
+				"include_rejected": middlewares.AddDefault(false, middlewares.LoadBool(false)),
 			}),
 		},
 		Handler: func(c echo.Context) error {
