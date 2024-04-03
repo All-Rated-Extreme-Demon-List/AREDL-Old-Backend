@@ -1529,7 +1529,6 @@ paths:
       - default: 40
         description: number of results per page
         in: query
-        maximum: 200
         minimum: 1
         name: per_page
         type: integer
