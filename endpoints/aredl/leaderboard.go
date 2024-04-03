@@ -37,7 +37,7 @@ type Leaderboard struct {
 //	@Tags			aredl
 //	@Param			page		query	int		false	"select page"	default(1)	minimum(1)
 //	@Param			user_id		query	string	false	"get the page the given user is on instead of the given page, does not work with name filter active"
-//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)
+//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1) maximum(200)
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
 //	@Produce		json
@@ -53,7 +53,7 @@ func registerLeaderboardEndpoint(e *echo.Group, app core.App) error {
 			middlewares.LoadParam(middlewares.LoadData{
 				"page":        middlewares.AddDefault(1, middlewares.LoadInt(false, validation.Min(1))),
 				"user_id":     middlewares.LoadString(false),
-				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1))),
+				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1), validation.Max(200))),
 				"name_filter": middlewares.LoadString(false),
 			}),
 		},
