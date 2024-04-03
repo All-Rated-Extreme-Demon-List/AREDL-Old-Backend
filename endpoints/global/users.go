@@ -4,12 +4,13 @@ import (
 	"AREDL/middlewares"
 	"AREDL/names"
 	"AREDL/util"
+	"net/http"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"net/http"
 )
 
 type UserEntry struct {
@@ -25,7 +26,7 @@ type UserEntry struct {
 //	@Security		ApiKeyAuth
 //	@Tags			global
 //	@Param			page		query	int		false	"select page"					default(1)	minimum(1)
-//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)	maximum(200)
+//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
 //	@Produce		json
@@ -43,7 +44,7 @@ func registerUserListEndpoint(e *echo.Group, app core.App) error {
 			middlewares.RequirePermissionGroup(app, "", "user_list"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"page":        middlewares.AddDefault(1, middlewares.LoadInt(false, validation.Min(1))),
-				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1), validation.Max(200))),
+				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1))),
 				"name_filter": middlewares.LoadString(false),
 			}),
 		},

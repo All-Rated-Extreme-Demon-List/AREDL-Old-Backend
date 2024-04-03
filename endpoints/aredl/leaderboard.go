@@ -6,13 +6,14 @@ import (
 	"AREDL/names"
 	"AREDL/util"
 	"fmt"
+	"net/http"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/daos"
-	"net/http"
 )
 
 type Leaderboard struct {
@@ -36,7 +37,7 @@ type Leaderboard struct {
 //	@Tags			aredl
 //	@Param			page		query	int		false	"select page"	default(1)	minimum(1)
 //	@Param			user_id		query	string	false	"get the page the given user is on instead of the given page, does not work with name filter active"
-//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)	maximum(200)
+//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1) maximum(200)
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
 //	@Produce		json
