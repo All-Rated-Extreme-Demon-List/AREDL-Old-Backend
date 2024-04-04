@@ -51,6 +51,9 @@ func registerNameChangeRequestEndpoint(e *echo.Group, app core.App) error {
 				sameAsOld := userRecord.GetString("global_name") == c.Get("new_name")
 				requestRecord, _ := txDao.FindFirstRecordByData(names.TableNameChangeRequests, "user", userRecord.Id)
 				if requestRecord == nil {
+					if sameAsOld {
+						return util.NewErrorResponse(nil, "New name is the same as the old one")
+					}
 					requestCollection, err := txDao.FindCollectionByNameOrId(names.TableNameChangeRequests)
 					if err != nil {
 						return util.NewErrorResponse(err, "Failed to load collection")
