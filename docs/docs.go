@@ -1193,6 +1193,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/me/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "global"
+                ],
+                "summary": "Get a list of Permissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/middlewares.PermissionData"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/merge-requests": {
             "get": {
                 "security": [
@@ -1516,46 +1556,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/permissions": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Returns all the available permissions to the authenticated user, if there is no authenticaiton provided, the permissions will be empty",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "global"
-                ],
-                "summary": "Get a list of Permissions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "$ref": "#/definitions/middlewares.PermissionData"
-                            }
-                        }
                     },
                     "400": {
                         "description": "Bad Request",

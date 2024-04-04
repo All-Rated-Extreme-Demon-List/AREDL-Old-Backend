@@ -22,11 +22,11 @@ import (
 //	@Success		200 {object}	map[string]middlewares.PermissionData
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
-//	@Router			/permissions [get]
+//	@Router			/me/permissions [get]
 func registerPermissionsEndpoint(e *echo.Group, app core.App) error {
 	_, err := e.AddRoute(echo.Route{
 		Method: http.MethodGet,
-		Path:   "/permissions",
+		Path:   "/me/permissions",
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.LoadApiKey(app),

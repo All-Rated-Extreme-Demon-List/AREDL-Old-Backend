@@ -1260,6 +1260,32 @@ paths:
       summary: Get Api Key
       tags:
       - global
+  /me/permissions:
+    get:
+      description: Returns all the available permissions to the authenticated user,
+        if there is no authenticaiton provided, the permissions will be empty
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              $ref: '#/definitions/middlewares.PermissionData'
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a list of Permissions
+      tags:
+      - global
   /merge-requests:
     get:
       description: |-
@@ -1486,32 +1512,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Reject name change request
-      tags:
-      - global
-  /permissions:
-    get:
-      description: Returns all the available permissions to the authenticated user,
-        if there is no authenticaiton provided, the permissions will be empty
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              $ref: '#/definitions/middlewares.PermissionData'
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a list of Permissions
       tags:
       - global
   /users:
