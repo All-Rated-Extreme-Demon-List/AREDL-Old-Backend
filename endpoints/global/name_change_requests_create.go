@@ -62,9 +62,6 @@ func registerNameChangeRequestEndpoint(e *echo.Group, app core.App) error {
 					}
 					return nil
 				}
-				if sameAsOld {
-					return util.NewErrorResponse(nil, "New name is the same as the old one")
-				}
 				requestForm := forms.NewRecordUpsert(app, requestRecord)
 				requestForm.SetDao(txDao)
 				err := requestForm.LoadData(map[string]any{
