@@ -1200,7 +1200,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Lists all open merge requests\nRequires user permission: name_change_review",
+                "description": "Lists all open merge requests\nRequires user permission: user_merge_review",
                 "produces": [
                     "application/json"
                 ],

@@ -1264,7 +1264,7 @@ paths:
     get:
       description: |-
         Lists all open merge requests
-        Requires user permission: name_change_review
+        Requires user permission: user_merge_review
       produces:
       - application/json
       responses:
