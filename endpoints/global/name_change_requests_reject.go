@@ -32,14 +32,14 @@ func registerNameChangeRejectEndpoint(e *echo.Group, app core.App) error {
 		Middlewares: []echo.MiddlewareFunc{
 			apis.ActivityLogger(app),
 			middlewares.CheckBanned(),
-			middlewares.RequirePermissionGroup(app, "aredl", "name_change_review"),
+			middlewares.RequirePermissionGroup(app, "", "name_change_review"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"id": middlewares.LoadString(true),
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				requestRecord, err := txDao.FindRecordById(names.TableNameChangeRequests, c.Get("request_id").(string))
+				requestRecord, err := txDao.FindRecordById(names.TableNameChangeRequests, c.Get("id").(string))
 				if err != nil {
 					return util.NewErrorResponse(err, "Request not found")
 				}
