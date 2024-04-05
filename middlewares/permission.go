@@ -40,15 +40,17 @@ func RequirePermissionGroup(app core.App, listName string, action string) echo.M
 				record = users[0]
 				c.Set(apis.ContextAuthRecordKey, record)
 			}
-			hasPermission, permissionData, err := GetPermission(app.Dao(), record.Id, listName, action)
-			if err != nil {
-				return apis.NewForbiddenError("Permissions could not be loaded", nil)
-			}
-			if !hasPermission {
-				return apis.NewForbiddenError("You are not allowed to access this endpoint", nil)
-			}
-			c.Set(KeyAffectedRoles, permissionData.AffectedRoles)
 
+			if record != nil {
+				hasPermission, permissionData, err := GetPermission(app.Dao(), record.Id, listName, action)
+				if err != nil {
+					return apis.NewForbiddenError("Permissions could not be loaded", nil)
+				}
+				if !hasPermission {
+					return apis.NewForbiddenError("You are not allowed to access this endpoint", nil)
+				}
+				c.Set(KeyAffectedRoles, permissionData.AffectedRoles)
+			}
 			return next(c)
 		}
 	}

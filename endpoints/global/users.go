@@ -15,7 +15,8 @@ import (
 
 type UserEntry struct {
 	Id         string `db:"id" json:"id"`
-	GlobalName string `db:"global_name" json:"name"`
+	GlobalName string `db:"global_name" json:"global_name"`
+	Userame    string `db:"username" json:"username"`
 }
 
 // registerUserListEndpoint godoc
@@ -25,12 +26,12 @@ type UserEntry struct {
 //	@Description	Requires user permission: user_list
 //	@Security		ApiKeyAuth
 //	@Tags			global
-//	@Param			page		query	int		false	"select page"					default(1)	minimum(1)
-//	@Param			per_page	query	int		false	"number of results per page"	default(40)	minimum(1)
+//	@Param			page		query	int		false	"select page"																default(1)	minimum(1)
+//	@Param			per_page	query	int		false	"number of results per page. If this is set to -1 it will return all users"	default(40)	minimum(-1)
 //	@Param			name_filter	query	string	false	"filters names to only contain the given substring"
 //	@Schemes		http https
 //	@Produce		json
-//	@Success		200 {object}	[]UserEntry
+//	@Success		200	{object}	[]UserEntry
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		403	{object}	util.ErrorResponse
 //	@Router			/users [get]
@@ -44,13 +45,16 @@ func registerUserListEndpoint(e *echo.Group, app core.App) error {
 			middlewares.RequirePermissionGroup(app, "", "user_list"),
 			middlewares.LoadParam(middlewares.LoadData{
 				"page":        middlewares.AddDefault(1, middlewares.LoadInt(false, validation.Min(1))),
-				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(1))),
+				"per_page":    middlewares.AddDefault(40, middlewares.LoadInt(false, validation.Min(-1))),
 				"name_filter": middlewares.LoadString(false),
 			}),
 		},
 		Handler: func(c echo.Context) error {
 			page := int64(c.Get("page").(int))
 			perPage := int64(c.Get("per_page").(int))
+			if perPage == 0 {
+				return util.NewErrorResponse(nil, "per_page cannot be 0")
+			}
 			var result []UserEntry
 			tableNames := map[string]string{
 				"base": names.TableUsers,
@@ -59,7 +63,11 @@ func registerUserListEndpoint(e *echo.Group, app core.App) error {
 				if c.Get("name_filter") != nil {
 					query.Where(dbx.Like(prefixResolver("global_name"), c.Get("name_filter").(string)))
 				}
-				query.Offset((page - 1) * perPage).Limit(perPage).OrderBy(prefixResolver("global_name"))
+				if perPage != -1 {
+					query.Offset((page - 1) * perPage).Limit(perPage)
+				}
+
+				query.OrderBy(prefixResolver("global_name"))
 			})
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to load request data")

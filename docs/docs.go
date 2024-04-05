@@ -1597,10 +1597,10 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "minimum": 1,
+                        "minimum": -1,
                         "type": "integer",
                         "default": 40,
-                        "description": "number of results per page",
+                        "description": "number of results per page. If this is set to -1 it will return all users",
                         "name": "per_page",
                         "in": "query"
                     },
@@ -2518,10 +2518,13 @@ const docTemplate = `{
         "global.UserEntry": {
             "type": "object",
             "properties": {
+                "global_name": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
-                "name": {
+                "username": {
                     "type": "string"
                 }
             }

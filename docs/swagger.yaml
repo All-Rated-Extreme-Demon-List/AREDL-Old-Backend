@@ -421,9 +421,11 @@ definitions:
     type: object
   global.UserEntry:
     properties:
+      global_name:
+        type: string
       id:
         type: string
-      name:
+      username:
         type: string
     type: object
   middlewares.PermissionData:
@@ -1527,9 +1529,10 @@ paths:
         name: page
         type: integer
       - default: 40
-        description: number of results per page
+        description: number of results per page. If this is set to -1 it will return
+          all users
         in: query
-        minimum: 1
+        minimum: -1
         name: per_page
         type: integer
       - description: filters names to only contain the given substring
