@@ -305,6 +305,8 @@ definitions:
               type: number
             position:
               type: integer
+            two_player:
+              type: string
           type: object
         type: array
       description:
@@ -353,6 +355,8 @@ definitions:
               type: number
             position:
               type: integer
+            two_player:
+              type: string
           type: object
         type: array
       rank:
@@ -379,6 +383,8 @@ definitions:
                   type: number
                 position:
                   type: integer
+                two_player:
+                  type: string
               type: object
             mobile:
               type: boolean

@@ -2338,6 +2338,9 @@ const docTemplate = `{
                             },
                             "position": {
                                 "type": "integer"
+                            },
+                            "two_player": {
+                                "type": "string"
                             }
                         }
                     }
@@ -2411,6 +2414,9 @@ const docTemplate = `{
                             },
                             "position": {
                                 "type": "integer"
+                            },
+                            "two_player": {
+                                "type": "string"
                             }
                         }
                     }
@@ -2451,6 +2457,9 @@ const docTemplate = `{
                                     },
                                     "position": {
                                         "type": "integer"
+                                    },
+                                    "two_player": {
+                                        "type": "string"
                                     }
                                 }
                             },

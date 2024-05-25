@@ -46,32 +46,35 @@ type User struct {
 		Mobile         bool   `db:"mobile" json:"mobile,omitempty"`
 		PlacementOrder int    `db:"placement_order" json:"placement_order"`
 		Level          struct {
-			Id       string  `db:"id" json:"id,omitempty"`
-			Position int     `db:"position" json:"position,omitempty"`
-			Name     string  `db:"name" json:"name,omitempty"`
-			Points   float64 `db:"points" json:"points"`
-			Legacy   bool    `db:"legacy" json:"legacy"`
-			LevelId  int     `db:"level_id" json:"level_id,omitempty"`
+			Id        string  `db:"id" json:"id,omitempty"`
+			Position  int     `db:"position" json:"position,omitempty"`
+			Name      string  `db:"name" json:"name,omitempty"`
+			TwoPlayer string  `db:"two_player" json:"two_player"`
+			Points    float64 `db:"points" json:"points"`
+			Legacy    bool    `db:"legacy" json:"legacy"`
+			LevelId   int     `db:"level_id" json:"level_id,omitempty"`
 		} `db:"level" json:"level,omitempty" extend:"level,levels,id"`
 	} `json:"records,omitempty"`
 	CreatedLevels []struct {
-		Id       string  `db:"id" json:"id,omitempty"`
-		Position int     `db:"position" json:"position,omitempty"`
-		Name     string  `db:"name" json:"name,omitempty"`
-		Points   float64 `db:"points" json:"points"`
-		Legacy   bool    `db:"legacy" json:"legacy"`
-		LevelId  int     `db:"level_id" json:"level_id,omitempty"`
-		Created  struct {
+		Id        string  `db:"id" json:"id,omitempty"`
+		Position  int     `db:"position" json:"position,omitempty"`
+		Name      string  `db:"name" json:"name,omitempty"`
+		TwoPlayer string  `db:"two_player" json:"two_player"`
+		Points    float64 `db:"points" json:"points"`
+		Legacy    bool    `db:"legacy" json:"legacy"`
+		LevelId   int     `db:"level_id" json:"level_id,omitempty"`
+		Created   struct {
 			Creator string `db:"creator"`
 		} `json:"-" extend:"id,creators,level" db:"creators"`
 	} `json:"created_levels"`
 	PublishedLevels []struct {
-		Id       string  `db:"id" json:"id,omitempty"`
-		Position int     `db:"position" json:"position,omitempty"`
-		Name     string  `db:"name" json:"name,omitempty"`
-		Points   float64 `db:"points" json:"points"`
-		Legacy   bool    `db:"legacy" json:"legacy"`
-		LevelId  int     `db:"level_id" json:"level_id,omitempty"`
+		Id        string  `db:"id" json:"id,omitempty"`
+		Position  int     `db:"position" json:"position,omitempty"`
+		Name      string  `db:"name" json:"name,omitempty"`
+		TwoPlayer string  `db:"two_player" json:"two_player"`
+		Points    float64 `db:"points" json:"points"`
+		Legacy    bool    `db:"legacy" json:"legacy"`
+		LevelId   int     `db:"level_id" json:"level_id,omitempty"`
 	} `json:"published_levels"`
 }
 

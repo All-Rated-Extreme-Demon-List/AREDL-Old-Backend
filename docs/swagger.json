@@ -2332,6 +2332,9 @@
                             },
                             "position": {
                                 "type": "integer"
+                            },
+                            "two_player": {
+                                "type": "string"
                             }
                         }
                     }
@@ -2405,6 +2408,9 @@
                             },
                             "position": {
                                 "type": "integer"
+                            },
+                            "two_player": {
+                                "type": "string"
                             }
                         }
                     }
@@ -2445,6 +2451,9 @@
                                     },
                                     "position": {
                                         "type": "integer"
+                                    },
+                                    "two_player": {
+                                        "type": "string"
                                     }
                                 }
                             },
