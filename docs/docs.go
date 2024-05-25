@@ -2340,7 +2340,7 @@ const docTemplate = `{
                                 "type": "integer"
                             },
                             "two_player": {
-                                "type": "string"
+                                "type": "boolean"
                             }
                         }
                     }
@@ -2416,7 +2416,7 @@ const docTemplate = `{
                                 "type": "integer"
                             },
                             "two_player": {
-                                "type": "string"
+                                "type": "boolean"
                             }
                         }
                     }
@@ -2459,7 +2459,7 @@ const docTemplate = `{
                                         "type": "integer"
                                     },
                                     "two_player": {
-                                        "type": "string"
+                                        "type": "boolean"
                                     }
                                 }
                             },

@@ -49,7 +49,7 @@ type User struct {
 			Id        string  `db:"id" json:"id,omitempty"`
 			Position  int     `db:"position" json:"position,omitempty"`
 			Name      string  `db:"name" json:"name,omitempty"`
-			TwoPlayer string  `db:"two_player" json:"two_player"`
+			TwoPlayer bool    `db:"two_player" json:"two_player"`
 			Points    float64 `db:"points" json:"points"`
 			Legacy    bool    `db:"legacy" json:"legacy"`
 			LevelId   int     `db:"level_id" json:"level_id,omitempty"`
@@ -59,7 +59,7 @@ type User struct {
 		Id        string  `db:"id" json:"id,omitempty"`
 		Position  int     `db:"position" json:"position,omitempty"`
 		Name      string  `db:"name" json:"name,omitempty"`
-		TwoPlayer string  `db:"two_player" json:"two_player"`
+		TwoPlayer bool    `db:"two_player" json:"two_player"`
 		Points    float64 `db:"points" json:"points"`
 		Legacy    bool    `db:"legacy" json:"legacy"`
 		LevelId   int     `db:"level_id" json:"level_id,omitempty"`
@@ -71,7 +71,7 @@ type User struct {
 		Id        string  `db:"id" json:"id,omitempty"`
 		Position  int     `db:"position" json:"position,omitempty"`
 		Name      string  `db:"name" json:"name,omitempty"`
-		TwoPlayer string  `db:"two_player" json:"two_player"`
+		TwoPlayer bool    `db:"two_player" json:"two_player"`
 		Points    float64 `db:"points" json:"points"`
 		Legacy    bool    `db:"legacy" json:"legacy"`
 		LevelId   int     `db:"level_id" json:"level_id,omitempty"`
