@@ -364,7 +364,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, levelName := range pack.Levels {
 						levelId, exists := knownLevels[levelName]
 						if !exists {
-							println("Ignoring " + levelName + " for pack " + pack.Name)
+							return fmt.Errorf("failed to load pack %v, because level %v was not found", pack.Name, levelName)
 						}
 						_, err := util.AddRecord(txDao, app, packLevelCollection, map[string]any{
 							"level": levelId,
