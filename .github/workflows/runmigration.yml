@@ -54,7 +54,7 @@ jobs:
             done
 
       - name: Download db from server
-        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db ./backend/pb_data/data.db
+        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data* ./backend/pb_data/
 
       - name: Start service
         uses: appleboy/ssh-action@v1.0.0
@@ -81,7 +81,7 @@ jobs:
             done
 
       - name: Upload db to server
-        run: rsync -avz ./backend/pb_data/data.db ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db
+        run: rsync -avz ./backend/pb_data/data* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/
 
       - name: Start service
         uses: appleboy/ssh-action@v1.0.0
