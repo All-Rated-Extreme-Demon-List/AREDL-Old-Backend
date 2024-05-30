@@ -54,7 +54,13 @@ jobs:
             done
 
       - name: Download db from server
-        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data* ./backend/pb_data/
+        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db ./backend/pb_data/
+
+      - name: Download db shm from server
+        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db-shm ./backend/pb_data/
+
+      - name: Download db wal from server
+        run: rsync -avz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/data.db-wal ./backend/pb_data/
 
       - name: Start service
         uses: appleboy/ssh-action@v1.0.0
@@ -81,7 +87,13 @@ jobs:
             done
 
       - name: Upload db to server
-        run: rsync -avz ./backend/pb_data/data* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/
+        run: rsync -avz ./backend/pb_data/data.db ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/
+
+      - name: Upload db shm to server
+        run: rsync -avz ./backend/pb_data/data.db-shm ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/
+
+      - name: Upload db wal to server
+        run: rsync -avz ./backend/pb_data/data.db-wal ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/pb_data/
 
       - name: Start service
         uses: appleboy/ssh-action@v1.0.0
