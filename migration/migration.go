@@ -128,11 +128,13 @@ func Register(app *pocketbase.PocketBase) {
 					names.TableMergeRequests,
 					names.TableNameChangeRequests}
 				for _, table := range deleteDataTables {
+					fmt.Printf("Deleting %v\n", table)
 					_, err := txDao.DB().Delete(table, nil).Execute()
 					if err != nil {
 						return err
 					}
 				}
+				println("Deleting placeholder users")
 				userRecords, err := txDao.FindRecordsByExpr(names.TableUsers, dbx.HashExp{"placeholder": true})
 				if err != nil {
 					return err
