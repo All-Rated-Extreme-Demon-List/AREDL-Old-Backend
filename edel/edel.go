@@ -35,11 +35,12 @@ func getGoogleSheetData(spreadsheetId string, readRange string, apiKey string) (
 func cleanLevelName(name string) string {
 	re := regexp.MustCompile(`[^\w\s]+`)
 	cleanedName := re.ReplaceAllString(name, "")
+	cleanedName = strings.ReplaceAll(cleanedName, "\n", "")
 	return strings.TrimSpace(cleanedName)
 }
 
 func matchLevelNames(levelName string, txDao *daos.Dao, levelCollection *models.Collection) ([]*models.Record, error) {
-	suffixes := []string{"", " (Solo)", " (2P)"}
+	suffixes := []string{"", " ", " (Solo)", " (2P)"}
 	var matchedLevels []*models.Record
 	for _, suffix := range suffixes {
 		fullName := levelName + suffix
