@@ -41,6 +41,7 @@ type Level struct {
 	Legacy        bool           `db:"legacy" json:"legacy,omitempty"`
 	LevelId       int            `db:"level_id" json:"level_id,omitempty"`
 	LevelPassword string         `db:"level_password" json:"level_password,omitempty"`
+	Enjoyment     float64        `db:"enjoyment" json:"enjoyment,omitempty"`
 	CustomSong    string         `db:"custom_song" json:"custom_song,omitempty"`
 	Publisher     LevelUser      `db:"publisher" json:"publisher,omitempty" extend:"publisher,users,id"`
 	Verification  *LevelRecord   `json:"verification,omitempty" extend:"id,records,submitted_by"`
