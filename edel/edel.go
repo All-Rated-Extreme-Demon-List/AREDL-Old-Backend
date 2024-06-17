@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/models"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"os"
+	"regexp"
+	"strings"
 
 	"AREDL/demonlist"
 	"github.com/pocketbase/pocketbase"
@@ -27,6 +30,26 @@ func getGoogleSheetData(spreadsheetId string, readRange string, apiKey string) (
 	}
 
 	return resp.Values, nil
+}
+
+func cleanLevelName(name string) string {
+	re := regexp.MustCompile(`[^\w\s]+`)
+	cleanedName := re.ReplaceAllString(name, "")
+	return strings.TrimSpace(cleanedName)
+}
+
+func matchLevelNames(levelName string, txDao *daos.Dao, levelCollection *models.Collection) ([]*models.Record, error) {
+	suffixes := []string{"", " (Solo)", " (2P)"}
+	var matchedLevels []*models.Record
+	for _, suffix := range suffixes {
+		fullName := levelName + suffix
+		levels, err := txDao.FindRecordsByExpr(levelCollection.Id, dbx.HashExp{"name": fullName})
+		if err != nil {
+			return nil, err
+		}
+		matchedLevels = append(matchedLevels, levels...)
+	}
+	return matchedLevels, nil
 }
 
 func Register(app *pocketbase.PocketBase) {
@@ -54,28 +77,37 @@ func Register(app *pocketbase.PocketBase) {
 				}
 
 				println("Updating level enjoyment data...")
+				nomatch := 0
+
 				for i, row := range sheetData {
 					if len(row) < 2 {
 						continue
 					}
+
 					levelName, enjoymentValue := row[0].(string), row[1].(string)
-					fmt.Printf("[%d/%d] %s\n", i+1, len(sheetData)-1, levelName)
-					levels, err := txDao.FindRecordsByExpr(levelCollection.Id, dbx.HashExp{"name": levelName})
+					cleanedLevelName := cleanLevelName(levelName)
+
+					matchedLevels, err := matchLevelNames(cleanedLevelName, txDao, levelCollection)
 					if err != nil {
 						return err
 					}
 
-					if len(levels) > 0 {
-						level := levels[0]
-						level.Set("enjoyment", enjoymentValue)
+					fmt.Printf("[%d/%d] %s\n", i+1, len(sheetData)-1, levelName)
+					if len(matchedLevels) > 0 {
+						for _, level := range matchedLevels {
+							level.Set("enjoyment", enjoymentValue)
 
-						err = txDao.SaveRecord(level)
-						if err != nil {
-							return err
+							err = txDao.SaveRecord(level)
+							if err != nil {
+								return err
+							}
 						}
+					} else {
+						nomatch++
+						println("\tCouldn't find a matching level on the list")
 					}
 				}
-
+				fmt.Printf("Scraped %d levels, %d not on AREDL\n", len(sheetData), nomatch)
 				return nil
 			})
 			if err != nil {
