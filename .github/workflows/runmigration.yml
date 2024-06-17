@@ -67,6 +67,9 @@ jobs:
       - name: Run migration
         run: ./backend/AREDL migrate "./aredl/data"
 
+      - name: Fetch EDEL data
+        run: ./backend/AREDL edel "${{ secrets.GSHEET_API_KEY }}"
+
       - name: Stop service
         uses: appleboy/ssh-action@v1.0.0
         with:

@@ -18,6 +18,7 @@ type ListEntry struct {
 	LevelId   int     `db:"level_id" json:"level_id,omitempty"`
 	TwoPlayer bool    `db:"two_player" json:"two_player"`
 	Legacy    bool    `db:"legacy" json:"legacy,omitempty"`
+	Enjoyment float64 `db:"enjoyment" json:"enjoyment,omitempty"`
 }
 
 // registerLevelsEndpoint godoc

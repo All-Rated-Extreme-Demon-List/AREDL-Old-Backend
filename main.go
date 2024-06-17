@@ -2,6 +2,7 @@ package main
 
 import (
 	"AREDL/demonlist"
+	"AREDL/edel"
 	"AREDL/endpoints/aredl"
 	"AREDL/endpoints/global"
 	"AREDL/migration"
@@ -31,6 +32,7 @@ func main() {
 	app := pocketbase.New()
 
 	migration.Register(app)
+	edel.Register(app)
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/docs/*", echoSwagger.WrapHandler)
