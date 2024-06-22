@@ -34,6 +34,9 @@ func matchLevels(id string, txDao *daos.Dao, levelCollection *models.Collection)
 	if err != nil {
 		return nil, err
 	}
+	if len(levels) > 1 {
+		return levels[1:], nil
+	}
 	return levels, nil
 }
 
