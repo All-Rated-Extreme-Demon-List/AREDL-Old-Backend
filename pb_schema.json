@@ -359,6 +359,16 @@
           "max": null,
           "noDecimal": false
         }
+      },
+      {
+        "system": false,
+        "id": "kzav23ub",
+        "name": "is_edel_pending",
+        "type": "bool",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {}
       }
     ],
     "indexes": [

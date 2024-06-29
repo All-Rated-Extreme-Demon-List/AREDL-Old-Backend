@@ -84,7 +84,7 @@ func Register(app *pocketbase.PocketBase) {
 					if len(matchedLevels) > 0 {
 						for _, level := range matchedLevels {
 							level.Set("enjoyment", enjoymentValue)
-
+							level.Set("is_edel_pending", false)
 							err = txDao.SaveRecord(level)
 							if err != nil {
 								return err
@@ -96,6 +96,47 @@ func Register(app *pocketbase.PocketBase) {
 					}
 				}
 				fmt.Printf("Scraped %d levels, %d not on AREDL\n", len(normalSheetData)-1, nomatch)
+
+				pendingReadRange := "'IDS'!E:F"
+
+				pendingSheetData, err := getGoogleSheetData(spreadsheetId, pendingReadRange, apiKey)
+				if err != nil {
+					return err
+				}
+
+				println("Updating level enjoyment data (pending)...")
+				nomatch = 0
+
+				for i := 1; i < len(pendingSheetData); i++ {
+					row := pendingSheetData[i]
+					if len(row) < 2 {
+						continue
+					}
+
+					enjoymentValue, levelID := row[0].(string), row[1].(string)
+
+					matchedLevels, err := matchLevels(levelID, txDao, levelCollection)
+					if err != nil {
+						return err
+					}
+
+					fmt.Printf("[%d/%d] %s\n", i, len(pendingSheetData)-1, levelID)
+					if len(matchedLevels) > 0 {
+						for _, level := range matchedLevels {
+							level.Set("enjoyment", enjoymentValue)
+							level.Set("is_edel_pending", true)
+
+							err = txDao.SaveRecord(level)
+							if err != nil {
+								return err
+							}
+						}
+					} else {
+						nomatch++
+						println("\tCouldn't find a matching level on the list")
+					}
+				}
+				fmt.Printf("Scraped %d levels, %d not on AREDL\n", len(pendingSheetData)-1, nomatch)
 				return nil
 			})
 			if err != nil {

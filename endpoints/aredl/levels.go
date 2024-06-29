@@ -11,14 +11,15 @@ import (
 )
 
 type ListEntry struct {
-	Id        string  `db:"id" json:"id,omitempty"`
-	Position  int     `db:"position" json:"position,omitempty"`
-	Name      string  `db:"name" json:"name,omitempty"`
-	Points    float64 `db:"points" json:"points,omitempty"`
-	LevelId   int     `db:"level_id" json:"level_id,omitempty"`
-	TwoPlayer bool    `db:"two_player" json:"two_player"`
-	Legacy    bool    `db:"legacy" json:"legacy,omitempty"`
-	Enjoyment float64 `db:"enjoyment" json:"enjoyment,omitempty"`
+	Id            string  `db:"id" json:"id,omitempty"`
+	Position      int     `db:"position" json:"position,omitempty"`
+	Name          string  `db:"name" json:"name,omitempty"`
+	Points        float64 `db:"points" json:"points,omitempty"`
+	LevelId       int     `db:"level_id" json:"level_id,omitempty"`
+	TwoPlayer     bool    `db:"two_player" json:"two_player"`
+	Legacy        bool    `db:"legacy" json:"legacy,omitempty"`
+	Enjoyment     float64 `db:"enjoyment" json:"enjoyment,omitempty"`
+	IsEdelPending bool    `db:"is_edel_pending" json:"is_edel_pending,omitempty"`
 }
 
 // registerLevelsEndpoint godoc
