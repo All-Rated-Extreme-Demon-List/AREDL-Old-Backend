@@ -79,6 +79,10 @@ func levelsHandler(app core.App) echo.HandlerFunc {
 		if err != nil {
 			return util.NewErrorResponse(err, "Failed to load demonlist data")
 		}
+
+		// Set Cache-Control header
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600") // Cache for 1 hour
+
 		return c.JSON(http.StatusOK, list)
 	}
 }
