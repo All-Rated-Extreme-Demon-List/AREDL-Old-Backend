@@ -110,6 +110,7 @@ func registerSubmissionAcceptEndpoint(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to delete submission")
 				}
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return demonlist.UpdateLeaderboardAndPacksForUser(txDao, aredl, submissionRecord.GetString("submitted_by"))
 			})
 		},

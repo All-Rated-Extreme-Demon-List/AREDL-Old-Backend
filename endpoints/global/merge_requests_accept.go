@@ -57,6 +57,7 @@ func registerMergeRequestAcceptEndpoint(e *echo.Group, app core.App) error {
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to merge")
 			}
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return c.String(200, "Merged")
 		},
 	})

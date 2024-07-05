@@ -56,6 +56,7 @@ func registerGetApiKeyEndpoint(e *echo.Group, app core.App) error {
 						return util.NewErrorResponse(nil, "Failed to create api key")
 					}
 				}
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return c.JSON(200, response)
 			})
 			return err

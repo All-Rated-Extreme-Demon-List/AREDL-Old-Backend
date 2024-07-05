@@ -38,6 +38,7 @@ func registerPackDelete(e *echo.Group, app core.App) error {
 		Handler: func(c echo.Context) error {
 			aredl := demonlist.Aredl()
 			err := demonlist.DeletePack(app.Dao(), aredl, c.Get("id").(string))
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return err
 		},
 	})

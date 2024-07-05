@@ -69,6 +69,7 @@ func registerPackEndpoint(e *echo.Group, app core.App) error {
 					}
 					output = append(output, pack)
 				}
+				c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 				return c.JSON(http.StatusOK, output)
 			})
 			return err

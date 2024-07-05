@@ -79,6 +79,7 @@ func registerLevelPlaceEndpoint(e *echo.Group, app core.App) error {
 
 			err := demonlist.PlaceLevel(app.Dao(), app, userRecord.Id, aredl, levelData, verificationData, creatorIds)
 
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return err
 		},
 	})

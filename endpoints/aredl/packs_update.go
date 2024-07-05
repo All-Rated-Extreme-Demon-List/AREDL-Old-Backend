@@ -49,6 +49,7 @@ func registerPackUpdate(e *echo.Group, app core.App) error {
 			aredl := demonlist.Aredl()
 			packData := c.Get("packData").(map[string]interface{})
 			err := demonlist.UpsertPack(app.Dao(), app, aredl, packData)
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return err
 		},
 	})

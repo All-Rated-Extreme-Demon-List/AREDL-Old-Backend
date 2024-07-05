@@ -52,6 +52,7 @@ func registerMergeRequestRejectEndpoint(e *echo.Group, app core.App) error {
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to reject")
 			}
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return c.String(200, "Rejected")
 		},
 	})

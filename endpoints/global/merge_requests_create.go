@@ -70,6 +70,7 @@ func registerMergeRequestEndpoint(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to create request")
 				}
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return nil
 			})
 			return err

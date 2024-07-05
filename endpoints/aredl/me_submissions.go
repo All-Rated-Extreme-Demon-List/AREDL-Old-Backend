@@ -74,6 +74,7 @@ func registerMeSubmissionList(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "could not load submissions")
 				}
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return c.JSON(200, submissions)
 			})
 			return err

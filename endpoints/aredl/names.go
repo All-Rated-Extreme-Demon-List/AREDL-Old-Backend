@@ -57,6 +57,7 @@ func registerNamesEndpoint(e *echo.Group, app core.App) error {
 				}
 				result[user.Role] = append(list, user.User)
 			}
+			c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 			return c.JSON(200, result)
 		},
 	})

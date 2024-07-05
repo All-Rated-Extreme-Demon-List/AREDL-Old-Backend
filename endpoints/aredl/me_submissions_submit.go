@@ -76,6 +76,7 @@ func registerSubmissionEndpoint(e *echo.Group, app core.App) error {
 				err = demonlist.UpsertSubmission(txDao, app, aredl, submissionData)
 				return err
 			})
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return err
 		},
 	})

@@ -98,6 +98,9 @@ func registerLeaderboardEndpoint(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to calculate page count")
 				}
+
+				c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+
 				return c.JSON(http.StatusOK, result)
 			})
 			return err

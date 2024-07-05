@@ -75,6 +75,8 @@ func registerLevelHistoryEndpoint(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "Failed to load demonlist data")
 				}
+
+				c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 				return c.JSON(http.StatusOK, result)
 			})
 			return err

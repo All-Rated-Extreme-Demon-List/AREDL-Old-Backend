@@ -71,6 +71,7 @@ func registerBanAccountEndpoint(e *echo.Group, app core.App) error {
 				}
 				return nil
 			})
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return err
 		},
 	})

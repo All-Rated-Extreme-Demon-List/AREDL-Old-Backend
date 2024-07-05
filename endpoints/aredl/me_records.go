@@ -70,6 +70,7 @@ func registerRecordList(e *echo.Group, app core.App) error {
 				if err != nil {
 					return util.NewErrorResponse(err, "could not load records")
 				}
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return c.JSON(200, records)
 			})
 			return err

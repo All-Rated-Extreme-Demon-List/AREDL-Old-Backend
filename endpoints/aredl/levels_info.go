@@ -146,6 +146,12 @@ func registerLevelEndpoint(e *echo.Group, app core.App) error {
 						return util.NewErrorResponse(err, "Failed to load demonlist data")
 					}
 				}
+
+				if c.Get("records").(bool) {
+					c.Response().Header().Set("Cache-Control", "no-store")
+				} else {
+					c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+				}
 				return c.JSON(http.StatusOK, level)
 			})
 			return err

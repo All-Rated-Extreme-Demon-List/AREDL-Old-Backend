@@ -57,6 +57,7 @@ func registerCreatePlaceholderUser(e *echo.Group, app core.App) error {
 					return util.NewErrorResponse(err, "Failed to create placeholder user")
 				}
 				response.Id = createdUser.Id
+				c.Response().Header().Set("Cache-Control", "no-store")
 				return c.JSON(200, response)
 			})
 			return err

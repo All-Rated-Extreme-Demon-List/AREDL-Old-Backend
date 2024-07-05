@@ -72,6 +72,7 @@ func registerUserListEndpoint(e *echo.Group, app core.App) error {
 			if err != nil {
 				return util.NewErrorResponse(err, "Failed to load request data")
 			}
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return c.JSON(http.StatusOK, result)
 		},
 	})

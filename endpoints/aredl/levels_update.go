@@ -62,6 +62,7 @@ func registerLevelUpdateEndpoint(e *echo.Group, app core.App) error {
 			}
 			aredl := demonlist.Aredl()
 			levelData := c.Get("levelData").(map[string]interface{})
+			c.Response().Header().Set("Cache-Control", "no-store")
 			return demonlist.UpdateLevel(app.Dao(), app, c.Get("id").(string), userRecord.Id, aredl, levelData, c.Get("creator_ids"))
 		},
 	})
