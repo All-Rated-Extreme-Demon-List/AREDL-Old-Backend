@@ -170,7 +170,7 @@ func registerUserEndpoint(e *echo.Group, app core.App) error {
 					return util.NewErrorResponse(err, "Failed to load roles")
 				}
 				user.Roles = util.MapSlice(roleData, func(v RoleData) string { return v.Role })
-				c.Response().Header().Set("Cache-Control", "no-store")
+				//c.Response().Header().Set("Cache-Control", "no-store")
 				return c.JSON(http.StatusOK, user)
 			})
 			return err

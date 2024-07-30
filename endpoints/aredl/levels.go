@@ -81,7 +81,7 @@ func levelsHandler(app core.App) echo.HandlerFunc {
 		}
 
 		// Set Cache-Control header
-		c.Response().Header().Set("Cache-Control", "public, max-age=3600") // Cache for 1 hour
+		//c.Response().Header().Set("Cache-Control", "public, max-age=3600") // Cache for 1 hour
 
 		return c.JSON(http.StatusOK, list)
 	}
