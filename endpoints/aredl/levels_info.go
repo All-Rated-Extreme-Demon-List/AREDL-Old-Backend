@@ -148,9 +148,9 @@ func registerLevelEndpoint(e *echo.Group, app core.App) error {
 				}
 
 				if c.Get("records").(bool) {
-					//c.Response().Header().Set("Cache-Control", "no-store")
+					c.Response().Header().Set("Cache-Control", "no-store")
 				} else {
-					//c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+					c.Response().Header().Set("Cache-Control", "public, max-age=1800")
 				}
 				return c.JSON(http.StatusOK, level)
 			})
