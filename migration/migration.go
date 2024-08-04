@@ -334,6 +334,7 @@ func Register(app *pocketbase.PocketBase) {
 							if err != nil {
 								return err
 							}
+							knownUsers[strings.ToLower(member.Name)] = memberId
 						}
 						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
 							"user": memberId,
@@ -359,6 +360,7 @@ func Register(app *pocketbase.PocketBase) {
 							if err != nil {
 								return err
 							}
+							knownUsers[strings.ToLower(member.Name)] = memberId
 						}
 						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
 							"user": memberId,
