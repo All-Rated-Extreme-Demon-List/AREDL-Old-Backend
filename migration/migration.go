@@ -66,8 +66,11 @@ type RoleList struct {
 	} `json:"members"`
 }
 
-func addPlaceholder(txDao *daos.Dao, username string) (string, error) {
-	userId := util.RandString(14)
+func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string) (string, error) {
+	userId, ok := oldIds[username]
+	if !ok {
+		userId = util.RandString(14)
+	}
 	usedName := util.RandString(10)
 	userToken := util.RandString(10)
 	_, err := txDao.DB().Insert(names.TableUsers, dbx.Params{
@@ -114,8 +117,20 @@ func Register(app *pocketbase.PocketBase) {
 			}
 			path := args[0]
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				println("Deleting current data")
 				aredl := demonlist.Aredl()
+
+				oldUserIds := make(map[string]string)
+				oldLevelIds := make(map[string]string)
+
+				oldLevels, err := txDao.FindRecordsByExpr(aredl.LevelTableName)
+				if err != nil {
+					return err
+				}
+				for _, oldLevel := range oldLevels {
+					oldLevelIds[oldLevel.GetString("name")] = oldLevel.Id
+				}
+
+				println("Deleting current data")
 				deleteDataTables := []string{
 					aredl.LeaderboardTableName,
 					aredl.LevelTableName,
@@ -140,6 +155,7 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				for _, userRecord := range userRecords {
+					oldUserIds[userRecord.GetString("global_name")] = userRecord.Id
 					if err = txDao.DeleteRecord(userRecord); err != nil {
 						return err
 					}
@@ -203,7 +219,7 @@ func Register(app *pocketbase.PocketBase) {
 
 					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Verifier)
+						userId, err := addPlaceholder(txDao, level.Verifier, oldUserIds)
 						if err != nil {
 							return err
 						}
@@ -212,7 +228,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Author)
+						userId, err := addPlaceholder(txDao, level.Author, oldUserIds)
 						if err != nil {
 							return err
 						}
@@ -220,7 +236,7 @@ func Register(app *pocketbase.PocketBase) {
 						knownUsers[strings.ToLower(level.Author)] = publisherId
 					}
 
-					levelRecord, err := util.AddRecord(txDao, app, levelCollection, map[string]any{
+					levelRecordData := map[string]any{
 						"position":       position + 1,
 						"name":           level.Name,
 						"publisher":      publisherId,
@@ -228,7 +244,14 @@ func Register(app *pocketbase.PocketBase) {
 						"level_password": level.Password,
 						"legacy":         levelData.Legacy,
 						"two_player":     twoPlayer,
-					})
+					}
+
+					levelId, ok := oldLevelIds[level.Name]
+					if ok {
+						levelRecordData["id"] = levelId
+					}
+
+					levelRecord, err := util.AddRecord(txDao, app, levelCollection, levelRecordData)
 					if err != nil {
 						return err
 					}
@@ -236,7 +259,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
-							creatorId, err = addPlaceholder(txDao, creator)
+							creatorId, err = addPlaceholder(txDao, creator, oldUserIds)
 							if err != nil {
 								return err
 							}
@@ -265,7 +288,7 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							userId, err := addPlaceholder(txDao, username)
+							userId, err := addPlaceholder(txDao, username, oldUserIds)
 							if err != nil {
 								return nil, err
 							}
@@ -307,7 +330,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, member := range editorList.Members {
 						memberId, ok := knownUsers[strings.ToLower(member.Name)]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds)
 							if err != nil {
 								return err
 							}
@@ -332,7 +355,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, member := range supporterList.Members {
 						memberId, ok := knownUsers[strings.ToLower(member.Name)]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds)
 							if err != nil {
 								return err
 							}
