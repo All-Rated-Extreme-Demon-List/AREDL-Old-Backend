@@ -67,7 +67,7 @@ type RoleList struct {
 }
 
 func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string) (string, error) {
-	userId, ok := oldIds[username]
+	userId, ok := oldIds[strings.ToLower(username)]
 	if !ok {
 		userId = util.RandString(14)
 	}
