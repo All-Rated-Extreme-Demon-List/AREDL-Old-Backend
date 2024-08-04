@@ -155,7 +155,7 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				for _, userRecord := range userRecords {
-					oldUserIds[userRecord.GetString("global_name")] = userRecord.Id
+					oldUserIds[strings.ToLower(userRecord.GetString("global_name"))] = userRecord.Id
 					if err = txDao.DeleteRecord(userRecord); err != nil {
 						return err
 					}
