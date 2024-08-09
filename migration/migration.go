@@ -91,11 +91,9 @@ func resolveRole(role string) string {
 	switch role {
 	case "owner":
 		return "listOwner"
-	case "coowner":
-		return "listCoOwner"
 	case "admin":
 		return "listAdmin"
-	case "trial":
+	case "mod":
 		return "listMod"
 	case "helper":
 		return "listHelper"
