@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -66,7 +67,7 @@ type RoleList struct {
 	} `json:"members"`
 }
 
-func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string) (string, error) {
+func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string, banned []string) (string, error) {
 	userId, ok := oldIds[strings.ToLower(username)]
 	if !ok {
 		userId = util.RandString(14)
@@ -74,12 +75,13 @@ func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string) 
 	usedName := util.RandString(10)
 	userToken := util.RandString(10)
 	_, err := txDao.DB().Insert(names.TableUsers, dbx.Params{
-		"id":           userId,
-		"username":     usedName,
-		"global_name":  username,
-		"placeholder":  true,
-		"passwordHash": "",
-		"tokenKey":     userToken,
+		"id":               userId,
+		"username":         usedName,
+		"global_name":      username,
+		"placeholder":      true,
+		"passwordHash":     "",
+		"tokenKey":         userToken,
+		"banned_from_list": slices.Contains(banned, strings.ToLower(username)),
 	}).Execute()
 	if err != nil {
 		return "", err
@@ -171,6 +173,12 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
+				var banned []string
+				err = readFileIntoJson(path+"/_leaderboard_banned.json", &banned)
+				if err != nil {
+					return err
+				}
+				banned = util.MapSlice(banned, func(name string) string { return strings.ToLower(name) })
 				levelCollection, err := txDao.FindCollectionByNameOrId(aredl.LevelTableName)
 				if err != nil {
 					return err
@@ -217,7 +225,7 @@ func Register(app *pocketbase.PocketBase) {
 
 					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Verifier, oldUserIds)
+						userId, err := addPlaceholder(txDao, level.Verifier, oldUserIds, banned)
 						if err != nil {
 							return err
 						}
@@ -226,7 +234,7 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Author, oldUserIds)
+						userId, err := addPlaceholder(txDao, level.Author, oldUserIds, banned)
 						if err != nil {
 							return err
 						}
@@ -257,7 +265,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, creator := range level.Creators {
 						creatorId, exists := knownUsers[strings.ToLower(creator)]
 						if !exists {
-							creatorId, err = addPlaceholder(txDao, creator, oldUserIds)
+							creatorId, err = addPlaceholder(txDao, creator, oldUserIds, banned)
 							if err != nil {
 								return err
 							}
@@ -286,7 +294,7 @@ func Register(app *pocketbase.PocketBase) {
 					addSubmissionRecord := func(username string, recordOrder int, url string, percent int, mobile bool) (*models.Record, error) {
 						playerId, exists := knownUsers[strings.ToLower(username)]
 						if !exists {
-							userId, err := addPlaceholder(txDao, username, oldUserIds)
+							userId, err := addPlaceholder(txDao, username, oldUserIds, banned)
 							if err != nil {
 								return nil, err
 							}
@@ -328,7 +336,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, member := range editorList.Members {
 						memberId, ok := knownUsers[strings.ToLower(member.Name)]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, banned)
 							if err != nil {
 								return err
 							}
@@ -354,7 +362,7 @@ func Register(app *pocketbase.PocketBase) {
 					for _, member := range supporterList.Members {
 						memberId, ok := knownUsers[strings.ToLower(member.Name)]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, banned)
 							if err != nil {
 								return err
 							}
