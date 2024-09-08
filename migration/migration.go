@@ -14,6 +14,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -34,7 +35,7 @@ func readFileIntoJson(path string, v any) error {
 }
 
 type Record struct {
-	User    string `json:"user"`
+	User    int    `json:"user"`
 	Link    string `json:"link"`
 	Percent int    `json:"percent"`
 	Mobile  bool   `json:"mobile"`
@@ -43,9 +44,9 @@ type Record struct {
 type Level struct {
 	Id               int      `json:"id"`
 	Name             string   `json:"name"`
-	Author           string   `json:"author"`
-	Creators         []string `json:"creators"`
-	Verifier         string   `json:"verifier"`
+	Author           int      `json:"author"`
+	Creators         []int    `json:"creators"`
+	Verifier         int      `json:"verifier"`
 	Verification     string   `json:"verification"`
 	PercentToQualify int      `json:"percentToQualify"`
 	Password         string   `json:"password"`
@@ -62,15 +63,19 @@ type Pack struct {
 type RoleList struct {
 	Role    string `json:"role"`
 	Members []struct {
-		Name string `json:"name"`
+		Name int    `json:"name"`
 		Link string `json:"link"`
 	} `json:"members"`
 }
 
-func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string, banned []string) (string, error) {
-	userId, ok := oldIds[strings.ToLower(username)]
+func addPlaceholder(txDao *daos.Dao, userJsonId int, oldIds map[int]string, jsonNameMap map[int]string, banned []int) (string, error) {
+	userId, ok := oldIds[userJsonId]
 	if !ok {
 		userId = util.RandString(14)
+	}
+	username, ok := jsonNameMap[userJsonId]
+	if !ok {
+		return "", fmt.Errorf("unknown json id %v", userJsonId)
 	}
 	usedName := util.RandString(10)
 	userToken := util.RandString(10)
@@ -81,7 +86,8 @@ func addPlaceholder(txDao *daos.Dao, username string, oldIds map[string]string, 
 		"placeholder":      true,
 		"passwordHash":     "",
 		"tokenKey":         userToken,
-		"banned_from_list": slices.Contains(banned, strings.ToLower(username)),
+		"json_id":          userJsonId,
+		"banned_from_list": slices.Contains(banned, userJsonId),
 	}).Execute()
 	if err != nil {
 		return "", err
@@ -119,7 +125,27 @@ func Register(app *pocketbase.PocketBase) {
 			err := app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 				aredl := demonlist.Aredl()
 
-				oldUserIds := make(map[string]string)
+				var jsonNameMapStr map[string]string
+				var err = readFileIntoJson(path+"/_name_map.json", &jsonNameMapStr)
+				if err != nil {
+					return err
+				}
+
+				jsonNameMap := make(map[int]string)
+				for idStr, name := range jsonNameMapStr {
+					var id, err = strconv.Atoi(idStr)
+					if err != nil {
+						return err
+					}
+					jsonNameMap[id] = name
+				}
+
+				jsonIdFromName := make(map[string]int)
+				for id, name := range jsonNameMap {
+					jsonIdFromName[strings.ToLower(name)] = id
+				}
+
+				oldUserIds := make(map[int]string)
 				oldLevelIds := make(map[string]string)
 
 				oldLevels, err := txDao.FindRecordsByExpr(aredl.LevelTableName)
@@ -155,12 +181,21 @@ func Register(app *pocketbase.PocketBase) {
 					return err
 				}
 				for _, userRecord := range userRecords {
-					oldUserIds[strings.ToLower(userRecord.GetString("global_name"))] = userRecord.Id
+					var id = userRecord.GetInt("json_id")
+					if id == 0 {
+						var ok bool
+						id, ok = jsonIdFromName[strings.TrimSpace(strings.ToLower(userRecord.GetString("global_name")))]
+						if !ok {
+							fmt.Printf("unknown existing name %s skipping\n", userRecord.GetString("global_name"))
+							continue
+						}
+					}
+					oldUserIds[id] = userRecord.Id
 					if err = txDao.DeleteRecord(userRecord); err != nil {
 						return err
 					}
 				}
-				knownUsers := make(map[string]string)
+				knownUsers := make(map[int]string)
 				knownLevels := make(map[string]string)
 				println("Migrating levels & records")
 				var levelNames []string
@@ -173,12 +208,11 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				var banned []string
+				var banned []int
 				err = readFileIntoJson(path+"/_leaderboard_banned.json", &banned)
 				if err != nil {
 					return err
 				}
-				banned = util.MapSlice(banned, func(name string) string { return strings.ToLower(name) })
 				levelCollection, err := txDao.FindCollectionByNameOrId(aredl.LevelTableName)
 				if err != nil {
 					return err
@@ -220,26 +254,26 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					twoPlayer := strings.HasSuffix(levelData.Name, "2p")
 					if len(level.Creators) == 0 {
-						level.Creators = []string{level.Author}
+						level.Creators = []int{level.Author}
 					}
 
-					verifierId, exists := knownUsers[strings.ToLower(level.Verifier)]
+					verifierId, exists := knownUsers[level.Verifier]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Verifier, oldUserIds, banned)
+						userId, err := addPlaceholder(txDao, level.Verifier, oldUserIds, jsonNameMap, banned)
 						if err != nil {
 							return err
 						}
 						verifierId = userId
-						knownUsers[strings.ToLower(level.Verifier)] = verifierId
+						knownUsers[level.Verifier] = verifierId
 					}
-					publisherId, exists := knownUsers[strings.ToLower(level.Author)]
+					publisherId, exists := knownUsers[level.Author]
 					if !exists {
-						userId, err := addPlaceholder(txDao, level.Author, oldUserIds, banned)
+						userId, err := addPlaceholder(txDao, level.Author, oldUserIds, jsonNameMap, banned)
 						if err != nil {
 							return err
 						}
 						publisherId = userId
-						knownUsers[strings.ToLower(level.Author)] = publisherId
+						knownUsers[level.Author] = publisherId
 					}
 
 					levelRecordData := map[string]any{
@@ -263,13 +297,13 @@ func Register(app *pocketbase.PocketBase) {
 					}
 					knownLevels[levelData.Name] = levelRecord.Id
 					for _, creator := range level.Creators {
-						creatorId, exists := knownUsers[strings.ToLower(creator)]
+						creatorId, exists := knownUsers[creator]
 						if !exists {
-							creatorId, err = addPlaceholder(txDao, creator, oldUserIds, banned)
+							creatorId, err = addPlaceholder(txDao, creator, oldUserIds, jsonNameMap, banned)
 							if err != nil {
 								return err
 							}
-							knownUsers[strings.ToLower(creator)] = creatorId
+							knownUsers[creator] = creatorId
 						}
 						_, err = util.AddRecord(txDao, app, creatorCollection, map[string]any{
 							"creator": creatorId,
@@ -291,15 +325,15 @@ func Register(app *pocketbase.PocketBase) {
 					}
 
 					// level submissions
-					addSubmissionRecord := func(username string, recordOrder int, url string, percent int, mobile bool) (*models.Record, error) {
-						playerId, exists := knownUsers[strings.ToLower(username)]
+					addSubmissionRecord := func(username int, recordOrder int, url string, percent int, mobile bool) (*models.Record, error) {
+						playerId, exists := knownUsers[username]
 						if !exists {
-							userId, err := addPlaceholder(txDao, username, oldUserIds, banned)
+							userId, err := addPlaceholder(txDao, username, oldUserIds, jsonNameMap, banned)
 							if err != nil {
 								return nil, err
 							}
 							playerId = userId
-							knownUsers[strings.ToLower(username)] = playerId
+							knownUsers[username] = playerId
 						}
 						submissionRecord, err := util.AddRecord(txDao, app, recordsCollection, map[string]any{
 							"video_url":       strings.Replace(url, " ", "", -1),
@@ -334,13 +368,13 @@ func Register(app *pocketbase.PocketBase) {
 				}
 				for _, editorList := range editors {
 					for _, member := range editorList.Members {
-						memberId, ok := knownUsers[strings.ToLower(member.Name)]
+						memberId, ok := knownUsers[member.Name]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, banned)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, jsonNameMap, banned)
 							if err != nil {
 								return err
 							}
-							knownUsers[strings.ToLower(member.Name)] = memberId
+							knownUsers[member.Name] = memberId
 						}
 						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
 							"user": memberId,
@@ -360,13 +394,13 @@ func Register(app *pocketbase.PocketBase) {
 				}
 				for _, supporterList := range supporters {
 					for _, member := range supporterList.Members {
-						memberId, ok := knownUsers[strings.ToLower(member.Name)]
+						memberId, ok := knownUsers[member.Name]
 						if !ok {
-							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, banned)
+							memberId, err = addPlaceholder(txDao, member.Name, oldUserIds, jsonNameMap, banned)
 							if err != nil {
 								return err
 							}
-							knownUsers[strings.ToLower(member.Name)] = memberId
+							knownUsers[member.Name] = memberId
 						}
 						_, err = txDao.DB().Insert(names.TableRoles, dbx.Params{
 							"user": memberId,
