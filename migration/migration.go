@@ -208,10 +208,14 @@ func Register(app *pocketbase.PocketBase) {
 				if err != nil {
 					return err
 				}
-				var banned []int
-				err = readFileIntoJson(path+"/_leaderboard_banned.json", &banned)
+				var bannedMap map[string][]int
+				err = readFileIntoJson(path+"/_leaderboard_banned.json", &bannedMap)
 				if err != nil {
-					return err
+				    return err
+				}
+				banned := []int{}
+				for _, ids := range bannedMap {
+				    banned = append(banned, ids...)
 				}
 				levelCollection, err := txDao.FindCollectionByNameOrId(aredl.LevelTableName)
 				if err != nil {
